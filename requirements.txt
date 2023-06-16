@@ -1,0 +1,5 @@
+libscrc==1.8.1
+numpy==1.24.2
+PyQt5==5.15.9
+PyQt5_sip==12.11.1
+pyserial==3.5
