@@ -6,7 +6,7 @@ class SerialParameters:
                  stopbits=serial.STOPBITS_ONE, timeout=None, xonxoff=False, rtscts=False,
                  write_timeout=None, dsrdtr=False, inter_byte_timeout=None, exclusive=None,
                  local_echo=False, appendCR=False, appendLF=False, readTextIndex="read_line", readBytes=1,
-                 readUntil='', DTR=False, maxSignalRate=10, Kennbin = ""):
+                 readUntil='', DTR=False, maxSignalRate=10, Kennbin = "", Kennung = ""):
         self.port = port
         self.baudrate = baudrate
         self.bytesize = bytesize
@@ -25,6 +25,7 @@ class SerialParameters:
         self.DTR = DTR
         self.maxSignalRate = maxSignalRate  # Hz
         self.Kennbin = Kennbin
+        self.Kennung = Kennung
 
         self.local_echo = local_echo
         self.appendCR = appendCR

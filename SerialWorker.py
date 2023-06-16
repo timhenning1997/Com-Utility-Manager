@@ -148,6 +148,7 @@ class SerialThread(QRunnable):
                                         if time() > self.lastRefreshTimeDict[Kennbin] + (1 / self.serialParameters.maxSignalRate):
                                             self.lastRefreshTimeDict[Kennbin] = time()
                                             self.serialParameters.Kennbin = Kennbin
+                                            self.serialParameters.Kennung = Kennung
                                             self.signals.receivedData.emit(self.serialParameters, singleLine)
                     else:
                         self.signals.lostConnection.emit(self.serialParameters)

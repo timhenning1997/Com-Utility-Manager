@@ -17,6 +17,7 @@ class WindowTablePlotter(AbstractWindow):
         self.receivedValueData = []
         self.currentLengthOfData = 0
         self.shownType = "Hex"
+        self.errorCounter = 0
 
         self.color1 = QColor(26, 26, 26)
         self.color2 = QColor(77, 0, 0)
@@ -59,11 +60,26 @@ class WindowTablePlotter(AbstractWindow):
         optionsLayout.addWidget(deleteColumnButton)
         optionsLayout.addWidget(addColumnButton)
 
+        dataCounterTextLabel = QLabel("Data couter:")
+        dataCounterTextLabel.adjustSize()
         self.dataCounterLabel = QLabel("Data couter")
-        self.dataCounterLabel.setFixedWidth(200)
+        self.dataCounterLabel.setFixedWidth(50)
+        dataSetLengthTextLabel = QLabel("NDL:")
+        dataSetLengthTextLabel.adjustSize()
+        self.dataSetLengthLabel = QLabel("NDL")
+        self.dataSetLengthLabel.setFixedWidth(50)
+        errorCounterTextLabel = QLabel("Error counter:")
+        errorCounterTextLabel.adjustSize()
+        self.errorCounterLabel = QLabel("0")
+        self.errorCounterLabel.setFixedWidth(50)
 
         options2Layout = QHBoxLayout()
+        options2Layout.addWidget(dataCounterTextLabel)
         options2Layout.addWidget(self.dataCounterLabel)
+        options2Layout.addWidget(dataSetLengthTextLabel)
+        options2Layout.addWidget(self.dataSetLengthLabel)
+        options2Layout.addWidget(errorCounterTextLabel)
+        options2Layout.addWidget(self.errorCounterLabel)
         options2Layout.addStretch()
 
         self.colNumber = 8
@@ -176,6 +192,10 @@ class WindowTablePlotter(AbstractWindow):
                     self.resizeTable(int(math.ceil(len(data[1:]) / self.colNumber)), self.colNumber)
 
             self.dataCounterLabel.setText(str(int(data[0], 16)))
+            self.dataSetLengthLabel.setText(str(serialParameters.Kennung))
+            if data[-1] and (str(data[-1]) == "4650"):
+                self.errorCounter += 1
+                self.errorCounterLabel.setText(str(self.errorCounter))
 
             temp_data = []
             temp_receivedValueData = []
