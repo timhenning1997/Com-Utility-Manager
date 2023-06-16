@@ -1,0 +1,41 @@
+{
+    "_windowType": "TablePlotter",
+    "_windowSize": [
+        775,
+        260
+    ],
+    "_windowPosition": [
+        854,
+        461
+    ],
+    "_filterMenu": {
+        "_activePorts": [
+            "COM-ALL"
+        ],
+        "_allPorts": [
+            "COM-ALL",
+            "ADD-COM"
+        ],
+        "_activeKennung": [
+            "KENNUNG-ALL"
+        ],
+        "_allKennung": [
+            "KENNUNG-ALL",
+            "ADD-Kennung"
+        ],
+        "_activeCalibration": [
+            "RAW-Values",
+            "CALIBRATED-Values"
+        ],
+        "_allCalibration": [
+            "RAW-Values",
+            "CALIBRATED-Values"
+        ]
+    },
+    "_windowSaveInfo": {
+        "rowCount": 1,
+        "colCount": 8,
+        "color1": "#000dff",
+        "color2": "#eaff00"
+    }
+}

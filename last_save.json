@@ -1,0 +1,188 @@
+{
+    "_windowType": "Hub",
+    "_windowSize": [
+        691,
+        300
+    ],
+    "_windowPosition": [
+        281,
+        106
+    ],
+    "_windowMaximized": false,
+    "_tableColumnsHidden": [
+        true,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true
+    ],
+    "ports": [
+        {
+            "serialParameter": {
+                "port": "COM3",
+                "baudrate": 115200,
+                "bytesize": 8,
+                "parity": "N",
+                "stopbits": 1,
+                "timeout": 0.3,
+                "xonxoff": false,
+                "rtscts": false,
+                "write_timeout": null,
+                "dsrdtr": false,
+                "inter_byte_timeout": null,
+                "exclusive": null,
+                "readTextIndex": "read_WU_device",
+                "readBytes": 1,
+                "readUntil": "",
+                "DTR": false,
+                "maxSignalRate": 30,
+                "local_echo": false,
+                "appendCR": false,
+                "appendLF": false
+            },
+            "savePath": "E:\\Local GitHub\\Com Utility Manager",
+            "calibrationPath": ""
+        }
+    ],
+    "windows": [
+        {
+            "_windowType": "TablePlotter",
+            "_windowSize": [
+                775,
+                170
+            ],
+            "_windowPosition": [
+                992,
+                90
+            ],
+            "_filterMenu": {
+                "_activePorts": [
+                    "COM-ALL"
+                ],
+                "_allPorts": [
+                    "COM-ALL",
+                    "ADD-COM",
+                    "COM3"
+                ],
+                "_activeKennung": [
+                    "0a04"
+                ],
+                "_allKennung": [
+                    "KENNUNG-ALL",
+                    "ADD-Kennung",
+                    "0a04",
+                    "3261",
+                    "0A04",
+                    "1004"
+                ],
+                "_activeCalibration": [
+                    "RAW-Values",
+                    "CALIBRATED-Values"
+                ],
+                "_allCalibration": [
+                    "RAW-Values",
+                    "CALIBRATED-Values"
+                ]
+            },
+            "_windowSaveInfo": {
+                "rowCount": 2,
+                "colCount": 8,
+                "color1": "#000000",
+                "color2": "#ff0000"
+            }
+        },
+        {
+            "_windowType": "TablePlotter",
+            "_windowSize": [
+                428,
+                155
+            ],
+            "_windowPosition": [
+                996,
+                320
+            ],
+            "_filterMenu": {
+                "_activePorts": [
+                    "COM-ALL"
+                ],
+                "_allPorts": [
+                    "COM-ALL",
+                    "COM3",
+                    "COM3",
+                    "COM4",
+                    "ADD-COM"
+                ],
+                "_activeKennung": [
+                    "0203"
+                ],
+                "_allKennung": [
+                    "KENNUNG-ALL",
+                    "0203",
+                    "ADD-Kennung"
+                ],
+                "_activeCalibration": [
+                    "RAW-Values",
+                    "CALIBRATED-Values"
+                ],
+                "_allCalibration": [
+                    "RAW-Values",
+                    "CALIBRATED-Values"
+                ]
+            },
+            "_windowSaveInfo": {
+                "rowCount": 1,
+                "colCount": 4,
+                "color1": "#1a1a1a",
+                "color2": "#1100ff"
+            }
+        },
+        {
+            "_windowType": "TablePlotter",
+            "_windowSize": [
+                800,
+                365
+            ],
+            "_windowPosition": [
+                996,
+                528
+            ],
+            "_filterMenu": {
+                "_activePorts": [
+                    "COM-ALL"
+                ],
+                "_allPorts": [
+                    "COM-ALL",
+                    "ADD-COM",
+                    "COM3"
+                ],
+                "_activeKennung": [
+                    "KENNUNG-ALL"
+                ],
+                "_allKennung": [
+                    "KENNUNG-ALL",
+                    "ADD-Kennung",
+                    "0a04",
+                    "0203",
+                    "0201"
+                ],
+                "_activeCalibration": [
+                    "RAW-Values",
+                    "CALIBRATED-Values"
+                ],
+                "_allCalibration": [
+                    "RAW-Values",
+                    "CALIBRATED-Values"
+                ]
+            },
+            "_windowSaveInfo": {
+                "rowCount": 2,
+                "colCount": 8,
+                "color1": "#1a1a1a",
+                "color2": "#4d0000"
+            }
+        }
+    ]
+}
