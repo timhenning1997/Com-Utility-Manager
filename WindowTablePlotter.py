@@ -209,7 +209,7 @@ class WindowTablePlotter(AbstractWindow):
                 colCount = numberIndex % self.colNumber
 
                 if self.shownType == "Hex":
-                    self.table.item(rowCount, colCount).setText(temp_data[numberIndex])
+                    self.table.item(rowCount, colCount).setText(temp_data[numberIndex].upper())
                 elif self.shownType == "Values":
                     self.table.item(rowCount, colCount).setText(str(temp_receivedValueData[numberIndex]))
 
