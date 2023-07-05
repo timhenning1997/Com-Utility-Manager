@@ -97,7 +97,6 @@ class WindowTerminal(AbstractWindow):
     def sendData(self):
         if self.sendBytesCombobox.currentText() == "Send as byte":
             data = self.lineEdit.text().encode('utf-8')
-            print(data)
         elif self.sendBytesCombobox.currentText() == "Send as string":
             data = self.lineEdit.text()
         elif self.sendBytesCombobox.currentText() == "Send as 0F35 command":
@@ -105,7 +104,9 @@ class WindowTerminal(AbstractWindow):
             try:
                 checkSum = str(hex(libscrc.modbus(binascii.unhexlify(str(byte))))[2:6].rjust(4,'0'))
                 data = "0F35" + str(byte) + str(checkSum)
+                #print(data)   # Testausgabe um zu schauen, welches Datenformat herauskommt
                 data = binascii.unhexlify(str(data))
+                #print(data)   # Testausgabe um zu schauen, welches Datenformat herauskommt
             except Exception as e:
                 msg = QMessageBox()
                 msg.setIcon(QMessageBox.Warning)
