@@ -17,9 +17,6 @@ class Scene():
     def addNode(self, node):
         self.nodes.append(node)
 
-    def getView(self) -> 'QGraphicsView':
-        return self.grScene.views()[0]
-
     def removeNode(self, node):
         self.nodes.remove(node)
 

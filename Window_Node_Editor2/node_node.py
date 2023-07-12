@@ -9,8 +9,6 @@ class Node():
         self.content = QDMNodeContentWidget()
         self.grNode = QDMGraphicsNode(self)
 
-        self.locked = False
-
         self.scene.addNode(self)
         self.scene.grScene.addItem(self.grNode)
 
