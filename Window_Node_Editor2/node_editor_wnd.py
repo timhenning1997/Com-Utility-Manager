@@ -5,7 +5,6 @@ from PyQt5.QtCore import *
 from Window_Node_Editor.node_scene import Scene
 from Window_Node_Editor.node_node import Node
 from Window_Node_Editor.node_graphics_view import QDMGraphicsView
-from Window_Node_Editor.nodes.Node_input_button import Node_TextButtonInputNode
 
 
 class NodeEditorWnd(QWidget):
@@ -28,8 +27,7 @@ class NodeEditorWnd(QWidget):
         self.scene = Scene()
         # self.grScene = self.scene.grScene
 
-        #node = Node(self.scene)
-        node = Node_TextButtonInputNode(self.scene)
+        node = Node(self.scene)
 
         # create graphics view
         self.view = QDMGraphicsView(self.scene.grScene, self)

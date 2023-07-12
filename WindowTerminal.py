@@ -104,9 +104,14 @@ class WindowTerminal(AbstractWindow):
             try:
                 checkSum = str(hex(libscrc.modbus(binascii.unhexlify(str(byte))))[2:6].rjust(4,'0'))
                 data = "0F35" + str(byte) + str(checkSum)
-                #print(data)   # Testausgabe um zu schauen, welches Datenformat herauskommt
+                #data = data.encode('utf-8')
+                print(data)   # Testausgabe um zu schauen, welches Datenformat herauskommt
                 data = binascii.unhexlify(str(data))
-                #print(data)   # Testausgabe um zu schauen, welches Datenformat herauskommt
+                print("Befehl: 0F35")
+                print("Byte: " + str(byte))
+                print("CheckSum: " + str(checkSum))
+                print("_______________________")
+                print("Sending: " + str(data))   # Testausgabe um zu schauen, welches Datenformat herauskommt
             except Exception as e:
                 msg = QMessageBox()
                 msg.setIcon(QMessageBox.Warning)

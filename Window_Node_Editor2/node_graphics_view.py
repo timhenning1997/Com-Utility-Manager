@@ -4,9 +4,6 @@ from PyQt5.QtGui import *
 
 
 class QDMGraphicsView(QGraphicsView):
-    scenePosChanged = pyqtSignal(int, int)
-    sceneScaleChanged = pyqtSignal(float)
-
     def __init__(self, grScene, parent=None):
         super().__init__(parent)
         self.grScene = grScene
@@ -17,9 +14,9 @@ class QDMGraphicsView(QGraphicsView):
 
         self.zoomInFactor = 1.25
         self.zoomClamp = True
-        self.zoom = 20
+        self.zoom = 10
         self.zoomStep = 1
-        self.zoomRange = [0, 30]
+        self.zoomRange = [0, 10]
 
 
     def initUI(self):
@@ -52,11 +49,6 @@ class QDMGraphicsView(QGraphicsView):
             self.rightMouseButtonRelease(event)
         else:
             super().mouseReleaseEvent(event)
-
-    def mouseMoveEvent(self, event: QMouseEvent):
-        scenepos = self.mapToScene(event.pos())
-        self.scenePosChanged.emit(int(scenepos.x()), int(scenepos.y()))
-        super().mouseMoveEvent(event)
 
 
     def middleMouseButtonPress(self, event):
@@ -111,4 +103,4 @@ class QDMGraphicsView(QGraphicsView):
         # set scene scale
         if not clamped or self.zoomClamp is False:
             self.scale(zoomFactor, zoomFactor)
-            self.sceneScaleChanged.emit(float(zoomFactor))
+

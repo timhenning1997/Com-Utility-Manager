@@ -176,16 +176,21 @@ class ConnectionHubWindow(QMainWindow):
 
     def connectToSerial(self, window: SerialConnectWindow, serialParam: SerialParameters = None):
         if window is not None:
+            print("Window is not none")
             serialParam = window.getSerialParameter()
+            print("Window got serial parameters")
             window.close()
+            print("Window closed")
 
         serialThread = SerialThread(serialParam)
+        print("SerialThread initialized")
         serialThread.signals.madeConnection.connect(lambda obj: self.madeSerialConnectionSignal.emit(obj))
         serialThread.signals.lostConnection.connect(lambda obj: self.lostSerialConnectionSignal.emit(obj))
         serialThread.signals.receivedData.connect(lambda obj, data: self.receiveSerialDataSignal.emit(obj, data))
         serialThread.signals.failedSendData.connect(lambda obj, data: self.failedSendSerialDataSignal.emit(obj, data))
         serialThread.signals.startRecording.connect(lambda obj: self.startedSerialRecordingSignal.emit(obj))
         serialThread.signals.stopRecording.connect(lambda obj: self.stopedSerialRecordingSignal.emit(obj))
+        print("SerialThread made signal connection")
 
         self.sendSerialWriteSignal.connect(serialThread.writeSerial)
         self.killSerialConnectionSignal.connect(serialThread.kill)
@@ -196,8 +201,16 @@ class ConnectionHubWindow(QMainWindow):
         self.pauseSerialRecordSignal.connect(serialThread.pauseRecordData)
         self.resumeSerialRecordSignal.connect(serialThread.resumeRecordData)
         self.writeToFileSignal.connect(serialThread.writeDataToFile)
+        print("SerialThread connected signal to Thread functions")
 
-        QThreadPool.globalInstance().start(serialThread)
+        QThreadPool.setMaxThreadCount(QThreadPool.globalInstance(), 10)
+        print("ThreadPool Information")
+        print("Max thread count: ", QThreadPool.maxThreadCount(QThreadPool.globalInstance()))
+        print("Active thread count before: ", QThreadPool.activeThreadCount(QThreadPool.globalInstance()))
+        #QThreadPool.globalInstance().start(serialThread)
+        QThreadPool.globalInstance().tryStart(serialThread)
+        print("Active thread count after: ", QThreadPool.activeThreadCount(QThreadPool.globalInstance()))
+        print(" ")
 
     def killSerialConnection(self, portName):
         self.killSerialConnectionSignal.emit(portName)
