@@ -176,21 +176,16 @@ class ConnectionHubWindow(QMainWindow):
 
     def connectToSerial(self, window: SerialConnectWindow, serialParam: SerialParameters = None):
         if window is not None:
-            print("Window is not none")
             serialParam = window.getSerialParameter()
-            print("Window got serial parameters")
             window.close()
-            print("Window closed")
 
         serialThread = SerialThread(serialParam)
-        print("SerialThread initialized")
         serialThread.signals.madeConnection.connect(lambda obj: self.madeSerialConnectionSignal.emit(obj))
         serialThread.signals.lostConnection.connect(lambda obj: self.lostSerialConnectionSignal.emit(obj))
         serialThread.signals.receivedData.connect(lambda obj, data: self.receiveSerialDataSignal.emit(obj, data))
         serialThread.signals.failedSendData.connect(lambda obj, data: self.failedSendSerialDataSignal.emit(obj, data))
         serialThread.signals.startRecording.connect(lambda obj: self.startedSerialRecordingSignal.emit(obj))
         serialThread.signals.stopRecording.connect(lambda obj: self.stopedSerialRecordingSignal.emit(obj))
-        print("SerialThread made signal connection")
 
         self.sendSerialWriteSignal.connect(serialThread.writeSerial)
         self.killSerialConnectionSignal.connect(serialThread.kill)
@@ -201,16 +196,19 @@ class ConnectionHubWindow(QMainWindow):
         self.pauseSerialRecordSignal.connect(serialThread.pauseRecordData)
         self.resumeSerialRecordSignal.connect(serialThread.resumeRecordData)
         self.writeToFileSignal.connect(serialThread.writeDataToFile)
-        print("SerialThread connected signal to Thread functions")
 
-        QThreadPool.setMaxThreadCount(QThreadPool.globalInstance(), 10)
-        print("ThreadPool Information")
-        print("Max thread count: ", QThreadPool.maxThreadCount(QThreadPool.globalInstance()))
-        print("Active thread count before: ", QThreadPool.activeThreadCount(QThreadPool.globalInstance()))
+        if QThreadPool.maxThreadCount(QThreadPool.globalInstance()) < QThreadPool.activeThreadCount(QThreadPool.globalInstance()) + 2:
+            QThreadPool.setMaxThreadCount(QThreadPool.globalInstance(), QThreadPool.activeThreadCount(QThreadPool.globalInstance()) + 2)
         #QThreadPool.globalInstance().start(serialThread)
-        QThreadPool.globalInstance().tryStart(serialThread)
-        print("Active thread count after: ", QThreadPool.activeThreadCount(QThreadPool.globalInstance()))
-        print(" ")
+        if not QThreadPool.globalInstance().tryStart(serialThread):
+            dlg = QMessageBox(self)
+            dlg.setWindowTitle("Thread reserve fail")
+            dlg.setText("Attempt to reserve a thread to run runnable failed. \n "
+                        "Please check if you PC has enough threads to run a new instance.")
+            dlg.setStandardButtons(QMessageBox.Ok)
+            dlg.setIcon(QMessageBox.Information)
+            print("Max thread count: ", QThreadPool.maxThreadCount(QThreadPool.globalInstance()))
+            print("Current active thread count: ", QThreadPool.activeThreadCount(QThreadPool.globalInstance()))
 
     def killSerialConnection(self, portName):
         self.killSerialConnectionSignal.emit(portName)

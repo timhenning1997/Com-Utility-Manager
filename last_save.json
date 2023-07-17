@@ -1,12 +1,12 @@
 {
     "_windowType": "Hub",
     "_windowSize": [
-        600,
-        300
+        732,
+        340
     ],
     "_windowPosition": [
-        1120,
-        500
+        1029,
+        90
     ],
     "_windowMaximized": false,
     "_tableColumnsHidden": [
@@ -19,59 +19,6 @@
         false,
         false
     ],
-    "ports": [
-        {
-            "serialParameter": {
-                "port": "COM3",
-                "baudrate": 115200,
-                "bytesize": 8,
-                "parity": "N",
-                "stopbits": 1,
-                "timeout": 0.3,
-                "xonxoff": false,
-                "rtscts": false,
-                "write_timeout": null,
-                "dsrdtr": false,
-                "inter_byte_timeout": null,
-                "exclusive": null,
-                "readTextIndex": "read_WU_device",
-                "readBytes": 1,
-                "readUntil": "",
-                "DTR": false,
-                "maxSignalRate": 5,
-                "local_echo": false,
-                "appendCR": false,
-                "appendLF": false
-            },
-            "savePath": "D:\\Local GitHub\\Com-Utility-Manager",
-            "calibrationPath": ""
-        },
-        {
-            "serialParameter": {
-                "port": "COM5",
-                "baudrate": 460800,
-                "bytesize": 8,
-                "parity": "N",
-                "stopbits": 1,
-                "timeout": 0.3,
-                "xonxoff": false,
-                "rtscts": false,
-                "write_timeout": null,
-                "dsrdtr": false,
-                "inter_byte_timeout": null,
-                "exclusive": null,
-                "readTextIndex": "read_WU_device",
-                "readBytes": 1,
-                "readUntil": "",
-                "DTR": false,
-                "maxSignalRate": 5,
-                "local_echo": false,
-                "appendCR": false,
-                "appendLF": false
-            },
-            "savePath": "D:\\Local GitHub\\Com-Utility-Manager",
-            "calibrationPath": ""
-        }
-    ],
+    "ports": [],
     "windows": []
 }

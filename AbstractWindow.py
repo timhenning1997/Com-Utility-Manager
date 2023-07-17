@@ -140,7 +140,7 @@ class AbstractWindow(QMainWindow):
             kennung = binascii.hexlify(serialParameters.Kennbin).decode("utf-8")
         except:
             print("Kennung nicht vorhanden!")
-        if any(port in self.menuFilter.activePorts for port in [serialParameters.port.upper(), "COM-ALL"]):
+        if any(port in self.menuFilter.activePorts for port in [serialParameters.port, "COM-ALL"]):
             if kennung == "" or (any(kenn in self.menuFilter.activeKennung for kenn in [kennung, "KENNUNG-ALL"])):
                 if dataInfo["dataType"] in self.menuFilter.activeCalibration:
                     self.receiveData(serialParameters, data, dataInfo)
