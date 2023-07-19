@@ -156,6 +156,7 @@ class AbstractWindow(QMainWindow):
 
     def sendSerialData(self, data):
         self.sendSerialWriteSignal.emit("|".join(self.menuFilter.activePorts), data)
+        print("|".join(self.menuFilter.activePorts))
 
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
         pass

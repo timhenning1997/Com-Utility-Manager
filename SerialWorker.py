@@ -260,19 +260,20 @@ class SerialThread(QRunnable):
             file.write(' '.join(data) + "\n")
 
     def writeSerial(self, port, data):
-        if port.upper() == "COM-ALL" or port.upper() == self.serialParameters.port.upper():
-            try:
-                if self.serialArduino.isOpen():
-                    self.serialArduino.write(data)
-                    self.serialArduino.flush()
-                    if self.serialParameters.local_echo:
-                        self.signals.receivedData.emit(self.serialParameters, data)
-                else:
-                    self.signals.lostConnection.emit(self.serialParameters)
+        for p in port.split("|"):
+            if p.upper() == "COM-ALL" or p.upper() == self.serialParameters.port.upper():
+                try:
+                    if self.serialArduino.isOpen():
+                        self.serialArduino.write(data)
+                        self.serialArduino.flush()
+                        if self.serialParameters.local_echo:
+                            self.signals.receivedData.emit(self.serialParameters, data)
+                    else:
+                        self.signals.lostConnection.emit(self.serialParameters)
+                        return None
+                except:
+                    self.signals.failedSendData.emit(self.serialParameters, data)
                     return None
-            except:
-                self.signals.failedSendData.emit(self.serialParameters, data)
-                return None
 
     def kill(self, port):
         if port.upper() == "COM-ALL" or port.upper() == self.serialParameters.port.upper():

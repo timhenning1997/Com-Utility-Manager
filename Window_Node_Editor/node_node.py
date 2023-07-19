@@ -9,6 +9,8 @@ class Node():
 
         self.initInnerClasses()
 
+        self.locked = False
+
         self.scene.addNode(self)
         self.scene.grScene.addItem(self.grNode)
 
