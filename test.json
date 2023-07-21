@@ -1,95 +1,49 @@
 {
-    "_windowType": "Hub",
+    "_windowType": "TablePlotter",
     "_windowSize": [
-        691,
-        300
+        800,
+        400
     ],
     "_windowPosition": [
-        122,
-        120
+        684,
+        429
     ],
-    "_windowMaximized": false,
-    "_tableColumnsHidden": [
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false,
-        false
-    ],
-    "ports": [
-        {
-            "serialParameter": {
-                "port": "COM3",
-                "baudrate": 115200,
-                "bytesize": 8,
-                "parity": "N",
-                "stopbits": 1,
-                "timeout": 0.3,
-                "xonxoff": false,
-                "rtscts": false,
-                "write_timeout": null,
-                "dsrdtr": false,
-                "inter_byte_timeout": null,
-                "exclusive": null,
-                "readTextIndex": "read_WU_device",
-                "readBytes": 1,
-                "readUntil": "",
-                "DTR": false,
-                "maxSignalRate": 5,
-                "local_echo": false,
-                "appendCR": false,
-                "appendLF": false
-            },
-            "savePath": "E:\\Local GitHub\\Com Utility Manager",
-            "calibrationPath": ""
-        }
-    ],
-    "windows": [
-        {
-            "_windowType": "TablePlotter",
-            "_windowSize": [
-                800,
-                400
-            ],
-            "_windowPosition": [
-                948,
-                96
-            ],
-            "_filterMenu": {
-                "_activePorts": [
-                    "COM-ALL"
-                ],
-                "_allPorts": [
-                    "COM-ALL",
-                    "ADD-COM",
-                    "COM3"
-                ],
-                "_activeKennung": [
-                    "2001"
-                ],
-                "_allKennung": [
-                    "KENNUNG-ALL",
-                    "ADD-Kennung",
-                    "2001"
-                ],
-                "_activeCalibration": [
-                    "RAW-Values",
-                    "CALIBRATED-Values"
-                ],
-                "_allCalibration": [
-                    "RAW-Values",
-                    "CALIBRATED-Values"
-                ]
-            },
-            "_windowSaveInfo": {
-                "rowCount": 5,
-                "colCount": 8,
-                "color1": "#1a1a1a",
-                "color2": "#4d0000"
-            }
-        }
-    ]
+    "_filterMenu": {
+        "_activePorts": [
+            "COM-ALL"
+        ],
+        "_allPorts": [
+            "COM-ALL",
+            "COM4",
+            "ADD-COM"
+        ],
+        "_activeKennung": [
+            "32",
+            "16",
+            "17"
+        ],
+        "_allKennung": [
+            "KENNUNG-ALL",
+            "10",
+            "2",
+            "32",
+            "16",
+            "ADD-Kennung",
+            "17"
+        ],
+        "_activeCalibration": [
+            "RAW-Values",
+            "CALIBRATED-Values"
+        ],
+        "_allCalibration": [
+            "RAW-Values",
+            "CALIBRATED-Values"
+        ]
+    },
+    "_windowSaveInfo": {
+        "rowCount": 5,
+        "colCount": 8,
+        "color1": "#1a1a1a",
+        "color2": "#000000"
+    }
 }
