@@ -16,6 +16,8 @@ class FilterMenu(QMenu):
         self.activeKennung = []
         self.activeCalibration = []
 
+        self.allKennung = ["KENNUNG-ALL"]
+
         self.setTitle("&Signal-Filter")
 
         # Port Filter Menu
@@ -118,11 +120,19 @@ class FilterMenu(QMenu):
             action.setChecked(True)
             action.triggered.connect(lambda: self.actionTriggeredEvent(self.activeKennung, self.activeKennungMenu, "KENNUNG-ALL"))
             self.activeKennungMenu.addAction(action)
+            self.allKennung.append(text)
             self.activeKennung.append(text)
             for act in self.activeKennungMenu.actions():
                 if act.text() == "KENNUNG-ALL" and act.text() in self.activeKennung:
                     act.setChecked(False)
                     self.activeKennung.remove(act.text())
+
+    def addKennungWithoutPressed(self, text: str):
+        action = QAction(text.lower(), self)
+        action.setCheckable(True)
+        action.triggered.connect(lambda: self.actionTriggeredEvent(self.activeKennung, self.activeKennungMenu, "KENNUNG-ALL"))
+        self.activeKennungMenu.addAction(action)
+        self.allKennung.append(text)
 
     def serialize(self):
         allPorts = []
@@ -166,6 +176,7 @@ class FilterMenu(QMenu):
             action.setCheckable(True)
             action.triggered.connect(lambda: self.actionTriggeredEvent(self.activeKennung, self.activeKennungMenu, "KENNUNG-ALL"))
             self.activeKennungMenu.addAction(action)
+            self.allKennung.append(kennung)
 
         for act in self.activeKennungMenu.actions():
             act.setChecked(False)

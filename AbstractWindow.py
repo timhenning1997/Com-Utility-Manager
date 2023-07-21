@@ -140,8 +140,11 @@ class AbstractWindow(QMainWindow):
             kennung = binascii.hexlify(serialParameters.Kennbin).decode("utf-8")
         except:
             print("Kennung nicht vorhanden!")
+        if kennung not in self.menuFilter.allKennung:
+            print("new Kennung: ", kennung)
+            self.menuFilter.addKennungWithoutPressed(kennung)
         if any(port in self.menuFilter.activePorts for port in [serialParameters.port, "COM-ALL"]):
-            if kennung == "" or (any(kenn in self.menuFilter.activeKennung for kenn in [kennung, "KENNUNG-ALL"])):
+            if kennung == "" or (any(kenn in self.menuFilter.activeKennung for kenn in [str(serialParameters.Kennung), kennung, "KENNUNG-ALL"])):
                 if dataInfo["dataType"] in self.menuFilter.activeCalibration:
                     self.receiveData(serialParameters, data, dataInfo)
 
@@ -156,7 +159,6 @@ class AbstractWindow(QMainWindow):
 
     def sendSerialData(self, data):
         self.sendSerialWriteSignal.emit("|".join(self.menuFilter.activePorts), data)
-        print("|".join(self.menuFilter.activePorts))
 
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
         pass
