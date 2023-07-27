@@ -11,6 +11,7 @@ class ColorSchemeHandler(QObject):
 
         self.app = app
         self.setToDarkScheme()
+        #self.setToDefaultColor()
 
     def setToStyleSheet(self, styleSheetName):
         sshFile = styleSheetName

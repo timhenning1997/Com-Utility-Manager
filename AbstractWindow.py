@@ -141,7 +141,7 @@ class AbstractWindow(QMainWindow):
         except:
             print("Kennung nicht vorhanden!")
         if kennung not in self.menuFilter.allKennung:
-            print("new Kennung: ", kennung)
+            #print("new Kennung: ", kennung)
             self.menuFilter.addKennungWithoutPressed(kennung)
         if any(port in self.menuFilter.activePorts for port in [serialParameters.port, "COM-ALL"]):
             if kennung == "" or (any(kenn in self.menuFilter.activeKennung for kenn in [str(serialParameters.Kennung), kennung, "KENNUNG-ALL"])):

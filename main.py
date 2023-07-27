@@ -7,7 +7,6 @@ if __name__ == '__main__':
     app = QApplication(sys.argv)
 
     wnd = ConnectionHubWindow()
-    # wnd.nodeeditor.addNodes()
     QApplication.setStyle("Fusion")
 
     colorSchemeHandler = ColorSchemeHandler(wnd)
