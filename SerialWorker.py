@@ -7,6 +7,7 @@ from PyQt5.QtWidgets import QMessageBox
 
 from SerialParameters import SerialParameters
 
+
 import binascii
 import libscrc
 import numpy as np
@@ -188,6 +189,19 @@ class SerialThread(QRunnable):
         if port.upper() == "COM-ALL":
             fileName = fileName.split(".")[0] + "_" + str(self.serialParameters.port) + ".txt"
         self.recordFilePath = filePath + fileName
+
+        try:
+            with open(self.recordFilePath, 'a') as file:
+                pass
+        except Exception as e:
+            msg = QMessageBox()
+            msg.setIcon(QMessageBox.Critical)
+            msg.setText("Invalid filename!")
+            msg.setInformativeText('Exception: \n' + str(e))
+            msg.setWindowTitle("Filename error")
+            msg.exec_()
+            return None
+
         self.failCounter = 0
         self.recordingStarted = True
         self.record = True

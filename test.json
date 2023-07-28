@@ -1,12 +1,12 @@
 {
-    "_windowType": "TablePlotter",
+    "_windowType": "NodeEditor",
     "_windowSize": [
-        800,
+        400,
         400
     ],
     "_windowPosition": [
-        684,
-        429
+        2413,
+        211
     ],
     "_filterMenu": {
         "_activePorts": [
@@ -14,22 +14,17 @@
         ],
         "_allPorts": [
             "COM-ALL",
-            "COM4",
             "ADD-COM"
         ],
         "_activeKennung": [
-            "32",
-            "16",
-            "17"
+            "KENNUNG-ALL"
         ],
         "_allKennung": [
             "KENNUNG-ALL",
-            "10",
-            "2",
-            "32",
-            "16",
             "ADD-Kennung",
-            "17"
+            "2001",
+            "0a04",
+            "0203"
         ],
         "_activeCalibration": [
             "RAW-Values",
@@ -41,9 +36,9 @@
         ]
     },
     "_windowSaveInfo": {
-        "rowCount": 5,
-        "colCount": 8,
-        "color1": "#1a1a1a",
-        "color2": "#000000"
+        "sceneCenterPosX": 380.8593749999999,
+        "sceneCenterPosY": 315.68749999999994,
+        "sceneZoom": 17,
+        "sceneFaktor": 1.25
     }
 }

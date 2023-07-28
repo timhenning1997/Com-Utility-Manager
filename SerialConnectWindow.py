@@ -142,7 +142,7 @@ class SerialConnectWindow(QWidget):
         self.readUntilRB = QRadioButton("Read until")
         self.readWUDRB = QRadioButton('Read WU_Device')
         self.readLoggingRawRB = QRadioButton('Log Raw')
-        self.readLinesRB.setChecked(True)
+        self.readWUDRB.setChecked(True)
         self.readLinesRB.toggled.connect(self.changeReadTextAvailable)
         self.readWUDRB.toggled.connect(self.changeReadTextAvailable)
         self.readLoggingRawRB.toggled.connect(self.changeReadTextAvailable)

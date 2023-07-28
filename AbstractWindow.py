@@ -148,6 +148,22 @@ class AbstractWindow(QMainWindow):
                 if dataInfo["dataType"] in self.menuFilter.activeCalibration:
                     self.receiveData(serialParameters, data, dataInfo)
 
+    def findCalibratedDataByUUID(self, data, dataInfo, UUID: str):
+        if dataInfo["dataType"] == "CALIBRATED-Values":
+            if data.get("UUID") is not None:
+                if UUID in data["UUID"]:
+                    index = data["UUID"].index(UUID)
+                    return data["DATA"][index]
+        return None
+
+    def findIndexByUUID(self, data, dataInfo, UUID: str):
+        if dataInfo["dataType"] == "CALIBRATED-Values":
+            if data.get("UUID") is not None:
+                if UUID in data["UUID"]:
+                    index = data["UUID"].index(UUID)
+                    return index
+        return None
+
     def failedSendSerialData(self, serialParameters: SerialParameters, data):
         pass
 

@@ -1,4 +1,5 @@
 import os
+import errno
 import sys
 from PyQt5.QtWidgets import QFrame, QSizePolicy
 
@@ -18,6 +19,19 @@ def isInt(s: str):
         return False
     return True
 
+def strToFloatElseNone(s: str):
+    try:
+        float(s)
+    except ValueError:
+        return None
+    return float(s)
+
+def strToIntElseNone(s: str):
+    try:
+        int(s)
+    except ValueError:
+        return None
+    return float(s)
 
 def returnFloat(s: str):
     try:

@@ -1,17 +1,20 @@
 import json
 import os
 import sys
+import csv
+from CalibrationFunctions import applyCalibrationFunction
 from collections import OrderedDict
+from datetime import datetime
 
 from PyQt5.QtCore import QThreadPool, pyqtSignal, Qt, QSize
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtWidgets import QMainWindow, QPushButton, QAction, QApplication, QFileDialog, QMenu, QTableWidget, \
-    QHBoxLayout, QWidget, QHeaderView, QTableWidgetItem, QMessageBox
+    QHBoxLayout, QWidget, QHeaderView, QTableWidgetItem, QMessageBox, QTextEdit, QLineEdit, QVBoxLayout, QSplitter
 from PortMenu import PortMenu
 from SerialConnectWindow import SerialConnectWindow
 from SerialWorker import SerialThread
 from SerialParameters import SerialParameters
-from UsefulFunctions import resource_path
+from UsefulFunctions import resource_path, strToIntElseNone, strToFloatElseNone
 from AbstractWindow import AbstractWindow
 from WindowTerminal import WindowTerminal
 from WindowTablePlotter import WindowTablePlotter
@@ -43,6 +46,8 @@ class ConnectionHubWindow(QMainWindow):
 
         self.windows = []
         self.connectedPorts = []
+        self.calibrationFiles = {}
+        self.measuringPoinListFiles = []
 
         self._windowType = "Hub"
 
@@ -56,14 +61,14 @@ class ConnectionHubWindow(QMainWindow):
 
     def initUI(self):
         self.setWindowTitle("Com Utility Manager")
-        self.resize(600, 300)
+        self.resize(800, 400)
 
         self.createMenus()
         self.createStatusBar()
 
         # create com port table
-        self.table = QTableWidget(0, 8)
-        self.table.setHorizontalHeaderLabels(["Del", "COM", "Baud", "Type", "Status", "Record", "Rec", "Cal"])
+        self.table = QTableWidget(0, 9)
+        self.table.setHorizontalHeaderLabels(["Del", "COM", "Baud", "Type", "Status", "Record", "Rec", "Rec Name", "Cal"])
         self.table.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Fixed)
@@ -74,18 +79,32 @@ class ConnectionHubWindow(QMainWindow):
         self.table.horizontalHeader().setSectionResizeMode(5, QHeaderView.Stretch)
         self.table.horizontalHeader().setSectionResizeMode(6, QHeaderView.Fixed)
         self.table.horizontalHeader().setSectionResizeMode(7, QHeaderView.Fixed)
+        self.table.horizontalHeader().setSectionResizeMode(8, QHeaderView.Fixed)
         self.table.setColumnWidth(0, 20)
         self.table.setColumnWidth(1, 100)
         self.table.setColumnWidth(2, 100)
         self.table.setColumnWidth(3, 100)
         self.table.setColumnWidth(4, 100)
         self.table.setColumnWidth(6, 20)
-        self.table.setColumnWidth(7, 20)
+        self.table.setColumnWidth(7, 80)
+        self.table.setColumnWidth(8, 20)
         self.table.hideColumn(0)
         self.table.hideColumn(7)
 
-        mainLayout = QHBoxLayout()
-        mainLayout.addWidget(self.table)
+        # create Messstellen table
+        self.measuringPointListTable = QTableWidget(0, 3)
+        self.measuringPointListTable.setHorizontalHeaderLabels(["Del", "Name", "Options"])
+        self.measuringPointListTable.horizontalHeader().setSectionResizeMode(0, QHeaderView.Fixed)
+        self.measuringPointListTable.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+        self.measuringPointListTable.horizontalHeader().setSectionResizeMode(2, QHeaderView.Fixed)
+        self.measuringPointListTable.hide()
+
+        tableSplitter = QSplitter(Qt.Vertical)
+        tableSplitter.addWidget(self.table)
+        tableSplitter.addWidget(self.measuringPointListTable)
+
+        mainLayout = QVBoxLayout()
+        mainLayout.addWidget(tableSplitter)
 
         mainWidget = QWidget()
         mainWidget.setLayout(mainLayout)
@@ -111,8 +130,10 @@ class ConnectionHubWindow(QMainWindow):
         fileMenu = QMenu("&File", self)
         actSaveAs = QAction('&Save layout', self, triggered=self.onFileSaveAs)
         actOpen = QAction('&Open layout', self, triggered=self.onFileOpen)
+        actMeasurementListOpen = QAction('Open &Measurement list', self, triggered=self.onMeasurementListOpen)
         fileMenu.addAction(actSaveAs)
         fileMenu.addAction(actOpen)
+        fileMenu.addAction(actMeasurementListOpen)
 
         tableMenu = QMenu("&Table", self)
         act = QAction("Show/Hide Columns", self)
@@ -142,9 +163,12 @@ class ConnectionHubWindow(QMainWindow):
         self.actShowPath = QAction('&Path', self, triggered=lambda obj: self.tableShowColumn(6, obj))
         self.actShowPath.setCheckable(True)
         self.actShowPath.setChecked(True)
-        self.actShowCalibration = QAction('C&alibration', self, triggered=lambda obj: self.tableShowColumn(7, obj))
+        self.actShowRecordName = QAction('Record &Name', self, triggered=lambda obj: self.tableShowColumn(7, obj))
+        self.actShowRecordName.setCheckable(True)
+        self.actShowRecordName.setChecked(False)
+        self.actShowCalibration = QAction('C&alibration', self, triggered=lambda obj: self.tableShowColumn(8, obj))
         self.actShowCalibration.setCheckable(True)
-        self.actShowCalibration.setChecked(False)
+        self.actShowCalibration.setChecked(True)
         tableMenu.addAction(self.actShowDelete)
         tableMenu.addAction(self.actShowCom)
         tableMenu.addAction(self.actShowBaud)
@@ -152,6 +176,7 @@ class ConnectionHubWindow(QMainWindow):
         tableMenu.addAction(self.actShowStatus)
         tableMenu.addAction(self.actShowRecord)
         tableMenu.addAction(self.actShowPath)
+        tableMenu.addAction(self.actShowRecordName)
         tableMenu.addAction(self.actShowCalibration)
 
         toolMenu = QMenu("Too&l", self)
@@ -266,6 +291,10 @@ class ConnectionHubWindow(QMainWindow):
     def printReceivedData(self, obj, data):
         self.receiveCalibratedSerialDataSignal.emit(obj, data, {"dataType": "RAW-Values"})
 
+        calibratedData = self.calibrateRawData(obj.port, data)
+        if calibratedData is not None:
+            self.receiveCalibratedSerialDataSignal.emit(obj, calibratedData, {"dataType": "CALIBRATED-Values"})
+
     def printFailedSendData(self, obj, data):
         pass
 
@@ -329,7 +358,7 @@ class ConnectionHubWindow(QMainWindow):
         recordButton.setStyleSheet("background-color : gray")
         recordButton.setProperty("path", os.getcwd())
         recordButton.setToolTip(recordButton.property("path"))
-        recordButton.clicked.connect(lambda: self.recordButtonPressed(obj.port))
+        recordButton.clicked.connect(lambda: self.recordButtonPressed(obj))
         self.table.setCellWidget(self.table.rowCount() - 1, 5, recordButton)
 
         openFilePathDialogButton = QPushButton()
@@ -339,13 +368,17 @@ class ConnectionHubWindow(QMainWindow):
         openFilePathDialogButton.clicked.connect(lambda: self.recordPathButtonPressed(obj.port))
         self.table.setCellWidget(self.table.rowCount() - 1, 6, openFilePathDialogButton)
 
+        recordNameButton = QLineEdit("DATE_TIME")
+        recordNameButton.setToolTip("DATE: replaced to jjjj-mm-dd | TIME: replaced to hh-mm-ss | PORT: replaced to port | BAUD: replaced to baud")
+        self.table.setCellWidget(self.table.rowCount() - 1, 7, recordNameButton)
+
         calibrationPathDialogButton = QPushButton()
         calibrationPathDialogButton.setIcon(QIcon(resource_path("res/Icon/folder.ico")))
         calibrationPathDialogButton.setProperty("path", "")
         calibrationPathDialogButton.setToolTip(calibrationPathDialogButton.property("path"))
         calibrationPathDialogButton.setIconSize(QSize(25, 25))
         calibrationPathDialogButton.clicked.connect(lambda: self.calibrationPathButtonPressed(obj.port))
-        self.table.setCellWidget(self.table.rowCount() - 1, 7, calibrationPathDialogButton)
+        self.table.setCellWidget(self.table.rowCount() - 1, 8, calibrationPathDialogButton)
 
         return self.table.rowCount() - 1
 
@@ -355,13 +388,19 @@ class ConnectionHubWindow(QMainWindow):
                 return countY
         return None
 
-    def recordButtonPressed(self, port):
-        row = self.tableFindComRow(port)
+    def recordButtonPressed(self, obj):
+        row = self.tableFindComRow(obj.port)
         if row is not None:
             if self.table.cellWidget(row, 5).text() == "Start Recording":
-                self.startSerialRecord(port, self.table.cellWidget(row, 5).property("path"), "")
+                filename = self.table.cellWidget(row, 7).text()
+                filename = filename.replace("PORT", obj.port)
+                filename = filename.replace("BAUD", str(obj.baudrate))
+                filename = filename.replace("DATE", datetime.now().strftime("%Y-%m-%d"))
+                filename = filename.replace("TIME", datetime.now().strftime("%H-%M-%S"))
+                filename += ".txt"
+                self.startSerialRecord(obj.port, self.table.cellWidget(row, 5).property("path"), filename)
             elif self.table.cellWidget(row, 5).text() == "Stop Recording":
-                self.stopSerialRecord(port)
+                self.stopSerialRecord(obj.port)
 
     def recordPathButtonPressed(self, port):
         row = self.tableFindComRow(port)
@@ -385,21 +424,117 @@ class ConnectionHubWindow(QMainWindow):
     def calibrationPathButtonPressed(self, port):
         row = self.tableFindComRow(port)
         if row is not None:
-            filePath, filter = QFileDialog.getOpenFileName(self, 'Open graph from file', "", "", "",
+            filePaths, filter = QFileDialog.getOpenFileNames(self, 'Open graph from file', "", "", "",
                                                         QFileDialog.DontUseNativeDialog)
-            self.checkForValidCalibrationFile(port, filePath)
+            self.checkForValidCalibrationFile(port, filePaths)
 
-    def checkForValidCalibrationFile(self, port, filePath):
-        if filePath != '' and os.path.isfile(filePath):
-            if self.loadCalibrationFile(filePath) is not None:
-                row = self.tableFindComRow(port)
-                button = self.table.cellWidget(row, 7)
-                button.setProperty("path", filePath)
-                button.setToolTip(filePath)
-                button.setIcon(QIcon(resource_path("res/Icon/folder_with_green_checkmark.ico")))
+    def checkForValidCalibrationFile(self, port, filePaths):
+        loadCalibrationFailed = False
+        buttonProperty = []
+        row = self.tableFindComRow(port)
+        button = self.table.cellWidget(row, 8)
 
-    def loadCalibrationFile(self, filePath):
+        if port in self.calibrationFiles:
+            del self.calibrationFiles[port]
+
+        for filePath in filePaths:
+            if filePath != '' and os.path.isfile(filePath):
+                if self.loadCalibrationFile(filePath, port) is not False:
+                    buttonProperty.append(filePath)
+                else:
+                    loadCalibrationFailed = True
+            else:
+                loadCalibrationFailed = True
+        if loadCalibrationFailed:
+            button.setIcon(QIcon(resource_path("res/Icon/folder_with_red_exclamationmark.ico")))
+        else:
+            button.setIcon(QIcon(resource_path("res/Icon/folder_with_green_checkmark.ico")))
+        if buttonProperty != []:
+            button.setProperty("path", buttonProperty)
+            button.setToolTip("\n".join(buttonProperty))
+
+    def loadCalibrationFile(self, filePath: str, port):
+        headings = []
+        calData = []
+
+        with open(filePath, newline='') as csvfile:
+            spamreader = csv.reader(csvfile, delimiter=';')
+            line_count = 0
+            for row in spamreader:
+                if line_count == 0:
+                    headings = row
+                else:
+                    if len(row) == 8:
+                        try:
+                            calData.append(
+                                [row[0],                                    # UUID
+                                 row[1],                                    # Name
+                                 json.loads(row[2]),                        # KalKoeff
+                                 row[3],                                    # KalFunkTyp
+                                 strToIntElseNone(row[4]),                  # DifferenzKanal
+                                 row[5],                                    # Messwert
+                                 strToFloatElseNone(row[6]),                # FitFehler
+                                 json.loads(row[7])]                        # Kommentar
+                            )
+                        except Exception as e:
+                            print(str(e))
+                            return False
+                    else:
+                        return False
+                line_count += 1
+
+        if port in self.calibrationFiles:
+            if not str(len(calData)) in self.calibrationFiles[port]:
+                self.calibrationFiles[port][str(len(calData))] = {"PATH": filePath,
+                                                    "NAME": os.path.basename(filePath),
+                                                    "HEADINGS": headings,
+                                                    "CALIBRATIONDATA": calData}
+            else:
+                return False
+        else:
+            self.calibrationFiles[port] = {str(len(calData)): {"PATH": filePath,
+                                                             "NAME": os.path.basename(filePath),
+                                                             "HEADINGS": headings,
+                                                             "CALIBRATIONDATA": calData}}
+
         return filePath
+
+    def loadMeasuringPointListFile(self, filePath: str):
+        headings = []
+        infoData = []
+
+        with open(filePath, newline='') as csvfile:
+            spamreader = csv.reader(csvfile, delimiter=';')
+            line_count = 0
+            for row in spamreader:
+                if line_count == 0:
+                    headings = row
+                else:
+                    try:
+                        dummyData = []
+                        for i in range(0, len(row)):
+                            dummyData.append(row[i])
+                        infoData.append(dummyData)
+                    except Exception as e:
+                        print(str(e))
+                        return False
+                line_count += 1
+        self.measuringPoinListFiles.append({"PATH": filePath,
+                                             "NAME": os.path.basename(filePath),
+                                             "HEADINGS": headings,
+                                             "INFODATA": infoData})
+
+        print(self.measuringPoinListFiles)
+
+    def calibrateRawData(self, port: str, data):
+        calibratedData = {"UUID": [], "DATA": []}
+        if port in self.calibrationFiles:
+            if str(len(data)-1) in self.calibrationFiles[port]:
+                calData = self.calibrationFiles[port][str(len(data)-1)]["CALIBRATIONDATA"]
+                for index in range(0, len(data)-1):
+                    applyCalibrationFunction(calData[index], data[index], calibratedData)
+                return calibratedData
+        return None
 
     def returnMsgBoxAnswerYesNo(self, title: str = "Message", text: str = ""):
         dlg = QMessageBox(self)
@@ -463,6 +598,21 @@ class ConnectionHubWindow(QMainWindow):
             self.loadFromFile(fname)
             self.setWindowTitle("Com Utility Manager: " + str(os.path.basename(fname)))
 
+    def onMeasurementListOpen(self):
+        filePaths, filter = QFileDialog.getOpenFileNames(self, 'Open measurement list from file', "", "", "", QFileDialog.DontUseNativeDialog)
+        for filePath in filePaths:
+            if filePath != '' and os.path.isfile(filePath):
+                sameFilePath = False
+                for countY in range(0, self.measuringPointListTable.rowCount()):
+                    if self.table.cellWidget(countY, 1).property("Path") == filePath:
+                        sameFilePath = True
+                if sameFilePath:
+                    print("Filepath already existing!")
+                else:
+                    self.loadMeasuringPointListFile(filePath)
+            else:
+                print("File not existing!")
+
     def fileSave(self, filename:str=None):
         QApplication.setOverrideCursor(Qt.WaitCursor)
         with open(filename, "w") as file:
@@ -492,8 +642,9 @@ class ConnectionHubWindow(QMainWindow):
         for countY in range(0, self.table.rowCount()):
             dummyDict = self.table.cellWidget(countY, 4).property("serialParameter").serialize()
             savePath = self.table.cellWidget(countY, 5).property("path")
-            calibrationPath = self.table.cellWidget(countY, 7).property("path")
-            ports.append({"serialParameter": dummyDict, "savePath": savePath, "calibrationPath": calibrationPath})
+            saveName = self.table.cellWidget(countY, 7).text()
+            calibrationPath = self.table.cellWidget(countY, 8).property("path")
+            ports.append({"serialParameter": dummyDict, "savePath": savePath, "saveName": saveName, "calibrationPath": calibrationPath})
 
         for window in self.windows:
             windows.append(window.serialize())
@@ -535,7 +686,8 @@ class ConnectionHubWindow(QMainWindow):
         self.actShowStatus.setChecked(not data['_tableColumnsHidden'][4])
         self.actShowRecord.setChecked(not data['_tableColumnsHidden'][5])
         self.actShowPath.setChecked(not data['_tableColumnsHidden'][6])
-        self.actShowCalibration.setChecked(not data['_tableColumnsHidden'][7])
+        self.actShowRecordName.setChecked(not data['_tableColumnsHidden'][7])
+        self.actShowCalibration.setChecked(not data['_tableColumnsHidden'][8])
 
         for countX in range(0, self.table.columnCount()):
             self.table.hideColumn(countX) if data['_tableColumnsHidden'][countX] else self.table.showColumn(countX)
@@ -549,6 +701,8 @@ class ConnectionHubWindow(QMainWindow):
 
             self.tableFindOrAddComRow(serialParameter)
             self.checkForValidRecordPath(serialParameter.port, port_data["savePath"])
+            row = self.tableFindComRow(serialParameter.port)
+            self.table.cellWidget(row, 7).setText(port_data["saveName"])
             self.checkForValidCalibrationFile(serialParameter.port, port_data["calibrationPath"])
             self.connectToSerial(None, serialParameter)
 
