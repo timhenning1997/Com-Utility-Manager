@@ -9,7 +9,8 @@ from datetime import datetime
 from PyQt5.QtCore import QThreadPool, pyqtSignal, Qt, QSize
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtWidgets import QMainWindow, QPushButton, QAction, QApplication, QFileDialog, QMenu, QTableWidget, \
-    QHBoxLayout, QWidget, QHeaderView, QTableWidgetItem, QMessageBox, QTextEdit, QLineEdit, QVBoxLayout, QSplitter
+    QHBoxLayout, QWidget, QHeaderView, QTableWidgetItem, QMessageBox, QTextEdit, QLineEdit, QVBoxLayout, QSplitter, \
+    QLabel
 from PortMenu import PortMenu
 from SerialConnectWindow import SerialConnectWindow
 from SerialWorker import SerialThread
@@ -47,7 +48,7 @@ class ConnectionHubWindow(QMainWindow):
         self.windows = []
         self.connectedPorts = []
         self.calibrationFiles = {}
-        self.measuringPoinListFiles = []
+        self.measuringPointListFiles = []
 
         self._windowType = "Hub"
 
@@ -68,7 +69,8 @@ class ConnectionHubWindow(QMainWindow):
 
         # create com port table
         self.table = QTableWidget(0, 9)
-        self.table.setHorizontalHeaderLabels(["Del", "COM", "Baud", "Type", "Status", "Record", "Rec", "Rec Name", "Cal"])
+        self.table.setHorizontalHeaderLabels(
+            ["Del", "COM", "Baud", "Type", "Status", "Record", "Rec", "Rec Name", "Cal"])
         self.table.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Fixed)
@@ -92,16 +94,15 @@ class ConnectionHubWindow(QMainWindow):
         self.table.hideColumn(7)
 
         # create Messstellen table
-        self.measuringPointListTable = QTableWidget(0, 3)
-        self.measuringPointListTable.setHorizontalHeaderLabels(["Del", "Name", "Options"])
-        self.measuringPointListTable.horizontalHeader().setSectionResizeMode(0, QHeaderView.Fixed)
-        self.measuringPointListTable.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
-        self.measuringPointListTable.horizontalHeader().setSectionResizeMode(2, QHeaderView.Fixed)
+        self.measuringPointListTable = QTableWidget(0, 1)
+        self.measuringPointListTable.setHorizontalHeaderLabels(["Measuring point list"])
+        self.measuringPointListTable.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
         self.measuringPointListTable.hide()
 
         tableSplitter = QSplitter(Qt.Vertical)
         tableSplitter.addWidget(self.table)
         tableSplitter.addWidget(self.measuringPointListTable)
+        tableSplitter.setSizes([1000, 100])
 
         mainLayout = QVBoxLayout()
         mainLayout.addWidget(tableSplitter)
@@ -222,9 +223,11 @@ class ConnectionHubWindow(QMainWindow):
         self.resumeSerialRecordSignal.connect(serialThread.resumeRecordData)
         self.writeToFileSignal.connect(serialThread.writeDataToFile)
 
-        if QThreadPool.maxThreadCount(QThreadPool.globalInstance()) < QThreadPool.activeThreadCount(QThreadPool.globalInstance()) + 2:
-            QThreadPool.setMaxThreadCount(QThreadPool.globalInstance(), QThreadPool.activeThreadCount(QThreadPool.globalInstance()) + 2)
-        #QThreadPool.globalInstance().start(serialThread)
+        if QThreadPool.maxThreadCount(QThreadPool.globalInstance()) < QThreadPool.activeThreadCount(
+                QThreadPool.globalInstance()) + 2:
+            QThreadPool.setMaxThreadCount(QThreadPool.globalInstance(),
+                                          QThreadPool.activeThreadCount(QThreadPool.globalInstance()) + 2)
+        # QThreadPool.globalInstance().start(serialThread)
         if not QThreadPool.globalInstance().tryStart(serialThread):
             dlg = QMessageBox(self)
             dlg.setWindowTitle("Thread reserve fail")
@@ -369,7 +372,8 @@ class ConnectionHubWindow(QMainWindow):
         self.table.setCellWidget(self.table.rowCount() - 1, 6, openFilePathDialogButton)
 
         recordNameButton = QLineEdit("DATE_TIME")
-        recordNameButton.setToolTip("DATE: replaced to jjjj-mm-dd | TIME: replaced to hh-mm-ss | PORT: replaced to port | BAUD: replaced to baud")
+        recordNameButton.setToolTip(
+            "DATE: replaced to jjjj-mm-dd | TIME: replaced to hh-mm-ss | PORT: replaced to port | BAUD: replaced to baud")
         self.table.setCellWidget(self.table.rowCount() - 1, 7, recordNameButton)
 
         calibrationPathDialogButton = QPushButton()
@@ -381,6 +385,18 @@ class ConnectionHubWindow(QMainWindow):
         self.table.setCellWidget(self.table.rowCount() - 1, 8, calibrationPathDialogButton)
 
         return self.table.rowCount() - 1
+
+    def measuringPointListTableAddRow(self, filePath):
+        self.measuringPointListTable.insertRow(self.measuringPointListTable.rowCount())
+
+        measuringPointListLabel = QLabel(os.path.basename(filePath))
+        measuringPointListLabel.setProperty("path", filePath)
+        measuringPointListLabel.setToolTip(measuringPointListLabel.property("path"))
+        self.measuringPointListTable.setCellWidget(self.measuringPointListTable.rowCount() - 1, 0, measuringPointListLabel)
+
+        self.measuringPointListTable.show()
+
+        return self.measuringPointListTable.rowCount() - 1
 
     def tableFindComRow(self, comName: str):
         for countY in range(0, self.table.rowCount()):
@@ -405,7 +421,8 @@ class ConnectionHubWindow(QMainWindow):
     def recordPathButtonPressed(self, port):
         row = self.tableFindComRow(port)
         if row is not None:
-            path = QFileDialog.getExistingDirectory(None, "Select Folder", "", QFileDialog.DontUseNativeDialog | QFileDialog.ShowDirsOnly)
+            path = QFileDialog.getExistingDirectory(None, "Select Folder", "",
+                                                    QFileDialog.DontUseNativeDialog | QFileDialog.ShowDirsOnly)
             self.checkForValidRecordPath(port, path)
 
     def checkForValidRecordPath(self, port, path):
@@ -425,7 +442,7 @@ class ConnectionHubWindow(QMainWindow):
         row = self.tableFindComRow(port)
         if row is not None:
             filePaths, filter = QFileDialog.getOpenFileNames(self, 'Open graph from file', "", "", "",
-                                                        QFileDialog.DontUseNativeDialog)
+                                                             QFileDialog.DontUseNativeDialog)
             self.checkForValidCalibrationFile(port, filePaths)
 
     def checkForValidCalibrationFile(self, port, filePaths):
@@ -467,14 +484,14 @@ class ConnectionHubWindow(QMainWindow):
                     if len(row) == 8:
                         try:
                             calData.append(
-                                [row[0],                                    # UUID
-                                 row[1],                                    # Name
-                                 json.loads(row[2]),                        # KalKoeff
-                                 row[3],                                    # KalFunkTyp
-                                 strToIntElseNone(row[4]),                  # DifferenzKanal
-                                 row[5],                                    # Messwert
-                                 strToFloatElseNone(row[6]),                # FitFehler
-                                 json.loads(row[7])]                        # Kommentar
+                                [row[0],  # UUID
+                                 row[1],  # Name
+                                 json.loads(row[2]),  # KalKoeff
+                                 row[3],  # KalFunkTyp
+                                 strToIntElseNone(row[4]),  # DifferenzKanal
+                                 row[5],  # Messwert
+                                 strToFloatElseNone(row[6]),  # FitFehler
+                                 json.loads(row[7])]  # Kommentar
                             )
                         except Exception as e:
                             print(str(e))
@@ -486,22 +503,23 @@ class ConnectionHubWindow(QMainWindow):
         if port in self.calibrationFiles:
             if not str(len(calData)) in self.calibrationFiles[port]:
                 self.calibrationFiles[port][str(len(calData))] = {"PATH": filePath,
-                                                    "NAME": os.path.basename(filePath),
-                                                    "HEADINGS": headings,
-                                                    "CALIBRATIONDATA": calData}
+                                                                  "NAME": os.path.basename(filePath),
+                                                                  "HEADINGS": headings,
+                                                                  "CALIBRATIONDATA": calData}
             else:
                 return False
         else:
             self.calibrationFiles[port] = {str(len(calData)): {"PATH": filePath,
-                                                             "NAME": os.path.basename(filePath),
-                                                             "HEADINGS": headings,
-                                                             "CALIBRATIONDATA": calData}}
+                                                               "NAME": os.path.basename(filePath),
+                                                               "HEADINGS": headings,
+                                                               "CALIBRATIONDATA": calData}}
 
         return filePath
 
     def loadMeasuringPointListFile(self, filePath: str):
         headings = []
-        infoData = []
+        dataInfo = []
+        dataInfo_t = []
 
         with open(filePath, newline='') as csvfile:
             spamreader = csv.reader(csvfile, delimiter=';')
@@ -511,27 +529,30 @@ class ConnectionHubWindow(QMainWindow):
                     headings = row
                 else:
                     try:
-                        dummyData = []
-                        for i in range(0, len(row)):
-                            dummyData.append(row[i])
-                        infoData.append(dummyData)
+                        dataInfo.append(row)
                     except Exception as e:
                         print(str(e))
                         return False
                 line_count += 1
-        self.measuringPoinListFiles.append({"PATH": filePath,
-                                             "NAME": os.path.basename(filePath),
-                                             "HEADINGS": headings,
-                                             "INFODATA": infoData})
 
-        print(self.measuringPoinListFiles)
+
+            for i in range(len(dataInfo[0])):
+                tmp = []
+                for v in dataInfo:
+                    tmp.append(v[i])
+                dataInfo_t.append(tmp)
+        self.measuringPointListFiles.append({"PATH": filePath,
+                                            "NAME": os.path.basename(filePath),
+                                            "HEADINGS": headings,
+                                            "DATAINFO": dataInfo,
+                                            "DATAINFOTRANSPOSED": dataInfo_t})
 
     def calibrateRawData(self, port: str, data):
         calibratedData = {"UUID": [], "DATA": []}
         if port in self.calibrationFiles:
-            if str(len(data)-1) in self.calibrationFiles[port]:
-                calData = self.calibrationFiles[port][str(len(data)-1)]["CALIBRATIONDATA"]
-                for index in range(0, len(data)-1):
+            if str(len(data) - 1) in self.calibrationFiles[port]:
+                calData = self.calibrationFiles[port][str(len(data) - 1)]["CALIBRATIONDATA"]
+                for index in range(0, len(data) - 1):
                     applyCalibrationFunction(calData[index], data[index], calibratedData)
                 return calibratedData
         return None
@@ -583,7 +604,8 @@ class ConnectionHubWindow(QMainWindow):
         return window
 
     def onFileSaveAs(self):
-        fname, filter = QFileDialog.getSaveFileName(self, 'Save current layout to file', None, "*.json", "", QFileDialog.DontUseNativeDialog)
+        fname, filter = QFileDialog.getSaveFileName(self, 'Save current layout to file', None, "*.json", "",
+                                                    QFileDialog.DontUseNativeDialog)
         if fname == '': return False
         if fname.split(".")[-1] != "json": fname += ".json"
         self.fileSave(fname)
@@ -593,27 +615,29 @@ class ConnectionHubWindow(QMainWindow):
         return True
 
     def onFileOpen(self):
-        fname, filter = QFileDialog.getOpenFileName(self, 'Open graph from file', "", "*.json", "", QFileDialog.DontUseNativeDialog)
+        fname, filter = QFileDialog.getOpenFileName(self, 'Open graph from file', "", "*.json", "",
+                                                    QFileDialog.DontUseNativeDialog)
         if fname != '' and os.path.isfile(fname):
             self.loadFromFile(fname)
             self.setWindowTitle("Com Utility Manager: " + str(os.path.basename(fname)))
 
     def onMeasurementListOpen(self):
-        filePaths, filter = QFileDialog.getOpenFileNames(self, 'Open measurement list from file', "", "", "", QFileDialog.DontUseNativeDialog)
+        filePaths, filter = QFileDialog.getOpenFileNames(self, 'Open measurement list from file', "", "", "",
+                                                         QFileDialog.DontUseNativeDialog)
+        if filePaths == []:
+            return
+        while self.measuringPointListTable.rowCount() > 0:
+            self.measuringPointListTable.removeRow(0)
+        self.measuringPointListFiles = []
+
         for filePath in filePaths:
             if filePath != '' and os.path.isfile(filePath):
-                sameFilePath = False
-                for countY in range(0, self.measuringPointListTable.rowCount()):
-                    if self.table.cellWidget(countY, 1).property("Path") == filePath:
-                        sameFilePath = True
-                if sameFilePath:
-                    print("Filepath already existing!")
-                else:
-                    self.loadMeasuringPointListFile(filePath)
+                self.loadMeasuringPointListFile(filePath)
+                self.measuringPointListTableAddRow(filePath)
             else:
                 print("File not existing!")
 
-    def fileSave(self, filename:str=None):
+    def fileSave(self, filename: str = None):
         QApplication.setOverrideCursor(Qt.WaitCursor)
         with open(filename, "w") as file:
             file.write(json.dumps(self.serialize(), indent=4))
@@ -637,6 +661,7 @@ class ConnectionHubWindow(QMainWindow):
 
     def serialize(self) -> OrderedDict:
         ports = []
+        measuringPointListFiles = []
         windows = []
 
         for countY in range(0, self.table.rowCount()):
@@ -644,7 +669,12 @@ class ConnectionHubWindow(QMainWindow):
             savePath = self.table.cellWidget(countY, 5).property("path")
             saveName = self.table.cellWidget(countY, 7).text()
             calibrationPath = self.table.cellWidget(countY, 8).property("path")
-            ports.append({"serialParameter": dummyDict, "savePath": savePath, "saveName": saveName, "calibrationPath": calibrationPath})
+            ports.append({"serialParameter": dummyDict, "savePath": savePath, "saveName": saveName,
+                          "calibrationPath": calibrationPath})
+
+        for countY in range(0, self.measuringPointListTable.rowCount()):
+            savePath = self.measuringPointListTable.cellWidget(countY, 0).property("path")
+            measuringPointListFiles.append({"savePath": savePath})
 
         for window in self.windows:
             windows.append(window.serialize())
@@ -660,6 +690,7 @@ class ConnectionHubWindow(QMainWindow):
             ('_windowMaximized', self.isMaximized()),
             ('_tableColumnsHidden', tableColumnShown),
             ('ports', ports),
+            ('measuringPointListFiles', measuringPointListFiles),
             ('windows', windows),
         ])
 
@@ -672,8 +703,14 @@ class ConnectionHubWindow(QMainWindow):
             window.close()
 
         self.resize(data['_windowSize'][0], data['_windowSize'][1])
-        if (QApplication.primaryScreen().size().width() < data['_windowPosition'][0] + data['_windowSize'][0] or data['_windowPosition'][0] < 0 or QApplication.primaryScreen().size().height() < data['_windowPosition'][1] + data['_windowSize'][1] or data['_windowPosition'][1] < 0) and self.returnMsgBoxAnswerYesNo("Out Of Screen", "Window \"Hub\" is out of screen!\nDo you want to move it inside the screen?")  == QMessageBox.Yes:
-            self.move(max(0, min(data['_windowPosition'][0], QApplication.primaryScreen().size().width()-data['_windowSize'][0])), max(0, min(data['_windowPosition'][1], QApplication.primaryScreen().size().height() - data['_windowSize'][1])))
+        if (QApplication.primaryScreen().size().width() < data['_windowPosition'][0] + data['_windowSize'][0] or
+            data['_windowPosition'][0] < 0 or QApplication.primaryScreen().size().height() < data['_windowPosition'][
+                1] + data['_windowSize'][1] or data['_windowPosition'][1] < 0) and self.returnMsgBoxAnswerYesNo(
+                "Out Of Screen",
+                "Window \"Hub\" is out of screen!\nDo you want to move it inside the screen?") == QMessageBox.Yes:
+            self.move(max(0, min(data['_windowPosition'][0],
+                                 QApplication.primaryScreen().size().width() - data['_windowSize'][0])), max(0, min(
+                data['_windowPosition'][1], QApplication.primaryScreen().size().height() - data['_windowSize'][1])))
         else:
             self.move(data['_windowPosition'][0], data['_windowPosition'][1])
         if data['_windowMaximized'] == True:
@@ -696,7 +733,8 @@ class ConnectionHubWindow(QMainWindow):
             serialParameter = SerialParameters()
             serialParameter.deserialize(port_data["serialParameter"])
             if any(param.port == serialParameter.port for param in self.connectedPorts):
-                QMessageBox.about(self, "Port occupied", "Der Port \"" + str(serialParameter.port) + "\" ist schon connected!")
+                QMessageBox.about(self, "Port occupied",
+                                  "Der Port \"" + str(serialParameter.port) + "\" ist schon connected!")
                 continue
 
             self.tableFindOrAddComRow(serialParameter)
@@ -705,6 +743,15 @@ class ConnectionHubWindow(QMainWindow):
             self.table.cellWidget(row, 7).setText(port_data["saveName"])
             self.checkForValidCalibrationFile(serialParameter.port, port_data["calibrationPath"])
             self.connectToSerial(None, serialParameter)
+
+        for measuringPointListFileData in data['measuringPointListFiles']:
+            filePath = measuringPointListFileData["savePath"]
+            if filePath != '' and os.path.isfile(filePath):
+                self.loadMeasuringPointListFile(filePath)
+                self.measuringPointListTableAddRow(filePath)
+            else:
+                print("File not existing!")
+
 
         for window_data in data['windows']:
             if window_data["_windowType"] == "Terminal":

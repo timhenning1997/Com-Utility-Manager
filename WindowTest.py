@@ -38,6 +38,8 @@ class WindowTest(AbstractWindow):
         self.indexLabel.setText("Index: " + str(self.findIndexByUUID(data, dataInfo, self.auswahlLineEdit.text())))
         self.auswahlLabel.setText("Value: " + str(self.findCalibratedDataByUUID(data, dataInfo, self.auswahlLineEdit.text())))
 
+        print(self.findCalibratedDataByKeyValue(data, dataInfo, "Messstelle", "TA2"))
+
     def sendData(self):
         # self.sendSerialData() ist eine interne Funktion, die die activen Ports berücksichtigt
         self.sendSerialData("sending test data...")

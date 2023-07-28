@@ -156,6 +156,18 @@ class AbstractWindow(QMainWindow):
                     return data["DATA"][index]
         return None
 
+    def findCalibratedDataByKeyValue(self, data, dataInfo, key: str, value):
+        if dataInfo["dataType"] == "CALIBRATED-Values":
+            listDatas = self._hubWindow.measuringPointListFiles
+            for listData in listDatas:
+                if key in listData["HEADINGS"]:
+                    keyIndex = listData["HEADINGS"].index(key)
+                    if value in listData["DATAINFOTRANSPOSED"][keyIndex]:
+                        index = listData["DATAINFOTRANSPOSED"][keyIndex].index(value)
+                        if data.get("UUID") is not None:
+                            return data["DATA"][index]
+        return None
+
     def findIndexByUUID(self, data, dataInfo, UUID: str):
         if dataInfo["dataType"] == "CALIBRATED-Values":
             if data.get("UUID") is not None:
