@@ -1,0 +1,99 @@
+{
+    "_windowType": "Hub",
+    "_windowSize": [
+        890,
+        526
+    ],
+    "_windowPosition": [
+        737,
+        161
+    ],
+    "_windowMaximized": false,
+    "_tableColumnsHidden": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+    ],
+    "ports": [
+        {
+            "serialParameter": {
+                "port": "COM4",
+                "baudrate": 115200,
+                "bytesize": 8,
+                "parity": "N",
+                "stopbits": 1,
+                "timeout": 0.3,
+                "xonxoff": false,
+                "rtscts": false,
+                "write_timeout": null,
+                "dsrdtr": false,
+                "inter_byte_timeout": null,
+                "exclusive": null,
+                "readTextIndex": "read_WU_device",
+                "readBytes": 1,
+                "readUntil": "",
+                "DTR": false,
+                "maxSignalRate": 5,
+                "local_echo": false,
+                "appendCR": false,
+                "appendLF": false
+            },
+            "savePath": "D:/Local GitHub/Com-Utility-Manager",
+            "saveName": "DATE_TIME",
+            "calibrationPath": [
+                "D:/Local GitHub/Com-Utility-Manager/test.txt",
+                "D:/Local GitHub/Com-Utility-Manager/test2.csv"
+            ]
+        }
+    ],
+    "measuringPointListFiles": [
+        {
+            "savePath": "D:/Local GitHub/Com-Utility-Manager/testmessstellenliste.csv"
+        }
+    ],
+    "windows": [
+        {
+            "_windowType": "Test",
+            "_windowSize": [
+                200,
+                100
+            ],
+            "_windowPosition": [
+                414,
+                269
+            ],
+            "_filterMenu": {
+                "_activePorts": [
+                    "COM-ALL"
+                ],
+                "_allPorts": [
+                    "COM-ALL",
+                    "COM4",
+                    "ADD-COM"
+                ],
+                "_activeKennung": [
+                    "KENNUNG-ALL"
+                ],
+                "_allKennung": [
+                    "KENNUNG-ALL",
+                    "0701",
+                    "ADD-Kennung"
+                ],
+                "_activeCalibration": [
+                    "CALIBRATED-Values"
+                ],
+                "_allCalibration": [
+                    "RAW-Values",
+                    "CALIBRATED-Values"
+                ]
+            },
+            "_windowSaveInfo": "{'UUID': ['GeraetXY_Messstelle_Z0', 'GeraetXY_Messstelle_Z1', 'GeraetXY_Messstelle_Z2', 'GeraetXY_Messstelle_Z3', 'GeraetXY_Messstelle_Z4', 'GeraetXY_Messstelle_Z5', 'GeraetXY_Messstelle_Z6', 'GeraetXY_Messstelle_Z7', 'GeraetXY_Messstelle_Z8'], 'DATA': [2.002258335240711, 3.067811093308919, 2.331898985275044, 2, 3, 4, 5, 6, 1.0]} | INFO: {'dataType': 'CALIBRATED-Values'}"
+        }
+    ]
+}
