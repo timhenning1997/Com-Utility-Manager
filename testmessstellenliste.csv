@@ -1,7 +1,11 @@
-UUID;Messstelle;Geraet;Getestet;r;x;phi;Kommentar
-GeraetXY_Messstelle_Z0;TA1;Tele;x;40,00;-151,95;350,0;
-GeraetXY_Messstelle_Z1;TA2;Tele;x;40,00;-140,95;350,0;
-GeraetXY_Messstelle_Z2;TA3;Tele;x;40,00;-129,95;350,0;
-GeraetXY_Messstelle_Z3;TA4;Tele;x;49,00;-122,00;350,0;
+UUID;Messstelle;Geraet;Getestet;r;x;phi;Einheit
+GeraetXY_Messstelle_Z0;TA1;Tele;x;40,00;-151,95;350,0;Pa
+GeraetXY_Messstelle_Z1;TA2;Tele;x;40,00;-140,95;350,0;Pa
+GeraetXY_Messstelle_Z2;TA3;Tele;x;40,00;-129,95;350,0;°C
+GeraetXY_Messstelle_Z3;TA4;Tele;x;49,00;-122,00;350,0;K
+GeraetXY_Messstelle_Z4;TA4;Tele;x;49,00;-122,00;350,0;K
+GeraetXY_Messstelle_Z5;TA4;Tele;x;49,00;-122,00;350,0;m^2
+GeraetXY_Messstelle_Z6;TA4;Tele;x;49,00;-122,00;350,0;m^3
+GeraetXY_Messstelle_Z13;TA4;Tele;x;49,00;-122,00;350,0;
 ECOFlex_Tele_A_PP0_4;TA5;Tele;x;60,75;-126,70;350,0;
 Tele_A_PP0_5;TA6;Tele;x;73,00;-134,40;350,0;

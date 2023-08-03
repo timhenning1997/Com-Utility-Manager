@@ -160,20 +160,36 @@ class AbstractWindow(QMainWindow):
         if dataInfo["dataType"] == "CALIBRATED-Values":
             listDatas = self._hubWindow.measuringPointListFiles
             for listData in listDatas:
-                if key in listData["HEADINGS"]:
-                    keyIndex = listData["HEADINGS"].index(key)
-                    if value in listData["DATAINFOTRANSPOSED"][keyIndex]:
-                        index = listData["DATAINFOTRANSPOSED"][keyIndex].index(value)
-                        if data.get("UUID") is not None:
-                            return data["DATA"][index]
+                if key in listData["DATA"].keys():
+                    if value in listData["DATA"][key]:
+                        return data["DATA"][listData["DATA"][key].index(value)]
+            return None
+
+    def findUUIDDataByKeyValue(self, key: str, value):
+        listDatas = self._hubWindow.measuringPointListFiles
+        for listData in listDatas:
+            if key in listData["DATA"].keys():
+                if value in listData["DATA"][key]:
+                            return listData["DATA"]["UUID"][listData["DATA"][key].index(value)]
         return None
 
-    def findIndexByUUID(self, data, dataInfo, UUID: str):
-        if dataInfo["dataType"] == "CALIBRATED-Values":
-            if data.get("UUID") is not None:
-                if UUID in data["UUID"]:
-                    index = data["UUID"].index(UUID)
-                    return index
+    def findIndexByUUID(self, UUID: str):
+        listDatas = self._hubWindow.measuringPointListFiles
+        for listData in listDatas:
+            if "UUID" in listData["DATA"].keys():
+                if UUID in listData["DATA"]["UUID"]:
+                    return listData["DATA"]["UUID"].index(UUID)
+        return None
+
+    def findMeasuringPointInfoByUUID(self, UUID: str):
+        listDatas = self._hubWindow.measuringPointListFiles
+        for listData in listDatas:
+            index = self.findIndexByUUID(UUID)
+            if index is not None:
+                temp = {}
+                for key in listData["DATA"].keys():
+                    temp[key] = listData["DATA"][key][index]
+                return temp
         return None
 
     def failedSendSerialData(self, serialParameters: SerialParameters, data):

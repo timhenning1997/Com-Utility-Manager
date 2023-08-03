@@ -20,6 +20,7 @@ from AbstractWindow import AbstractWindow
 from WindowTerminal import WindowTerminal
 from WindowTablePlotter import WindowTablePlotter
 from WindowNodeEditor import WindowNodeEditor
+from WindowSimpleGraph import WindowSimpleGraph
 from WindowTest import WindowTest
 
 
@@ -184,10 +185,12 @@ class ConnectionHubWindow(QMainWindow):
         actCreateTerminal = QAction('&Terminal', self, triggered=self.createTerminal)
         actCreateTablePlotter = QAction('Table &Plotter', self, triggered=self.createTablePlotter)
         actCreateNodeEditor = QAction('&Node Editor', self, triggered=self.createNodeEditor)
+        actCreateSimpleGraphWindow = QAction('&Simple Graph', self, triggered=self.createSimpleGraphWindow)
         actCreateTestWindow = QAction('T&est', self, triggered=self.createTestWindow)
         toolMenu.addAction(actCreateTerminal)
         toolMenu.addAction(actCreateTablePlotter)
         toolMenu.addAction(actCreateNodeEditor)
+        toolMenu.addAction(actCreateSimpleGraphWindow)
         toolMenu.addAction(actCreateTestWindow)
 
         self.menuBar().addMenu(fileMenu)
@@ -519,7 +522,7 @@ class ConnectionHubWindow(QMainWindow):
     def loadMeasuringPointListFile(self, filePath: str):
         headings = []
         dataInfo = []
-        dataInfo_t = []
+        dataInfo_t = {}
 
         with open(filePath, newline='') as csvfile:
             spamreader = csv.reader(csvfile, delimiter=';')
@@ -540,12 +543,11 @@ class ConnectionHubWindow(QMainWindow):
                 tmp = []
                 for v in dataInfo:
                     tmp.append(v[i])
-                dataInfo_t.append(tmp)
+                dataInfo_t[headings[i]] = tmp
         self.measuringPointListFiles.append({"PATH": filePath,
                                             "NAME": os.path.basename(filePath),
                                             "HEADINGS": headings,
-                                            "DATAINFO": dataInfo,
-                                            "DATAINFOTRANSPOSED": dataInfo_t})
+                                            "DATA": dataInfo_t})
 
     def calibrateRawData(self, port: str, data):
         calibratedData = {"UUID": [], "DATA": []}
@@ -593,6 +595,12 @@ class ConnectionHubWindow(QMainWindow):
 
     def createNodeEditor(self):
         window = WindowNodeEditor(self)
+        self.windows.append(window)
+        self.connectWindowToSignals(window)
+        return window
+
+    def createSimpleGraphWindow(self):
+        window = WindowSimpleGraph(self)
         self.windows.append(window)
         self.connectWindowToSignals(window)
         return window
@@ -760,5 +768,7 @@ class ConnectionHubWindow(QMainWindow):
                 self.createTablePlotter().deserialize(window_data)
             if window_data["_windowType"] == "NodeEditor":
                 self.createNodeEditor().deserialize(window_data)
+            if window_data["_windowType"] == "SimpleGraph":
+                self.createSimpleGraphWindow().deserialize(window_data)
             if window_data["_windowType"] == "Test":
                 self.createTestWindow().deserialize(window_data)
