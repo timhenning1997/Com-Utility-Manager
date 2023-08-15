@@ -177,7 +177,7 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         
 
         self.graphicalMeasurements = []
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget,   0,  50, "TLRT", "TLRT", "°C", "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget,   0,  50, "UUID", "TLRT", "°C", "LTE"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget,   0, 130, "UUID", "TLSBL9", "°C", "LTE"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget,   0, 180, "UUID", "DDSBL9", "kPa", "DD"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget,   0, 230, "UUID", "DSBL9", "bar", "DA"))
@@ -187,29 +187,29 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 152, 250, "UUID", "RPM", "rpm", "RPM"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 152, 200, "UUID", "TSA2", "°C", "TE"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 152, 150, "UUID", "TSA1", "°C", "TE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 152, 100, "UUID", "SWA", "mm/s", "SWS"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 152, 100, "G16.1_SPI_6", "SWA", "mm/s", "SWS"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 247, 250, "UUID", "GTARA2", "°C", "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 247, 250, "G16.1_SPI_0", "GTARA2", "°C", "TE"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 247, 200, "UUID", "GTARA1", "°C", "TE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 247, 150, "UUID", "LTKR", "°C", "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 247, 150, "G16.1_SPI_2", "LTKR", "°C", "LTE"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 285,  50, "UUID", "GTMRaA", "°C", "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 285,  50, "G16.1_SPI_1", "GTMRaA", "°C", "TE"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 285, 100, "UUID", "GTMRbA", "°C", "TE"))
 
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 380,   0, "UUID", "TLSBL1", "°C", "LTE"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 380,  50, "UUID", "DDSBL1", "kPa", "DD"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 380, 100, "UUID", "DSBL1", "bar", "DA"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 530,  50, "UUID", "GTMRaB", "°C", "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 530,  50, "G16.1_SPI_3", "GTMRaB", "°C", "TE"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 530, 100, "UUID", "GTMRbB", "°C", "TE"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 585, 250, "UUID", "GTARB2", "°C", "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 585, 250, "G16.1_SPI_4", "GTARB2", "°C", "TE"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 585, 200, "UUID", "GTARB1", "°C", "TE"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 585, 150, "UUID", "LPKR", "°C", "DA"))
 
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 670, 200, "UUID", "TSB1", "°C", "TE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 670, 250, "UUID", "SWB", "mm/s", "SWS"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 690, 470, "UUID", "TOelZu", "°C", "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 670, 250, "G16.1_SPI_7", "SWB", "mm/s", "SWS"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 690, 470, "G16.1_SPI_5", "TOelZu", "°C", "LTE"))
 
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 820, 130, "UUID", "TLSBL3", "°C", "LTE"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 820, 180, "UUID", "DDSBL3", "kPa", "DD"))
@@ -221,7 +221,10 @@ class WindowBetriebsmesstechnik(AbstractWindow):
 
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
         for graphicalMeasurement in self.graphicalMeasurements:
-            graphicalMeasurement.setValueText(str(self.findCalibratedDataByUUID(data, dataInfo, graphicalMeasurement.uuid)))
+            
+            vData = self.findCalibratedDataByUUID(data, dataInfo, graphicalMeasurement.uuid)
+            if vData is not None:
+                graphicalMeasurement.setValueText(str("{0:10.2f}").format(vData))
 
     def sendData(self):
         # self.sendSerialData() ist eine interne Funktion, die die activen Ports berücksichtigt
