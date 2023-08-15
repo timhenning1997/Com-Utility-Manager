@@ -10,7 +10,7 @@ class WindowNodeEditor(AbstractWindow):
         super().__init__(hubWindow, "NodeEditor")
         self.resize(400, 400)
 
-        self.mainWidget = NodeEditorWnd()
+        self.mainWidget = NodeEditorWnd(hubWindow=hubWindow)
         self.setCentralWidget(self.mainWidget)
 
         self.sceneMousePosX = 0

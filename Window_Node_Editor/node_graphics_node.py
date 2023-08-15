@@ -111,7 +111,13 @@ class QDMGraphicsNode(QGraphicsItem):
         self.resize_item.setPos(self.width - 38, self.height + 2)
         self.rotate_item.setPos(self.width + 2, self.height + 2)
         self.filter_item.setPos(0, -17)
-        self.rotate_item.setPos(self.width + 2, -17)
+        self.option_item.setPos(self.width + 2, -17)
+
+    def filterWindowPressed(self, x: int = 0, y: int = 0):
+        print("X: ", x, "   Y: ", y)
+
+    def optionWindowPressed(self, x: int = 0, y: int = 0):
+        print("X: ", x, "   Y: ", y)
 
     def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         # content
@@ -164,7 +170,7 @@ class ScaleIconItem(QGraphicsItem):
 
         view = self.grNode.node.scene.getView()
 
-        zoom = int(self.grNode.node.scene.getView().zoom - 10)
+        zoom = int(self.grNode.node.scene.getView().zoom - self.grNode.node.scene.getView().startZoom)
         faktor = self.grNode.node.scene.getView().zoomInFactor
         zoomFaktor = float(faktor) ** zoom
         scaleFaktor = self.grNode.scale()
@@ -266,7 +272,7 @@ class RotateIconItem(QGraphicsItem):
 
         view = self.grNode.node.scene.getView()
 
-        zoom = int(self.grNode.node.scene.getView().zoom - 10)
+        zoom = int(self.grNode.node.scene.getView().zoom - self.grNode.node.scene.getView().startZoom)
         faktor = self.grNode.node.scene.getView().zoomInFactor
         zoomFaktor = float(faktor) ** zoom
         scaleFaktor = self.grNode.scale()
@@ -339,7 +345,24 @@ class FilterIconItem(QGraphicsItem):
         self.setFlag(QGraphicsItem.ItemStacksBehindParent, False)
 
     def mousePressEvent(self, event: 'QGraphicsSceneMouseEvent'):
-        print("open Filter Window")
+        view = self.grNode.node.scene.getView()
+
+        zoom = int(self.grNode.node.scene.getView().zoom - self.grNode.node.scene.getView().startZoom)
+        faktor = self.grNode.node.scene.getView().zoomInFactor
+        zoomFaktor = float(faktor) ** zoom
+        scaleFaktor = self.grNode.scale()
+
+        viewPos = view.mapToGlobal(QPoint(0, 0))
+        grNodePos = view.mapFromScene(self.grNode.pos().x(), self.grNode.pos().y())
+        angle = self.grNode.rotation()
+        newX = (event.pos().x() + self.pos().x()) * math.cos(math.radians(angle)) - \
+               (event.pos().y() + self.pos().y()) * math.sin(math.radians(angle))
+        newY = (event.pos().x() + self.pos().x()) * math.sin(math.radians(angle)) + \
+               (event.pos().y() + self.pos().y()) * math.cos(math.radians(angle))
+        eventPos = QPoint(int(newX * zoomFaktor * scaleFaktor),
+                          int(newY * zoomFaktor * scaleFaktor))
+        actionPos = viewPos + grNodePos + eventPos
+        self.grNode.filterWindowPressed(actionPos.x(), actionPos.y())
 
     def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         if self.grNode.node.locked:
@@ -360,7 +383,24 @@ class OptionIconItem(QGraphicsItem):
         self.setFlag(QGraphicsItem.ItemStacksBehindParent, False)
 
     def mousePressEvent(self, event: 'QGraphicsSceneMouseEvent'):
-        print("open Option Window")
+        view = self.grNode.node.scene.getView()
+
+        zoom = int(self.grNode.node.scene.getView().zoom - self.grNode.node.scene.getView().startZoom)
+        faktor = self.grNode.node.scene.getView().zoomInFactor
+        zoomFaktor = float(faktor) ** zoom
+        scaleFaktor = self.grNode.scale()
+
+        viewPos = view.mapToGlobal(QPoint(0, 0))
+        grNodePos = view.mapFromScene(self.grNode.pos().x(), self.grNode.pos().y())
+        angle = self.grNode.rotation()
+        newX = (event.pos().x() + self.pos().x()) * math.cos(math.radians(angle)) - \
+               (event.pos().y() + self.pos().y()) * math.sin(math.radians(angle))
+        newY = (event.pos().x() + self.pos().x()) * math.sin(math.radians(angle)) + \
+               (event.pos().y() + self.pos().y()) * math.cos(math.radians(angle))
+        eventPos = QPoint(int(newX * zoomFaktor * scaleFaktor),
+                          int(newY * zoomFaktor * scaleFaktor))
+        actionPos = viewPos + grNodePos + eventPos
+        self.grNode.optionWindowPressed(actionPos.x(), actionPos.y())
 
     def paint(self, painter, QStyleOptionGraphicsItem, widget=None):
         if self.grNode.node.locked:

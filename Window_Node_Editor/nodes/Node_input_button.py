@@ -1,7 +1,8 @@
-from PyQt5.QtWidgets import QHBoxLayout, QPushButton, QTextEdit
+from PyQt5.QtWidgets import QHBoxLayout, QPushButton, QTextEdit, QWidget
 from Window_Node_Editor.node_node import Node
 from Window_Node_Editor.node_content_widget import QDMNodeContentWidget
 from Window_Node_Editor.node_graphics_node import QDMGraphicsNode
+from Window_Node_Editor.select_measuring_points import SelectMeasuringPointsWindow
 
 
 class Content(QDMNodeContentWidget):
@@ -18,10 +19,14 @@ class GraphicsNode(QDMGraphicsNode):
     def __init__(self, node, parent=None):
         super().__init__(node, parent)
 
+    def optionWindowPressed(self, x: int = 0, y: int = 0):
+        self.window = SelectMeasuringPointsWindow(self)
+        self.window.move(x - self.window.width() // 2, y - self.window.height() // 2)
+
 
 class Node_TextButtonInputNode(Node):
-    def __init__(self, scene: 'Scene'):
-        super().__init__(scene)
+    def __init__(self, scene: 'Scene', hubWindow = None):
+        super().__init__(scene, hubWindow)
         self.grNode.minWidth = 100
         self.grNode.minHeight = 50
 

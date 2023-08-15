@@ -182,7 +182,7 @@ class SerialConnectWindow(QWidget):
         maxSignalRateLabel = QLabel("Max signal rate [Hz]")
 
         self.maxSignalRateSpinBox = QSpinBox()
-        self.maxSignalRateSpinBox.setRange(1, 30)
+        self.maxSignalRateSpinBox.setRange(1, 9999)
         self.maxSignalRateSpinBox.setValue(5)
 
         optionsLayout = QFormLayout()

@@ -21,6 +21,8 @@ from WindowTerminal import WindowTerminal
 from WindowTablePlotter import WindowTablePlotter
 from WindowNodeEditor import WindowNodeEditor
 from WindowSimpleGraph import WindowSimpleGraph
+from WindowBetriebsmesstechnik import WindowBetriebsmesstechnik
+from WindowSynthetischeDaten import WindowSynthetischeDaten
 from WindowTest import WindowTest
 
 
@@ -186,11 +188,15 @@ class ConnectionHubWindow(QMainWindow):
         actCreateTablePlotter = QAction('Table &Plotter', self, triggered=self.createTablePlotter)
         actCreateNodeEditor = QAction('&Node Editor', self, triggered=self.createNodeEditor)
         actCreateSimpleGraphWindow = QAction('&Simple Graph', self, triggered=self.createSimpleGraphWindow)
+        actCreateBetriebsmesstechnikWindow = QAction('&Betriebsmesstechnik', self, triggered=self.createBetriebsmesstechnikWindow)
+        actCreateSynthetischeDatenWindow = QAction('Synthetische &Daten', self, triggered=self.createSynthetischeDatenWindow)
         actCreateTestWindow = QAction('T&est', self, triggered=self.createTestWindow)
         toolMenu.addAction(actCreateTerminal)
         toolMenu.addAction(actCreateTablePlotter)
         toolMenu.addAction(actCreateNodeEditor)
         toolMenu.addAction(actCreateSimpleGraphWindow)
+        toolMenu.addAction(actCreateBetriebsmesstechnikWindow)
+        toolMenu.addAction(actCreateSynthetischeDatenWindow)
         toolMenu.addAction(actCreateTestWindow)
 
         self.menuBar().addMenu(fileMenu)
@@ -294,12 +300,19 @@ class ConnectionHubWindow(QMainWindow):
             self.table.cellWidget(row, 5).setStyleSheet("background-color : gray")
         print("Lost connection with: " + obj.port)
 
-    def printReceivedData(self, obj, data):
+    def printReceivedData(self, obj, data, dataType = None):
+        if dataType is not None:
+            self.receiveCalibratedSerialDataSignal.emit(obj, data, dataType)
+            return
+
         self.receiveCalibratedSerialDataSignal.emit(obj, data, {"dataType": "RAW-Values"})
 
         calibratedData = self.calibrateRawData(obj.port, data)
         if calibratedData is not None:
+            print(calibratedData)
             self.receiveCalibratedSerialDataSignal.emit(obj, calibratedData, {"dataType": "CALIBRATED-Values"})
+
+
 
     def printFailedSendData(self, obj, data):
         pass
@@ -605,6 +618,17 @@ class ConnectionHubWindow(QMainWindow):
         self.connectWindowToSignals(window)
         return window
 
+    def createBetriebsmesstechnikWindow(self):
+        window = WindowBetriebsmesstechnik(self)
+        self.windows.append(window)
+        self.connectWindowToSignals(window)
+        return window
+
+    def createSynthetischeDatenWindow(self):
+        window = WindowSynthetischeDaten(self)
+        self.windows.append(window)
+        return window
+
     def createTestWindow(self):
         window = WindowTest(self)
         self.windows.append(window)
@@ -770,5 +794,9 @@ class ConnectionHubWindow(QMainWindow):
                 self.createNodeEditor().deserialize(window_data)
             if window_data["_windowType"] == "SimpleGraph":
                 self.createSimpleGraphWindow().deserialize(window_data)
+            if window_data["_windowType"] == "Betriebsmesstechnik":
+                self.createBetriebsmesstechnikWindow().deserialize(window_data)
+            if window_data["_windowType"] == "SynthetischeDaten":
+                self.createSynthetischeDatenWindow().deserialize(window_data)
             if window_data["_windowType"] == "Test":
                 self.createTestWindow().deserialize(window_data)
