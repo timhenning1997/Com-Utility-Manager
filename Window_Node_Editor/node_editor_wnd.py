@@ -9,8 +9,10 @@ from Window_Node_Editor.nodes.Node_input_button import Node_TextButtonInputNode
 
 
 class NodeEditorWnd(QWidget):
-    def __init__(self, parent=None):
+    def __init__(self, parent=None, hubWindow=None):
         super().__init__(parent)
+
+        self.hubWindow = hubWindow
 
         self.stylesheet_filename = 'qss/nodestyle.qss'
         self.loadStylesheet(self.stylesheet_filename)
@@ -29,7 +31,7 @@ class NodeEditorWnd(QWidget):
         # self.grScene = self.scene.grScene
 
         #node = Node(self.scene)
-        node = Node_TextButtonInputNode(self.scene)
+        node = Node_TextButtonInputNode(self.scene, self.hubWindow)
 
         # create graphics view
         self.view = QDMGraphicsView(self.scene.grScene, self)

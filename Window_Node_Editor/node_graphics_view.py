@@ -17,6 +17,7 @@ class QDMGraphicsView(QGraphicsView):
 
         self.zoomInFactor = 1.25
         self.zoomClamp = True
+        self.startZoom = 20
         self.zoom = 20
         self.zoomStep = 1
         self.zoomRange = [0, 30]

@@ -3,8 +3,9 @@ from Window_Node_Editor.node_content_widget import QDMNodeContentWidget
 
 
 class Node():
-    def __init__(self, scene):
+    def __init__(self, scene, hubWindow = None):
         self.scene = scene
+        self.hubWindow = hubWindow
         self.locked = False
 
         self.initInnerClasses()
