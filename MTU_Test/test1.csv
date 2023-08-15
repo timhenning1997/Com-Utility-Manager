@@ -1,0 +1,13 @@
+UUID;Name (Str);KalKoeff (valid JSON);KalFunkTyp (Str);DifferenzKanal (Int);Messwert (Str);FitFehler (Float);Kommentar (valid JSON)
+EcoFlex-TeleA_PM0_0;PM0_0;[2, 1];POL16;3;TE;1E-10;[]
+EcoFlex-TeleA_PM0_1;PM0_1;[2, 1];POL16;3;TE;1E-10;[]
+EcoFlex-TeleA_PM0_2;PM0_2;[2, 1];POL16;3;TE;1E-10;[]
+EcoFlex-TeleA_PM0_3;PM0_3;[2, 1];POL16;3;TE;1E-10;[]
+EcoFlex-TeleA_PM0_4;PM0_4;[2, 1];POL16;3;TE;1E-10;[]
+EcoFlex-TeleA_PM0_5;PM0_5;[2, 1];POL16;3;TE;1E-10;[]
+EcoFlex-TeleA_PM0_6;PM0_6;[2, 1];POL16;3;TE;1E-10;[]
+EcoFlex-TeleA_PM0_7;PM0_7;[2, 1];POL16;3;TE;1E-10;[]
+EcoFlex-TeleA_PP0_0;PP0_0;[2, 1];POL16;3;TE;1E-10;[]
+EcoFlex-TeleA_PP0_1;PP0_1;[2, 1];POL16;3;TE;1E-10;[]
+EcoFlex-TeleA_PP0_2;PP0_2;[2, 1];POL16;3;TE;1E-10;[]
+EcoFlex-TeleA_PP0_3;PP0_3;[2, 1];POL16;3;TE;1E-10;[]
