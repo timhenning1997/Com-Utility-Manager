@@ -22,6 +22,7 @@ from WindowTablePlotter import WindowTablePlotter
 from WindowNodeEditor import WindowNodeEditor
 from WindowSimpleGraph import WindowSimpleGraph
 from WindowBetriebsmesstechnik import WindowBetriebsmesstechnik
+from WindowTeleTableView import WindowTeleTableView
 from WindowSynthetischeDaten import WindowSynthetischeDaten
 from WindowTest import WindowTest
 
@@ -189,6 +190,7 @@ class ConnectionHubWindow(QMainWindow):
         actCreateNodeEditor = QAction('&Node Editor', self, triggered=self.createNodeEditor)
         actCreateSimpleGraphWindow = QAction('&Simple Graph', self, triggered=self.createSimpleGraphWindow)
         actCreateBetriebsmesstechnikWindow = QAction('&Betriebsmesstechnik', self, triggered=self.createBetriebsmesstechnikWindow)
+        actCreateTeleTableViewWindow = QAction('Tele Table &View', self, triggered=self.createTeleTableViewWindow)
         actCreateSynthetischeDatenWindow = QAction('Synthetische &Daten', self, triggered=self.createSynthetischeDatenWindow)
         actCreateTestWindow = QAction('T&est', self, triggered=self.createTestWindow)
         toolMenu.addAction(actCreateTerminal)
@@ -196,6 +198,7 @@ class ConnectionHubWindow(QMainWindow):
         toolMenu.addAction(actCreateNodeEditor)
         toolMenu.addAction(actCreateSimpleGraphWindow)
         toolMenu.addAction(actCreateBetriebsmesstechnikWindow)
+        toolMenu.addAction(actCreateTeleTableViewWindow)
         toolMenu.addAction(actCreateSynthetischeDatenWindow)
         toolMenu.addAction(actCreateTestWindow)
 
@@ -624,6 +627,12 @@ class ConnectionHubWindow(QMainWindow):
         self.connectWindowToSignals(window)
         return window
 
+    def createTeleTableViewWindow(self):
+        window = WindowTeleTableView(self)
+        self.windows.append(window)
+        self.connectWindowToSignals(window)
+        return window
+
     def createSynthetischeDatenWindow(self):
         window = WindowSynthetischeDaten(self)
         self.windows.append(window)
@@ -796,6 +805,8 @@ class ConnectionHubWindow(QMainWindow):
                 self.createSimpleGraphWindow().deserialize(window_data)
             if window_data["_windowType"] == "Betriebsmesstechnik":
                 self.createBetriebsmesstechnikWindow().deserialize(window_data)
+            if window_data["_windowType"] == "TeleTableView":
+                self.createTeleTableViewWindow().deserialize(window_data)
             if window_data["_windowType"] == "SynthetischeDaten":
                 self.createSynthetischeDatenWindow().deserialize(window_data)
             if window_data["_windowType"] == "Test":

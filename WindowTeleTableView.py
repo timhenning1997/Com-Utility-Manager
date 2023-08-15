@@ -4,9 +4,9 @@ from PyQt5.QtGui import QPixmap, QFont
 from AbstractWindow import AbstractWindow
 from SerialParameters import SerialParameters
 
-class WindowTest(AbstractWindow):
+class WindowTeleTableView(AbstractWindow):
     def __init__(self, hubWindow):
-        super().__init__(hubWindow, "Test")
+        super().__init__(hubWindow, "TeleTableView")
         
         # Dem Hauptfenster ein Layout zuweisen
         scheibeALayout = QVBoxLayout()
