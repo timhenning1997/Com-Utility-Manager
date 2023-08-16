@@ -1,8 +1,9 @@
 import time
 
 from PyQt5.QtCore import QPoint
+from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QPushButton, QWidget, QLineEdit, QMenu, QGroupBox, QHBoxLayout, \
-    QTableWidget, QHeaderView, QTableWidgetItem, QSpinBox, QMessageBox
+    QTableWidget, QHeaderView, QTableWidgetItem, QSpinBox, QMessageBox, QSplitter, QAction
 from PyQt5.QtCore import Qt
 from AbstractWindow import AbstractWindow
 from SerialParameters import SerialParameters
@@ -38,7 +39,7 @@ class GraphLine:
     def calculateFit(self):
         p = polyfit(self.x, self.y, 1)
         #return str(polyfit(self.x, self.y, 1))
-        return str("{:.3f}".format(p[0]))
+        return str("{:.2f}".format(p[0]))
 
 
 class WindowSimpleGraph(AbstractWindow):
@@ -99,14 +100,57 @@ class WindowSimpleGraph(AbstractWindow):
         verticalLayout.addLayout(maxDataPointsLayout)
         verticalLayout.addWidget(self.table)
         verticalLayout.addLayout(addNameLayout)
+        tableWidget = QWidget()
+        tableWidget.setLayout(verticalLayout)
+
+        graphSplitter = QSplitter(Qt.Horizontal)
+        graphSplitter.addWidget(self.graphWidget)
+        graphSplitter.addWidget(tableWidget)
 
         mainLayout = QHBoxLayout()
-        mainLayout.addWidget(self.graphWidget)
-        mainLayout.addLayout(verticalLayout)
+        mainLayout.addWidget(graphSplitter)
 
         mainWidget = QWidget()
         mainWidget.setLayout(mainLayout)
         self.setCentralWidget(mainWidget)
+
+    def initUI(self):
+        tableMenu = QMenu("&Table", self)
+        act = QAction("Show/Hide Columns", self)
+        act.setEnabled(False)
+        font1 = QFont()
+        font1.setUnderline(True)
+        act.setFont(font1)
+        tableMenu.addAction(act)
+        self.actShowColor = QAction('&Color', self, triggered=lambda obj: self.tableShowColumn(0, obj))
+        self.actShowColor.setCheckable(True)
+        self.actShowColor.setChecked(True)
+        self.actShowUUID = QAction('&UUID', self, triggered=lambda obj: self.tableShowColumn(1, obj))
+        self.actShowUUID.setCheckable(True)
+        self.actShowUUID.setChecked(True)
+        self.actShowName = QAction('&Name', self, triggered=lambda obj: self.tableShowColumn(2, obj))
+        self.actShowName.setCheckable(True)
+        self.actShowName.setChecked(True)
+        self.actShowUnit = QAction('&Unit', self, triggered=lambda obj: self.tableShowColumn(3, obj))
+        self.actShowUnit.setCheckable(True)
+        self.actShowUnit.setChecked(True)
+        self.actShowLastValue = QAction('&Last value', self, triggered=lambda obj: self.tableShowColumn(4, obj))
+        self.actShowLastValue.setCheckable(True)
+        self.actShowLastValue.setChecked(True)
+        self.actShowFitSlope = QAction('&Fit slope', self, triggered=lambda obj: self.tableShowColumn(5, obj))
+        self.actShowFitSlope.setCheckable(True)
+        self.actShowFitSlope.setChecked(True)
+        self.actShowDelete = QAction('&Delete', self, triggered=lambda obj: self.tableShowColumn(6, obj))
+        self.actShowDelete.setCheckable(True)
+        self.actShowDelete.setChecked(True)
+        tableMenu.addAction(self.actShowColor)
+        tableMenu.addAction(self.actShowUUID)
+        tableMenu.addAction(self.actShowName)
+        tableMenu.addAction(self.actShowUnit)
+        tableMenu.addAction(self.actShowLastValue)
+        tableMenu.addAction(self.actShowFitSlope)
+        tableMenu.addAction(self.actShowDelete)
+        self.menuBar().addMenu(tableMenu)
 
 
     def returnMsgBoxAnswerYesNo(self, title: str = "Message", text: str = ""):
@@ -202,6 +246,12 @@ class WindowSimpleGraph(AbstractWindow):
                 return countY
         return None
 
+    def tableShowColumn(self, column: int, checked: bool):
+        if checked:
+            self.table.showColumn(column)
+        else:
+            self.table.hideColumn(column)
+
     def deleteButtonPressed(self, UUID: str):
         self.table.removeRow(self.tableFindComRow(UUID))
         self.graphLines[UUID].dataLine.clear()
@@ -217,7 +267,7 @@ class WindowSimpleGraph(AbstractWindow):
             value = self.findCalibratedDataByUUID(data, dataInfo, key)
             if value is not None:
                 self.graphLines[key].appendDataPoint(value) #, self.dataCounter)
-                self.table.item(self.tableFindComRow(key), 4).setText("{:.4f}".format(value))
+                self.table.item(self.tableFindComRow(key), 4).setText("{:.2f}".format(value))
 
                 if self.dataCounter % 10 == 0:
                     self.table.item(self.tableFindComRow(key), 5).setText(self.graphLines[key].calculateFit())
@@ -231,8 +281,23 @@ class WindowSimpleGraph(AbstractWindow):
             saveName = self.table.cellWidget(countY, 0).property("UUID")
             tempSave.append(saveName)
 
-        return tempSave
+        tableColumnShown = []
+        for countX in range(0, self.table.columnCount()):
+            tableColumnShown.append(self.table.isColumnHidden(countX))
+
+        return {"tempSave": tempSave, "_tableColumnsHidden": tableColumnShown}
 
     def load(self, data):
-        for saveName in data:
+        for saveName in data["tempSave"]:
             self.addDataLine("", saveName)
+
+        self.actShowColor.setChecked(not data['_tableColumnsHidden'][0])
+        self.actShowUUID.setChecked(not data['_tableColumnsHidden'][1])
+        self.actShowName.setChecked(not data['_tableColumnsHidden'][2])
+        self.actShowUnit.setChecked(not data['_tableColumnsHidden'][3])
+        self.actShowLastValue.setChecked(not data['_tableColumnsHidden'][4])
+        self.actShowFitSlope.setChecked(not data['_tableColumnsHidden'][5])
+        self.actShowDelete.setChecked(not data['_tableColumnsHidden'][6])
+
+        for countX in range(0, self.table.columnCount()):
+            self.table.hideColumn(countX) if data['_tableColumnsHidden'][countX] else self.table.showColumn(countX)
