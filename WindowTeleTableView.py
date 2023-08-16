@@ -260,20 +260,20 @@ class WindowTeleTableView(AbstractWindow):
             {"name": "TM56", "UUID": "EcoFlex-TeleB_PAD4_6", "unit": "K"}]
         
         self.list_IW_TE = [
-            {"name": "TIW1", "UUID": "EcoFlex-TeleIW_x_0", "unit": "K"}, 
-            {"name": "TIW2", "UUID": "EcoFlex-TeleIW_x_1", "unit": "K"},
-            {"name": "TIW3", "UUID": "EcoFlex-TeleIW_x_2", "unit": "K"}]
+            {"name": "TIW1", "UUID": "EcoFlex-TeleIW_x_0", "unit": "K"},    # TODO: Belegungsplan IW nachtragen
+            {"name": "TIW2", "UUID": "EcoFlex-TeleIW_x_1", "unit": "K"},    # TODO: Belegungsplan IW nachtragen
+            {"name": "TIW3", "UUID": "EcoFlex-TeleIW_x_2", "unit": "K"}]    # TODO: Belegungsplan IW nachtragen
         
         self.list_IW_LTE = [
-            {"name": "TLIW1", "UUID": "EcoFlex-TeleIW_x_0", "unit": "K"}, 
-            {"name": "TLIW2", "UUID": "EcoFlex-TeleIW_x_1", "unit": "K"},
-            {"name": "TLIW3", "UUID": "EcoFlex-TeleIW_x_2", "unit": "K"},
-            {"name": "TLIW4", "UUID": "EcoFlex-TeleIW_x_3", "unit": "K"}, 
-            {"name": "TLIW5", "UUID": "EcoFlex-TeleIW_x_4", "unit": "K"},
-            {"name": "TLIW6", "UUID": "EcoFlex-TeleIW_x_5", "unit": "K"},
-            {"name": "TLIW7", "UUID": "EcoFlex-TeleIW_x_x", "unit": "K"}, 
-            {"name": "TLIW8", "UUID": "EcoFlex-TeleIW_x_x", "unit": "K"},
-            {"name": "TLIW9", "UUID": "EcoFlex-TeleIW_x_x", "unit": "K"}]
+            {"name": "TLIW1", "UUID": "EcoFlex-TeleIW_x_0", "unit": "K"},   # TODO: Belegungsplan IW nachtragen
+            {"name": "TLIW2", "UUID": "EcoFlex-TeleIW_x_1", "unit": "K"},   # TODO: Belegungsplan IW nachtragen
+            {"name": "TLIW3", "UUID": "EcoFlex-TeleIW_x_2", "unit": "K"},   # TODO: Belegungsplan IW nachtragen
+            {"name": "TLIW4", "UUID": "EcoFlex-TeleIW_x_3", "unit": "K"},   # TODO: Belegungsplan IW nachtragen
+            {"name": "TLIW5", "UUID": "EcoFlex-TeleIW_x_4", "unit": "K"},   # TODO: Belegungsplan IW nachtragen
+            {"name": "TLIW6", "UUID": "EcoFlex-TeleIW_x_5", "unit": "K"},   # TODO: Belegungsplan IW nachtragen
+            {"name": "TLIW7", "UUID": "EcoFlex-TeleIW_x_x", "unit": "K"},   # TODO: Belegungsplan IW nachtragen
+            {"name": "TLIW8", "UUID": "EcoFlex-TeleIW_x_x", "unit": "K"},   # TODO: Belegungsplan IW nachtragen
+            {"name": "TLIW9", "UUID": "EcoFlex-TeleIW_x_x", "unit": "K"}]   # TODO: Belegungsplan IW nachtragen
         
         self.list_A_LTE = [
             {"name": "TLA1", "UUID": "EcoFlex-TeleA_PM1_0", "unit": "K"}, 
