@@ -312,7 +312,6 @@ class ConnectionHubWindow(QMainWindow):
 
         calibratedData = self.calibrateRawData(obj.port, data)
         if calibratedData is not None:
-            print(calibratedData)
             self.receiveCalibratedSerialDataSignal.emit(obj, calibratedData, {"dataType": "CALIBRATED-Values"})
 
 
