@@ -50,7 +50,7 @@ class WindowSimpleGraph(AbstractWindow):
         self.graphStartTime = time.time()
 
         self.colorCounter = 0
-        self.colorTable = ["#c095e3", "#fff384", "#53af8b", "#e3adb5", "#95b8e3", "#a99887", "#f69284", "#95dfe3", "3f2b44", "#f0b892"]
+        self.colorTable = ["#c095e3", "#fff384", "#53af8b", "#e3adb5", "#95b8e3", "#a99887", "#f69284", "#95dfe3", "#3f2b44", "#f0b892"]
 
         self.graphWidget = PlotWidget()
         self.graphWidget.showGrid(x=True, y=True)
