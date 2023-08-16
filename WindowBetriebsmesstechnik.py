@@ -115,21 +115,22 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         druckversorgungGridLayout.setColumnStretch(2,1)
 
         piclist = [
-            ['res\\pics\\Messstelle_Temperatur.png', "Materialtemperatur"],
-            ['res\\pics\\Messstelle_Lufttemperatur.png', "Lufttemperatur"],
-            ['res\\pics\\Messstelle_Druck_absolut.png', "Absolutdruck"],
-            ['res\\pics\\Messstelle_Druck_differenz.png', "Differenzdruck"],
-            ['res\\pics\\Messstelle_Schwinggeschwindigkeit.png', "Schwinggeschwindigkeit"],
-            ['res\\pics\\Messstelle_Magnet.png', "Magnet (Signalgeber)"],
-            ['res\\pics\\Messstelle_Hallgeber.png',"Hallsensor (Drehfrequenz)"],
-            ['res\\pics\\Messstelle_Blende.png',"Normblende"]
+            ['res\\Pictures\\Messstelle_Temperatur.png', "Materialtemperatur"],
+            ['res\\Pictures\\Messstelle_Lufttemperatur.png', "Lufttemperatur"],
+            ['res\\Pictures\\Messstelle_Druck_absolut.png', "Absolutdruck"],
+            ['res\\Pictures\\Messstelle_Druck_differenz.png', "Differenzdruck"],
+            ['res\\Pictures\\Messstelle_Schwinggeschwindigkeit.png', "Schwinggeschwindigkeit"],
+            ['res\\Pictures\\Messstelle_Magnet.png', "Magnet (Signalgeber)"],
+            ['res\\Pictures\\Messstelle_Hallgeber.png',"Hallsensor (Drehfrequenz)"],
+            ['res\\Pictures\\Messstelle_Blende.png',"Normblende"]
             ]
 
         for num in range(0, len(piclist)):
             symbolLabel = QLabel()
+            symbolLabel.setScaledContents(True)
             pixmap = QPixmap(piclist[num][0])
             symbolLabel.setPixmap(pixmap)
-            # symbolLabel.setScaledContents(True)
+            
             # symbolLabel.setFixedSize(15,15)
             legendeGridLayout.addWidget(symbolLabel, num, 0, alignment=Qt.AlignCenter)
             legendeGridLayout.addWidget(QLabel(piclist[num][1]), num, 1)
@@ -159,7 +160,12 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         druckversorgungGroubox.setFixedHeight(90)
         betriebsspannungGroupbox.setFixedHeight(120)
         legendeGroubox.setFixedHeight(240)
-
+        
+        massestromGroubox.setFixedWidth(250)
+        druckversorgungGroubox.setFixedWidth(250)
+        betriebsspannungGroupbox.setFixedWidth(250)
+        legendeGroubox.setFixedWidth(250)
+        
         mainLayout.addWidget(msWidget)
         mainLayout.addLayout(subLayout)
 
@@ -169,55 +175,60 @@ class WindowBetriebsmesstechnik(AbstractWindow):
 
         msWidget.setFixedSize(920,660)
         backgroundLabel = QLabel(msWidget)
-        backgroundLabel.move(60, 80)
+        offset_x = 60
+        offset_y = 80
+        backgroundLabel.move(offset_x, offset_y)
         backgroundLabel.setScaledContents(True)
         b = 800
         h = 600
         backgroundLabel.setFixedSize(b,h)
-        pixmap = QPixmap('res\\pics\\Betriebsmesstechnik _Messstellen.png')
+        pixmap = QPixmap('res\\Pictures\\Betriebsmesstechnik_Messstellen.png')
         backgroundLabel.setPixmap(pixmap)
         
+        def x(x_rel):
+            return (offset_x+b)*x_rel
+        
+        def y(y_rel):
+            return (offset_y+h)*y_rel
 
         self.graphicalMeasurements = []
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget,   0,  50, "UUID",          "TLRT", "°C", "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget,   0, 130, "UUID",          "TLSBL9", "°C", "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget,   0, 180, "UUID",          "DDSBL9", "kPa", "DD"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget,   0, 230, "UUID",          "DSBL9", "bar", "DA"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget,   0, 310, "UUID",          "TLSA", "bar", "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget,   0, 405, "G16.1_PC3_0",   "DSA", "bar", "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.120), "UUID",          "TLRT", "°C", "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.250), "UUID",          "TLSBL9", "°C", "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.325), "UUID",          "DDSBL9", "kPa", "DD"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.400), "UUID",          "DSBL9", "bar", "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.490), "UUID",          "TLSA", "bar", "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.620), "G16.1_PC3_0",   "DSA", "bar", "DA"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 152, 250, "UUID",          "RPM", "rpm", "RPM"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 152, 200, "UUID",          "TSA2", "°C", "TE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 152, 150, "UUID",          "TSA1", "°C", "TE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 152, 100, "G16.1_SPI_6",   "SWA", "mm/s", "SWS"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.175), "UUID",          "RPM", "rpm", "RPM"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.250), "UUID",          "TSA2", "°C", "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.325), "UUID",          "TSA1", "°C", "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.400), "G16.1_SPI_6",   "SWA", "mm/s", "SWS"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 247, 250, "G16.1_SPI_0",   "GTARA2", "°C", "TE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 247, 200, "UUID",          "GTARA1", "°C", "TE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 247, 150, "G16.1_SPI_2",   "LTKR", "°C", "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.290), y(0.250), "G16.1_SPI_2",   "LTKR", "°C", "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.290), y(0.325), "UUID",          "GTARA1", "°C", "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.290), y(0.400), "G16.1_SPI_1",   "GTMRaA", "°C", "TE"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 285,  50, "G16.1_SPI_1",   "GTMRaA", "°C", "TE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 285, 100, "UUID",          "GTMRbA", "°C", "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.610), y(0.025), "UUID",          "TLSBL7", "°C", "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.610), y(0.100), "UUID",          "DDSBL7", "kPa", "DD"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.610), y(0.175), "UUID",          "DSBL7", "bar", "DA"))
+        
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.370), y(0.025), "UUID",          "TLSBL1", "°C", "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.370), y(0.100), "UUID",          "DDSBL1", "kPa", "DD"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.370), y(0.175), "UUID",          "DSBL1", "bar", "DA"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 380,   0, "UUID",          "TLSBL1", "°C", "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 380,  50, "UUID",          "DDSBL1", "kPa", "DD"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 380, 100, "UUID",          "DSBL1", "bar", "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.683), y(0.250), "G16.1_PC3_2",   "LPKR", "°C", "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.683), y(0.325), "UUID",          "GTARB1", "°C", "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.683), y(0.400), "G16.1_SPI_3",   "GTMRaB", "°C", "TE"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 530,  50, "G16.1_SPI_3",   "GTMRaB", "°C", "TE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 530, 100, "UUID",          "GTMRbB", "°C", "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.783), y(0.325), "UUID",          "TSB1", "°C", "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.783), y(0.400), "G16.1_SPI_7",   "SWB", "mm/s", "SWS"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.800), y(0.710), "G16.1_SPI_5",   "TOelZu", "°C", "LTE"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 585, 250, "G16.1_SPI_4",   "GTARB2", "°C", "TE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 585, 200, "UUID",          "GTARB1", "°C", "TE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 585, 150, "G16.1_PC3_2",   "LPKR", "°C", "DA"))
-
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 670, 200, "UUID",          "TSB1", "°C", "TE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 670, 250, "G16.1_SPI_7",   "SWB", "mm/s", "SWS"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 690, 470, "G16.1_SPI_5",   "TOelZu", "°C", "LTE"))
-
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 820, 130, "UUID",          "TLSBL3", "°C", "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 820, 180, "UUID",          "DDSBL3", "kPa", "DD"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 820, 230, "UUID",          "DSBL3", "bar", "DA"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 820, 320, "UUID",          "TLSB", "bar", "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, 820, 390, "G16.1_PC3_1",   "DSB", "bar", "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.250), "UUID",          "TLSBL3", "°C", "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.325), "UUID",          "DDSBL3", "kPa", "DD"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.400), "UUID",          "DSBL3", "bar", "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.490), "UUID",          "TLSB", "bar", "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.620), "G16.1_PC3_1",   "DSB", "bar", "DA"))
 
 
 
