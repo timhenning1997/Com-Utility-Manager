@@ -151,7 +151,7 @@ class WindowSynthetischeDaten(AbstractWindow):
                     except Exception as e:
                         self.errorLineEdit.setText(str(e))
                         dataList.append(0)
-                self.table.cellWidget(i, self.dataCounter).setStyleSheet("background-color : rgb(0, 0, 255, 50)")
+                self.table.cellWidget(i, self.dataCounter).setStyleSheet("background-color : rgba(0, 0, 255, 50)")
             self.dataCounter += 1
         data = {"UUID": uuidList, "DATA": dataList}
         self._hubWindow.printReceivedData(self.serialParameters, data, {"dataType": "CALIBRATED-Values"})
