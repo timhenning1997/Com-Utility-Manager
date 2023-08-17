@@ -3,6 +3,7 @@ from PyQt5.QtWidgets import QLabel, QVBoxLayout, QPushButton, QWidget, QLineEdit
 from PyQt5.QtGui import QPixmap, QFont
 from AbstractWindow import AbstractWindow
 from SerialParameters import SerialParameters
+from Blendenmessung import Blendenmessung
 
 
 class GraphicalMeasurement(QWidget):
@@ -78,14 +79,19 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         subLayout = QVBoxLayout()
         mainLayout = QHBoxLayout()
 
-        massestromGridLayout.addWidget(QLabel("BL1 (MH zu)"), 0,0)
+        self.label_BL1 = QLabel("xx,xx (\u00B1 x,x %)")
+        self.label_BL3 = QLabel("xx,xx (\u00B1 x,x %)")
+        self.label_BL7 = QLabel("xx,xx (\u00B1 x,x %)")
+        self.label_BL9 = QLabel("xx,xx (\u00B1 x,x %)")
+        
+        massestromGridLayout.addWidget(QLabel("BL9 (ZKMR zu)"), 0,0)
         massestromGridLayout.addWidget(QLabel("BL3 (ZKMR ab)"), 1,0)
-        massestromGridLayout.addWidget(QLabel("BL7 (ZKMR zu)"), 2,0)
-        massestromGridLayout.addWidget(QLabel("BL9 (ZKMR zu)"), 3,0)
-        massestromGridLayout.addWidget(QLabel("xx,xx (\u00B1 x,x %)"), 0,1)
-        massestromGridLayout.addWidget(QLabel("xx,xx (\u00B1 x,x %)"), 1,1)
-        massestromGridLayout.addWidget(QLabel("xx,xx (\u00B1 x,x %)"), 2,1)
-        massestromGridLayout.addWidget(QLabel("xx,xx (\u00B1 x,x %)"), 3,1)
+        massestromGridLayout.addWidget(QLabel("BL1 (MH zu)"), 2,0)
+        massestromGridLayout.addWidget(QLabel("BL7 (MH ab)"), 3,0)
+        massestromGridLayout.addWidget(self.label_BL9, 0,1)
+        massestromGridLayout.addWidget(self.label_BL3, 1,1)
+        massestromGridLayout.addWidget(self.label_BL1, 2,1)
+        massestromGridLayout.addWidget(self.label_BL7, 3,1)
         massestromGridLayout.addWidget(QLabel("kg/s"), 0,2)
         massestromGridLayout.addWidget(QLabel("kg/s"), 1,2)
         massestromGridLayout.addWidget(QLabel("kg/s"), 2,2)
@@ -94,12 +100,29 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         massestromGridLayout.setColumnStretch(1,2)
         massestromGridLayout.setColumnStretch(2,1)
 
-        betriebsspannungGridLayout.addWidget(QLabel("Telemetrie A"), 0,0)
-        betriebsspannungGridLayout.addWidget(QLabel("Telemetrie B"), 1,0)
+        self.label_Vordruck = QLabel("xx,xx")
+        self.label_Filterdruck = QLabel("xx,xx")
+
+        druckversorgungGridLayout.addWidget(QLabel("Vordruck"),    0,0)
+        druckversorgungGridLayout.addWidget(QLabel("Filterdruck"), 1,0)
+        druckversorgungGridLayout.addWidget(self.label_Vordruck   , 0,1)
+        druckversorgungGridLayout.addWidget(self.label_Filterdruck, 1,1)
+        druckversorgungGridLayout.addWidget(QLabel("bar"), 0,2)
+        druckversorgungGridLayout.addWidget(QLabel("kPa"), 1,2)
+        druckversorgungGridLayout.setColumnStretch(0,3)
+        druckversorgungGridLayout.setColumnStretch(1,2)
+        druckversorgungGridLayout.setColumnStretch(2,1)
+        
+        self.label_Telemetrie_A  = QLabel("xx,xx")
+        self.label_Telemetrie_B  = QLabel("xx,xx")
+        self.label_Telemetrie_IW = QLabel("xx,xx")
+
+        betriebsspannungGridLayout.addWidget(QLabel("Telemetrie A"),  0,0)
+        betriebsspannungGridLayout.addWidget(QLabel("Telemetrie B"),  1,0)
         betriebsspannungGridLayout.addWidget(QLabel("Telemetrie IW"), 2,0)
-        betriebsspannungGridLayout.addWidget(QLabel("xx,xx"), 0,1)
-        betriebsspannungGridLayout.addWidget(QLabel("xx,xx"), 1,1)
-        betriebsspannungGridLayout.addWidget(QLabel("xx,xx"), 2,1)
+        betriebsspannungGridLayout.addWidget(self.label_Telemetrie_A,  0,1)
+        betriebsspannungGridLayout.addWidget(self.label_Telemetrie_B,  1,1)
+        betriebsspannungGridLayout.addWidget(self.label_Telemetrie_IW, 2,1)
         betriebsspannungGridLayout.addWidget(QLabel("V"), 0,2)
         betriebsspannungGridLayout.addWidget(QLabel("V"), 1,2)
         betriebsspannungGridLayout.addWidget(QLabel("V"), 2,2)
@@ -107,15 +130,14 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         betriebsspannungGridLayout.setColumnStretch(1,2)
         betriebsspannungGridLayout.setColumnStretch(2,1)
 
-        druckversorgungGridLayout.addWidget(QLabel("Vordruck"), 0,0)
-        druckversorgungGridLayout.addWidget(QLabel("Filterdruck"), 1,0)
-        druckversorgungGridLayout.addWidget(QLabel("xx,xx"), 0,1)
-        druckversorgungGridLayout.addWidget(QLabel("xx,xx"), 1,1)
-        druckversorgungGridLayout.addWidget(QLabel("bar"), 0,2)
-        druckversorgungGridLayout.addWidget(QLabel("kPa"), 1,2)
-        druckversorgungGridLayout.setColumnStretch(0,3)
-        druckversorgungGridLayout.setColumnStretch(1,2)
-        druckversorgungGridLayout.setColumnStretch(2,1)
+        self.dataLabels = [[self.label_Vordruck, "Vordruck"], [self.label_Filterdruck, "Filterdruck"], [self.label_Telemetrie_A, "UTeleA"], [self.label_Telemetrie_B, "UTeleB"], [self.label_Telemetrie_IW, "UTeleIW"]]
+        self.massFlowLabels = [
+            [self.label_BL1, "DSBL1", "DDSBL1", "TLSBL1", 0.053, 0.0125, 0.01e-3, 0.01e-3, 175, 12, 0.3],
+            [self.label_BL3, "DSBL3", "DDSBL3", "TLSBL3", 0.053, 0.0125, 0.01e-3, 0.01e-3, 175, 12, 0.3],
+            [self.label_BL7, "DSBL7", "DDSBL7", "TLSBL7", 0.053, 0.0125, 0.01e-3, 0.01e-3, 175, 12, 0.3],
+            [self.label_BL9, "DSBL9", "DDSBL9", "TLSBL9", 0.053, 0.0125, 0.01e-3, 0.01e-3, 175, 12, 0.3]
+            ]
+
 
         piclist = [
             ['res\\Pictures\\Messstelle_Temperatur.png', "Materialtemperatur"],
@@ -237,10 +259,37 @@ class WindowBetriebsmesstechnik(AbstractWindow):
 
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
         for graphicalMeasurement in self.graphicalMeasurements:
-            
             vData = self.findCalibratedDataByUUID(data, dataInfo, graphicalMeasurement.uuid)
             if vData is not None:
                 graphicalMeasurement.setValueText(str("{0:10.2f}").format(vData))
+                
+        for label in self.dataLabels:
+            vData = self.findCalibratedDataByUUID(data, dataInfo, label[1])
+            if vData is not None:
+                label[0].setText(str("{0:10.2f}").format(vData))
+                
+        for label in self.massFlowLabels:
+            p1  = self.findCalibratedDataByUUID(data, dataInfo, label[1])
+            dp  = self.findCalibratedDataByUUID(data, dataInfo, label[2])
+            T1  = self.findCalibratedDataByUUID(data, dataInfo, label[3])
+            D   = label[ 4]
+            d   = label[ 5]
+            dD  = label[ 6]
+            dd  = label[ 7]
+            dp1 = label[ 8]
+            ddp = label[ 9]
+            dT1 = label[10]
+
+            if (p1 is not None) and (dp is not None) and (T1 is not None):
+                blende = Blendenmessung(D, d, p1, dp, T1+273.15, dp1=dp1, ddp=ddp, dT1=dT1, dD=dD, dd=dd)
+                blende.Massestrom()
+                blende.Fehlerrechnung()
+                vData = blende.qm
+                wData = blende.dqmp
+                label[0].setText(str("{0:1.3f} (\u00B1 {1:2.2f} %)").format(vData, wData))
+        
+        
+        
 
     def sendData(self):
         # self.sendSerialData() ist eine interne Funktion, die die activen Ports berücksichtigt

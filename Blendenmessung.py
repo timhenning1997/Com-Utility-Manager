@@ -223,4 +223,13 @@ class Blendenmessung():
         self.Fehlerrechnung()
         print(self.Ausgabe())
         
-        
+
+
+if __name__ == "__main__":
+    
+    p1 = 110000
+    dp =   8000
+    T1 =    313
+    
+    blende = Blendenmessung(0.053, 0.0125, p1, dp, T1, 0.01e-3, 0.01e-3, 100, 12, 0.3)
+    blende.Run()
