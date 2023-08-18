@@ -132,10 +132,10 @@ class WindowBetriebsmesstechnik(AbstractWindow):
 
         self.dataLabels = [[self.label_Vordruck, "Vordruck"], [self.label_Filterdruck, "Filterdruck"], [self.label_Telemetrie_A, "UTeleA"], [self.label_Telemetrie_B, "UTeleB"], [self.label_Telemetrie_IW, "UTeleIW"]]
         self.massFlowLabels = [
-            [self.label_BL1, "DSBL1", "DDSBL1", "TLSBL1", 0.053, 0.0125, 0.01e-3, 0.01e-3, 175, 12, 0.3],
-            [self.label_BL3, "DSBL3", "DDSBL3", "TLSBL3", 0.053, 0.0125, 0.01e-3, 0.01e-3, 175, 12, 0.3],
-            [self.label_BL7, "DSBL7", "DDSBL7", "TLSBL7", 0.053, 0.0125, 0.01e-3, 0.01e-3, 175, 12, 0.3],
-            [self.label_BL9, "DSBL9", "DDSBL9", "TLSBL9", 0.053, 0.0125, 0.01e-3, 0.01e-3, 175, 12, 0.3]
+            [self.label_BL1, "DSBL1", "DDSBL1", "TLSBL1", 0.05526, 0.037, 0.039e-3, 0.01e-3, 175, 12, 0.3],
+            [self.label_BL3, "DSBL3", "DDSBL3", "TLSBL3", 0.05529, 0.030, 0.078e-3, 0.01e-3, 175, 12, 0.3],
+            [self.label_BL7, "DSBL7", "DDSBL7", "TLSBL7", 0.05582, 0.030, 0.060e-3, 0.01e-3, 175, 12, 0.3],
+            [self.label_BL9, "DSBL9", "DDSBL9", "TLSBL9", 0.05532, 0.030, 0.033e-3, 0.01e-3, 175, 12, 0.3]
             ]
 
 
