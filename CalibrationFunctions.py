@@ -27,6 +27,9 @@ def applyCalibrationFunction(calData, data, calibratedData):
             res += coeff[i] * val ** i
         calibratedData["UUID"].append(calData[0])
         calibratedData["DATA"].append(res)
+        
+    elif calData[3] == "NTC":
+        pass # TODO: Weitere fehlende KalFunkTypen hinzufügen
     
     else:
         calibratedData["UUID"].append(calData[0])
