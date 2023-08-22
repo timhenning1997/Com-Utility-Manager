@@ -138,7 +138,7 @@ class WindowBetriebsmesstechnik(AbstractWindow):
             [self.label_BL9, "DSBL9", "DDSBL9", "TLSBL9", 0.05532, 0.030, 0.033e-3, 0.01e-3, 175, 12, 0.3]
             ]
 
-
+        # TODO: Hier weiter machen
         piclist = [
             ['res\\Pictures\\Messstelle_Temperatur.png', "Materialtemperatur"],
             ['res\\Pictures\\Messstelle_Lufttemperatur.png', "Lufttemperatur"],
