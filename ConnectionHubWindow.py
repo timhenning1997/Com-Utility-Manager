@@ -2,7 +2,7 @@ import json
 import os
 import sys
 import csv
-from CalibrationFunctions import applyCalibrationFunction
+from CalibrationFunctions import applyCalibrationFunctions
 from collections import OrderedDict
 from datetime import datetime
 
@@ -565,12 +565,10 @@ class ConnectionHubWindow(QMainWindow):
                                             "DATA": dataInfo_t})
 
     def calibrateRawData(self, port: str, data):
-        calibratedData = {"UUID": [], "DATA": []}
         if port in self.calibrationFiles:
             if str(len(data) - 1) in self.calibrationFiles[port]:
                 calData = self.calibrationFiles[port][str(len(data) - 1)]["CALIBRATIONDATA"]
-                for index in range(0, len(data) - 1):
-                    applyCalibrationFunction(calData[index], data[index], calibratedData)
+                calibratedData = applyCalibrationFunctions(calData, data)
                 return calibratedData
         return None
 
