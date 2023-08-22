@@ -506,7 +506,7 @@ class ConnectionHubWindow(QMainWindow):
                                  row[1],  # Name
                                  json.loads(row[2]),  # KalKoeff
                                  row[3],  # KalFunkTyp
-                                 strToIntElseNone(row[4]),  # DifferenzKanal
+                                 json.loads(row[4]),  # DifferenzKanal
                                  row[5],  # Messwert
                                  strToFloatElseNone(row[6]),  # FitFehler
                                  json.loads(row[7])]  # Kommentar
