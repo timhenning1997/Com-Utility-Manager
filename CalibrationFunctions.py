@@ -31,7 +31,7 @@ def applyCalibrationFunctions(calData, data):
             calibratedData["DATA"].append(res)
 
         elif calData[i][3] == "POL16TED2":
-            diffChannels = calData[i][4]        # Liste der Differenzkanäle ("D2" ~ 2 Differenzkanälen [Thermoelement, Therminstor])
+            diffChannels = calData[i][4]        # Liste der Differenzkanäle ("D2" ~ 2 Differenzkanälen [Thermoelement, Thermistor])
             if type(diffChannels) != list:
                 print("Type of column DifferenzKanal is not a list! row index: ", i)
                 continue
