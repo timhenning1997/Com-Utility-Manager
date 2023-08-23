@@ -62,6 +62,26 @@ def applyCalibrationFunctions(calData, data):
             calibratedData["UUID"].append(calData[i][0])
             calibratedData["DATA"].append(res)
 
+        elif calData[i][3] == "RPM2HEX":
+            diffChannels = calData[i][4]        # Liste der Differenzkanäle ("D2" ~ 2 Differenzkanälen [Thermoelement, Thermistor])
+            if type(diffChannels) != list:
+                print("Type of column DifferenzKanal is not a list! row index: ", i)
+                continue
+            if len(diffChannels) != 1:
+                print("Length of list DifferenzKanal is not 2! row index: ", i)
+                continue
+            if diffChannels[0] >= len(data):
+                print("DifferenzKanal[0] is out of index of data list! row index: ", i, " | diffChannel: ", diffChannels[0])
+                continue
+            val1 = int(data[i], 16)
+            val2 = int(data[diffChannels[0]], 16)
+            coeff1 = calData[i][2][0]
+
+            res = coeff1*60/(val1 * 65536 + val2)
+
+            calibratedData["UUID"].append(calData[i][0])
+            calibratedData["DATA"].append(res)
+
         elif calData[i][3] == "NTC":
             pass    # TODO: Weitere fehlende KalFunkTypen hinzufügen
 
