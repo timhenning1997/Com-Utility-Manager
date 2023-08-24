@@ -46,7 +46,7 @@ def applyCalibrationFunctions(calData, data):
 
         elif calData[i][3] == "POL16TED2":
             diffChannels = calData[i][4]        # Liste der Differenzkanäle ("D2" ~ 2 Differenzkanälen [Thermoelement, Thermistor])
-            if isValidDiffChannels(diffChannels, data, 2) == False:
+            if not isValidDiffChannels(diffChannels, data, 2):
                 continue
             t1 = int(data[i], 16) / 65535
             t2 = int(data[diffChannels[0]], 16) / 65535
@@ -68,7 +68,7 @@ def applyCalibrationFunctions(calData, data):
 
         elif calData[i][3] == "RPM2HEX":
             diffChannels = calData[i][4]        # Liste des Differenzkaal
-            if isValidDiffChannels(diffChannels, data, 1) == False:
+            if not isValidDiffChannels(diffChannels, data, 1):
                 continue
             val1 = int(data[i], 16)
             val2 = int(data[diffChannels[0]], 16)
