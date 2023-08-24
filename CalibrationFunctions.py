@@ -1,4 +1,18 @@
 
+def isValidDiffChannels(diffChannels: list, data, numberOfChannels: int = 0):
+    if type(diffChannels) != list:
+        print("Type of column DifferenzKanal is not a list!")
+        return False
+    if len(diffChannels) != numberOfChannels:
+        print("Length of list DifferenzKanal is not 2!")
+        return False
+    for i in range(0, numberOfChannels):
+        if diffChannels[i] >= len(data):
+            print("DifferenzKanal[0] is out of index of data list! | diffChannel: ", diffChannels[i])
+            return False
+    return True
+
+
 def applyCalibrationFunctions(calData, data):
     calibratedData = {"UUID": [], "DATA": []}
 
@@ -32,17 +46,7 @@ def applyCalibrationFunctions(calData, data):
 
         elif calData[i][3] == "POL16TED2":
             diffChannels = calData[i][4]        # Liste der Differenzkanäle ("D2" ~ 2 Differenzkanälen [Thermoelement, Thermistor])
-            if type(diffChannels) != list:
-                print("Type of column DifferenzKanal is not a list! row index: ", i)
-                continue
-            if len(diffChannels) != 2:
-                print("Length of list DifferenzKanal is not 2! row index: ", i)
-                continue
-            if diffChannels[0] >= len(data):
-                print("DifferenzKanal[0] is out of index of data list! row index: ", i, " | diffChannel: ", diffChannels[0])
-                continue
-            if diffChannels[1] >= len(data):
-                print("DifferenzKanal[1] is out of index of data list! row index: ", i, " | diffChannel: ", diffChannels[1])
+            if isValidDiffChannels(diffChannels, data, 2) == False:
                 continue
             t1 = int(data[i], 16) / 65535
             t2 = int(data[diffChannels[0]], 16) / 65535
@@ -53,10 +57,10 @@ def applyCalibrationFunctions(calData, data):
             tempRes1 = 0
             tempRes2 = 0
             for k in range(0, len(coeff1)):
-                tempRes1 += coeff1[k] * (t1-t2) ** (len(coeff)-1-k)
+                tempRes1 += coeff1[k] * (t1-t2) ** (len(coeff1)-1-k)
 
             for k in range(0, len(coeff3)):
-                tempRes2 += coeff3[k] * t3 ** (len(coeff)-1-k)
+                tempRes2 += coeff3[k] * t3 ** (len(coeff3)-1-k)
 
             res = tempRes1 + tempRes2
             calibratedData["UUID"].append(calData[i][0])
@@ -64,14 +68,7 @@ def applyCalibrationFunctions(calData, data):
 
         elif calData[i][3] == "RPM2HEX":
             diffChannels = calData[i][4]        # Liste des Differenzkaal
-            if type(diffChannels) != list:
-                print("Type of column DifferenzKanal is not a list! row index: ", i)
-                continue
-            if len(diffChannels) != 1:
-                print("Length of list DifferenzKanal is not 2! row index: ", i)
-                continue
-            if diffChannels[0] >= len(data):
-                print("DifferenzKanal[0] is out of index of data list! row index: ", i, " | diffChannel: ", diffChannels[0])
+            if isValidDiffChannels(diffChannels, data, 1) == False:
                 continue
             val1 = int(data[i], 16)
             val2 = int(data[diffChannels[0]], 16)
