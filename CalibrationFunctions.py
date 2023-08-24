@@ -35,6 +35,15 @@ def applyCalibrationFunctions(calData, data):
             calibratedData["UUID"].append(calData[i][0])
             calibratedData["DATA"].append(res)
 
+        elif calData[i][3] == "POL10":
+            coeff = calData[i][2]               # Liste der vorhandenen Koeffizienten
+            val = int(data[i], 16) / 1023       # Rohdaten Wert
+            res = 0                             # Resultat auf 0 setzen
+            for k in range(0, len(coeff)):
+                res += coeff[k] * val ** (len(coeff)-1-k)
+            calibratedData["UUID"].append(calData[i][0])
+            calibratedData["DATA"].append(res)
+        
         elif calData[i][3] == "POL8":
             coeff = calData[i][2]               # Liste der vorhandenen Koeffizienten
             val = int(data[i], 16) / 255        # Rohdaten Wert
