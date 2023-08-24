@@ -8,7 +8,7 @@ def applyCalibrationFunctions(calData, data):
             val = int(data[i], 16) / 65535      # Rohdaten Wert
             res = 0                             # Resultat auf 0 setzen
             for k in range(0, len(coeff)):
-                res += coeff[k] * val ** k
+                res += coeff[k] * val ** (len(coeff)-1-k)
             calibratedData["UUID"].append(calData[i][0])
             calibratedData["DATA"].append(res)
 
@@ -17,7 +17,7 @@ def applyCalibrationFunctions(calData, data):
             val = int(data[i], 16) / 4095       # Rohdaten Wert
             res = 0                             # Resultat auf 0 setzen
             for k in range(0, len(coeff)):
-                res += coeff[k] * val ** k
+                res += coeff[k] * val ** (len(coeff)-1-k)
             calibratedData["UUID"].append(calData[i][0])
             calibratedData["DATA"].append(res)
 
@@ -26,7 +26,7 @@ def applyCalibrationFunctions(calData, data):
             val = int(data[i], 16) / 255        # Rohdaten Wert
             res = 0                             # Resultat auf 0 setzen
             for k in range(0, len(coeff)):
-                res += coeff[k] * val ** k
+                res += coeff[k] * val ** (len(coeff)-1-k)
             calibratedData["UUID"].append(calData[i][0])
             calibratedData["DATA"].append(res)
 
@@ -53,10 +53,10 @@ def applyCalibrationFunctions(calData, data):
             tempRes1 = 0
             tempRes2 = 0
             for k in range(0, len(coeff1)):
-                tempRes1 += coeff1[k] * (t1-t2) ** k
+                tempRes1 += coeff1[k] * (t1-t2) ** (len(coeff)-1-k)
 
             for k in range(0, len(coeff3)):
-                tempRes2 += coeff3[k] * t3 ** k
+                tempRes2 += coeff3[k] * t3 ** (len(coeff)-1-k)
 
             res = tempRes1 + tempRes2
             calibratedData["UUID"].append(calData[i][0])
