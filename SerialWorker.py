@@ -4,6 +4,7 @@ from time import time
 from PyQt5.QtCore import *
 import serial
 from PyQt5.QtWidgets import QMessageBox
+from pathlib import Path
 
 from SerialParameters import SerialParameters
 

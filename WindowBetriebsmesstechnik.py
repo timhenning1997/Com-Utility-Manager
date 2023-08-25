@@ -4,6 +4,7 @@ from PyQt5.QtGui import QPixmap, QFont
 from AbstractWindow import AbstractWindow
 from SerialParameters import SerialParameters
 from Blendenmessung import Blendenmessung
+from pathlib import Path
 
 
 class GraphicalMeasurement(QWidget):
@@ -147,14 +148,14 @@ class WindowBetriebsmesstechnik(AbstractWindow):
             ]
 
         piclist = [
-            ['res\\Pictures\\Messstelle_Temperatur.png', "Materialtemperatur"],
-            ['res\\Pictures\\Messstelle_Lufttemperatur.png', "Lufttemperatur"],
-            ['res\\Pictures\\Messstelle_Druck_absolut.png', "Absolutdruck"],
-            ['res\\Pictures\\Messstelle_Druck_differenz.png', "Differenzdruck"],
-            ['res\\Pictures\\Messstelle_Schwinggeschwindigkeit.png', "Schwinggeschwindigkeit"],
-            ['res\\Pictures\\Messstelle_Magnet.png', "Magnet (Signalgeber)"],
-            ['res\\Pictures\\Messstelle_Hallgeber.png',"Hallsensor (Drehfrequenz)"],
-            ['res\\Pictures\\Messstelle_Blende.png',"Normblende"]
+            ['res/Pictures/Messstelle_Temperatur.png', "Materialtemperatur"],
+            ['res/Pictures/Messstelle_Lufttemperatur.png', "Lufttemperatur"],
+            ['res/Pictures/Messstelle_Druck_absolut.png', "Absolutdruck"],
+            ['res/Pictures/Messstelle_Druck_differenz.png', "Differenzdruck"],
+            ['res/Pictures/Messstelle_Schwinggeschwindigkeit.png', "Schwinggeschwindigkeit"],
+            ['res/Pictures/Messstelle_Magnet.png', "Magnet (Signalgeber)"],
+            ['res/Pictures/Messstelle_Hallgeber.png',"Hallsensor (Drehfrequenz)"],
+            ['res/Pictures/Messstelle_Blende.png',"Normblende"]
             ]
 
         for num in range(0, len(piclist)):
@@ -214,7 +215,7 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         b = 800
         h = 600
         backgroundLabel.setFixedSize(b,h)
-        pixmap = QPixmap('res\\Pictures\\Betriebsmesstechnik_Messstellen.png')
+        pixmap = QPixmap('res/Pictures/Betriebsmesstechnik_Messstellen.png')
         backgroundLabel.setPixmap(pixmap)
         
         def x(x_rel):
