@@ -75,6 +75,30 @@ def applyCalibrationFunctions(calData, data):
             calibratedData["UUID"].append(calData[i][0])
             calibratedData["DATA"].append(res)
 
+        elif calData[i][3] == "POL16DruckPlusBaro":
+            diffChannels = calData[i][4]
+
+            t1 = int(data[i], 16) / 65535
+            t2 = int(data[diffChannels[0]], 16) / 65535
+
+            coeff1 = calData[i][2]
+            coeff2 = calData[diffChannels[0]][2]
+
+            DDRes = 0
+            DARes = 0
+            for k in range(0, len(coeff1)):
+                DDRes += coeff1[k] * t1 ** (len(coeff1)-1-k)
+
+            for k in range(0, len(coeff2)):
+                DARes += coeff2[k] * t2 ** (len(coeff2)-1-k)
+
+            res = DARes + DDRes
+            # res = res/1e5 # Ausgabe  in bar
+
+            calibratedData["UUID"].append(calData[i][0])
+            calibratedData["DATA"].append(res)
+            
+
         elif calData[i][3] == "RPM2HEX":
             diffChannels = calData[i][4]        # Liste des Differenzkaal
             if not isValidDiffChannels(diffChannels, data, 1):

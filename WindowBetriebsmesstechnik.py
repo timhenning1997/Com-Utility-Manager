@@ -46,18 +46,22 @@ class GraphicalMeasurement(QWidget):
 
         self.nameLabel = QLabel(self.name, groupbox)
         self.setStyleSheet("QLabel{color: #434343};")
-        myFont=QFont()
-        myFont.setBold(True)
-        self.nameLabel.setFont(myFont)
+        boltFont=QFont()
+        boltFont.setBold(True)
+        self.nameLabel.setFont(boltFont)
         self.nameLabel.move(5, 0)
         self.nameLabel.setFixedSize(60, 20)
 
+        smallFont=QFont('Arial', 8)
+
         self.valueLabel = QLabel("No Data", groupbox)
+        self.valueLabel.setFont(smallFont)
         self.valueLabel.setAlignment(Qt.AlignLeft)
         self.valueLabel.move(5, 25)
         self.valueLabel.setFixedSize(50, 20)
 
         self.unitLabel = QLabel(self.unit, groupbox)
+        self.unitLabel .setFont(smallFont)
         self.unitLabel.setAlignment(Qt.AlignRight)
         self.unitLabel.move(40, 25)
         self.unitLabel.setFixedSize(35, 20)
@@ -133,8 +137,8 @@ class WindowBetriebsmesstechnik(AbstractWindow):
 
         
         self.dataLabels = [
-            [self.label_Vordruck,       "Vordruck"], 
-            [self.label_Filterdruck,    "Filterdruck"], 
+            [self.label_Vordruck,       "G20.1_PAD_4"], 
+            [self.label_Filterdruck,    "G20.1_PAD_3"], 
             [self.label_Telemetrie_A,   "UTeleA"],      # TODO: Richtige UUIDs einpflegen
             [self.label_Telemetrie_B,   "UTeleB"],      # TODO: Richtige UUIDs einpflegen
             [self.label_Telemetrie_IW,  "UTeleIW"]      # TODO: Richtige UUIDs einpflegen
@@ -148,6 +152,7 @@ class WindowBetriebsmesstechnik(AbstractWindow):
             ]
 
         piclist = [
+<<<<<<< Updated upstream
             [str(Path('res/Pictures/Messstelle_Temperatur.png')), "Materialtemperatur"],
             [str(Path('res/Pictures/Messstelle_Lufttemperatur.png')), "Lufttemperatur"],
             [str(Path('res/Pictures/Messstelle_Druck_absolut.png')), "Absolutdruck"],
@@ -156,6 +161,16 @@ class WindowBetriebsmesstechnik(AbstractWindow):
             [str(Path('res/Pictures/Messstelle_Magnet.png')), "Magnet (Signalgeber)"],
             [str(Path('res/Pictures/Messstelle_Hallgeber.png')),"Hallsensor (Drehfrequenz)"],
             [str(Path('res/Pictures/Messstelle_Blende.png')),"Normblende"]
+=======
+            ['res/Pictures/Messstelle_Temperatur.png', "Materialtemperatur"],
+            ['res/Pictures/Messstelle_Lufttemperatur.png', "Lufttemperatur"],
+            ['res/Pictures/Messstelle_Druck_absolut.png', "Absolutdruck"],
+            ['res/Pictures/Messstelle_Druck_differenz.png', "Differenzdruck"],
+            ['res/Pictures/Messstelle_Schwinggeschwindigkeit.png', "Schwinggeschwindigkeit"],
+            ['res/Pictures/Messstelle_Magnet.png', "Magnet (Signalgeber)"],
+            ['res/Pictures/Messstelle_Hallgeber.png',"Hallsensor (Drehfrequenz)"],
+            ['res/Pictures/Messstelle_Blende.png',"Normblende"]
+>>>>>>> Stashed changes
             ]
 
         for num in range(0, len(piclist)):
@@ -215,7 +230,11 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         b = 800
         h = 600
         backgroundLabel.setFixedSize(b,h)
+<<<<<<< Updated upstream
         pixmap = QPixmap(str(Path('res/Pictures/Betriebsmesstechnik_Messstellen.png')))
+=======
+        pixmap = QPixmap('res/Pictures/Betriebsmesstechnik_Messstellen.png')
+>>>>>>> Stashed changes
         backgroundLabel.setPixmap(pixmap)
         
         def x(x_rel):
@@ -227,10 +246,10 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         self.graphicalMeasurements = []
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.120), "G20.1_SPI1_5",  "TLRT",   "°C",   "LTE"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.250), "G20.1_SPI2_0",  "TLSBL9", "°C",   "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.325), "G20.1_A10",     "DDSBL9", "kPa",  "DD"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.400), "G20.1_A9",      "DSBL9",  "bar",  "DA"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.490), "G20.1_SPI1_3",  "TLSA",   "bar",  "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.620), "G16.1_PC3_0",   "DSA",    "bar",  "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.325), "G20.1_A10",     "DDSBL9", "Pa",  "DD"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.400), "G20.1_A9",      "DSBL9",  "Pa",  "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.490), "G20.1_SPI1_3",  "TLSA",   "°C",   "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.620), "G16.1_PC3_0",   "DSA",    "Pa",  "DA"))
 
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.175), "G20.1_TCNT_0",  "RPM",    "rpm",  "RPM"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.250), "G20.1_SPI1_1",  "TSA2",   "°C",   "TE"))
@@ -242,14 +261,14 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.290), y(0.400), "G16.1_SPI_1",   "GTMRaA", "°C",   "TE"))
 
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.610), y(0.025), "G20.1_SPI2_3",  "TLSBL7", "°C",   "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.610), y(0.100), "G20.1_B4",      "DDSBL7", "kPa",  "DD"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.610), y(0.175), "G20.1_B3",      "DSBL7",  "bar",  "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.610), y(0.100), "G20.1_B4",      "DDSBL7", "Pa",  "DD"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.610), y(0.175), "G20.1_B3",      "DSBL7",  "Pa",  "DA"))
         
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.370), y(0.025), "G20.1_SPI2_1",  "TLSBL1", "°C",   "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.370), y(0.100), "G20.1_A2",      "DDSBL1", "kPa",  "DD"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.370), y(0.175), "G20.1_A1",      "DSBL1",  "bar",  "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.370), y(0.100), "G20.1_A2",      "DDSBL1", "Pa",  "DD"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.370), y(0.175), "G20.1_A1",      "DSBL1",  "Pa",  "DA"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.683), y(0.250), "G16.1_PC3_2",   "LPKR",   "°C",   "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.683), y(0.250), "G16.1_PC3_2",   "LPKR",   "Pa",  "DA"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.683), y(0.325), "G16.1_SPI_4",   "GTARB2", "°C",   "TE"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.683), y(0.400), "G16.1_SPI_3",   "GTMRaB", "°C",   "TE"))
 
@@ -258,10 +277,10 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.800), y(0.710), "G16.1_SPI_5",   "TOelZu", "°C",   "LTE"))
 
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.250), "G20.1_SPI2_2",  "TLSBL3", "°C",   "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.325), "G20.1_A6",      "DDSBL3", "kPa",  "DD"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.400), "G20.1_A5",      "DSBL3",  "bar",  "DA"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.490), "G20.1_SPI1_4",  "TLSB",   "bar",  "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.620), "G16.1_PC3_1",   "DSB",    "bar",  "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.325), "G20.1_A6",      "DDSBL3", "Pa",  "DD"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.400), "G20.1_A5",      "DSBL3",  "Pa",  "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.490), "G20.1_SPI1_4",  "TLSB",   "°C",   "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.620), "G16.1_PC3_1",   "DSB",    "Pa",  "DA"))
 
 
 
@@ -269,7 +288,7 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         for graphicalMeasurement in self.graphicalMeasurements:
             vData = self.findCalibratedDataByUUID(data, dataInfo, graphicalMeasurement.uuid)
             if vData is not None:
-                graphicalMeasurement.setValueText(str("{0:10.2f}").format(vData))
+                graphicalMeasurement.setValueText(str("{0:10.1f}").format(vData))
                 
         for label in self.dataLabels:
             vData = self.findCalibratedDataByUUID(data, dataInfo, label[1])

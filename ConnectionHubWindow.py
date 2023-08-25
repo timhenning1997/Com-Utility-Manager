@@ -517,6 +517,7 @@ class ConnectionHubWindow(QMainWindow):
                             print(str(e))
                             return False
                     else:
+                        print("Column count of calibration file not 8")
                         return False
                 line_count += 1
 

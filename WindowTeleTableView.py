@@ -43,17 +43,26 @@ class WindowTeleTableView(AbstractWindow):
         tables = [self.scheibeATableTE, self.scheibeBTableTE, self.scheibeMTableTE, self.scheibeMMantelTableTE, self.innenwelleTableTE, self.scheibeATableDA, self.scheibeBTableDA, self.innenwelleTableLTE, self.scheibeATableLTE, self.scheibeMTableLTE]
         
         for table in tables:
-            table.setHorizontalHeaderLabels(["Name", "Wert", "Einheit"])
-            for column in range(0, table.columnCount()):
-                table.horizontalHeader().setSectionResizeMode(column, QHeaderView.Stretch)
+            table.setHorizontalHeaderLabels(["Name", "Wert", "E"])
+            # for column in range(0, table.columnCount()):
+            #     table.horizontalHeader().setSectionResizeMode(column, QHeaderView.Stretch)
+
+            table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Fixed)
+            table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
+            table.horizontalHeader().setSectionResizeMode(2, QHeaderView.Fixed)
+            table.setColumnWidth(0, 50)
+            table.setColumnWidth(1, 50)
+            table.setColumnWidth(2, 30)
             
             rowHeight = 10
             for row in range(0, table.rowCount()):
                 table.setRowHeight(row, rowHeight)
                 table.verticalHeader().setSectionResizeMode(row, QHeaderView.Stretch)
+
+        
         
         label_A = QLabel(" Scheibe A")
-        label_A.setStyleSheet("font: 14pt;")
+        label_A.setStyleSheet("font: 14pt; color : white;")
         scheibeALayout.addWidget(label_A)
         label_TE = QLabel(" Thermoelemente")
         label_TE.setStyleSheet("background-color: #FFA99B; color : black; font: 12pt;") 
@@ -65,7 +74,7 @@ class WindowTeleTableView(AbstractWindow):
         scheibeALayout.addWidget(self.scheibeATableDA, stretch=8)
 
         label_B = QLabel(" Scheibe B")
-        label_B.setStyleSheet("font: 14pt;")   
+        label_B.setStyleSheet("font: 14pt; color : white;")   
         scheibeBLayout.addWidget(label_B)
         label_TE = QLabel(" Thermoelemente")
         label_TE.setStyleSheet("background-color: #FFA99B; color : black; font: 12pt;") 
@@ -77,7 +86,7 @@ class WindowTeleTableView(AbstractWindow):
         scheibeBLayout.addWidget(self.scheibeBTableDA, stretch=8)
 
         label_M = QLabel(" Scheibe M")
-        label_M.setStyleSheet("font: 14pt;") 
+        label_M.setStyleSheet("font: 14pt; color : white;") 
         scheibeMLayout.addWidget(label_M)
         label_TE = QLabel(" Thermoelemente")
         label_TE.setStyleSheet("background-color: #FFA99B; color : black; font: 12pt;") 
@@ -85,7 +94,7 @@ class WindowTeleTableView(AbstractWindow):
         scheibeMLayout.addWidget(self.scheibeMTableTE, stretch=28)
 
         label_Mm = QLabel(" Scheibe Mantel M")
-        label_Mm.setStyleSheet("font: 14pt;") 
+        label_Mm.setStyleSheet("font: 14pt; color : white;") 
         scheibeMMantelLayout.addWidget(label_Mm)
         label_TE = QLabel(" Thermoelemente")
         label_TE.setStyleSheet("background-color: #FFA99B; color : black; font: 12pt;") 
@@ -93,7 +102,7 @@ class WindowTeleTableView(AbstractWindow):
         scheibeMMantelLayout.addWidget(self.scheibeMMantelTableTE, stretch=28)
 
         label_IW = QLabel(" Innenwelle")
-        label_IW.setStyleSheet("font: 14pt;") 
+        label_IW.setStyleSheet("font: 14pt; color : white;") 
         innenwelleLayout.addWidget(label_IW)
         label_TE = QLabel(" Thermoelemente")
         label_TE.setStyleSheet("background-color: #FFA99B; color : black; font: 12pt;") 
@@ -104,14 +113,14 @@ class WindowTeleTableView(AbstractWindow):
         innenwelleLayout.addWidget(label_LTE)
         innenwelleLayout.addWidget(self.innenwelleTableLTE, stretch=9)
         label_A = QLabel(" Scheibe A")
-        label_A.setStyleSheet("font: 14pt;")
+        label_A.setStyleSheet("font: 14pt; color : white;")
         innenwelleLayout.addWidget(label_A)
         label_LTE = QLabel(" Luft-Thermoelemente")
         label_LTE.setStyleSheet("background-color: #BDD7EE; color : black; font: 12pt")
         innenwelleLayout.addWidget(label_LTE)
         innenwelleLayout.addWidget(self.scheibeATableLTE, stretch=6)
         label_M = QLabel(" Scheibe M")
-        label_M.setStyleSheet("font: 14pt;") 
+        label_M.setStyleSheet("font: 14pt; color : white;") 
         innenwelleLayout.addWidget(label_M)
         label_LTE = QLabel(" Luft-Thermoelemente")
         label_LTE.setStyleSheet("background-color: #BDD7EE; color : black; font: 12pt")
