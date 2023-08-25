@@ -152,16 +152,6 @@ class WindowBetriebsmesstechnik(AbstractWindow):
             ]
 
         piclist = [
-<<<<<<< Updated upstream
-            [str(Path('res/Pictures/Messstelle_Temperatur.png')), "Materialtemperatur"],
-            [str(Path('res/Pictures/Messstelle_Lufttemperatur.png')), "Lufttemperatur"],
-            [str(Path('res/Pictures/Messstelle_Druck_absolut.png')), "Absolutdruck"],
-            [str(Path('res/Pictures/Messstelle_Druck_differenz.png')), "Differenzdruck"],
-            [str(Path('res/Pictures/Messstelle_Schwinggeschwindigkeit.png')), "Schwinggeschwindigkeit"],
-            [str(Path('res/Pictures/Messstelle_Magnet.png')), "Magnet (Signalgeber)"],
-            [str(Path('res/Pictures/Messstelle_Hallgeber.png')),"Hallsensor (Drehfrequenz)"],
-            [str(Path('res/Pictures/Messstelle_Blende.png')),"Normblende"]
-=======
             ['res/Pictures/Messstelle_Temperatur.png', "Materialtemperatur"],
             ['res/Pictures/Messstelle_Lufttemperatur.png', "Lufttemperatur"],
             ['res/Pictures/Messstelle_Druck_absolut.png', "Absolutdruck"],
@@ -170,7 +160,6 @@ class WindowBetriebsmesstechnik(AbstractWindow):
             ['res/Pictures/Messstelle_Magnet.png', "Magnet (Signalgeber)"],
             ['res/Pictures/Messstelle_Hallgeber.png',"Hallsensor (Drehfrequenz)"],
             ['res/Pictures/Messstelle_Blende.png',"Normblende"]
->>>>>>> Stashed changes
             ]
 
         for num in range(0, len(piclist)):
