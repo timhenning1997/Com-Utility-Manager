@@ -77,6 +77,8 @@ def applyCalibrationFunctions(calData, data):
 
         elif calData[i][3] == "POL16DruckPlusBaro":
             diffChannels = calData[i][4]
+            if not isValidDiffChannels(diffChannels, data, 1):
+                continue
 
             t1 = int(data[i], 16) / 65535
             t2 = int(data[diffChannels[0]], 16) / 65535
