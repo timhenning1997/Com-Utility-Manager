@@ -130,15 +130,22 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         betriebsspannungGridLayout.setColumnStretch(1,2)
         betriebsspannungGridLayout.setColumnStretch(2,1)
 
-        self.dataLabels = [[self.label_Vordruck, "Vordruck"], [self.label_Filterdruck, "Filterdruck"], [self.label_Telemetrie_A, "UTeleA"], [self.label_Telemetrie_B, "UTeleB"], [self.label_Telemetrie_IW, "UTeleIW"]]
+        
+        self.dataLabels = [
+            [self.label_Vordruck,       "Vordruck"], 
+            [self.label_Filterdruck,    "Filterdruck"], 
+            [self.label_Telemetrie_A,   "UTeleA"],      # TODO: Richtige UUIDs einpflegen
+            [self.label_Telemetrie_B,   "UTeleB"],      # TODO: Richtige UUIDs einpflegen
+            [self.label_Telemetrie_IW,  "UTeleIW"]      # TODO: Richtige UUIDs einpflegen
+            ]
+        
         self.massFlowLabels = [
-            [self.label_BL1, "DSBL1", "DDSBL1", "TLSBL1", 0.05526, 0.037, 0.039e-3, 0.01e-3, 175, 12, 0.3],
-            [self.label_BL3, "DSBL3", "DDSBL3", "TLSBL3", 0.05529, 0.030, 0.078e-3, 0.01e-3, 175, 12, 0.3],
-            [self.label_BL7, "DSBL7", "DDSBL7", "TLSBL7", 0.05582, 0.030, 0.060e-3, 0.01e-3, 175, 12, 0.3],
-            [self.label_BL9, "DSBL9", "DDSBL9", "TLSBL9", 0.05532, 0.030, 0.033e-3, 0.01e-3, 175, 12, 0.3]
+            [self.label_BL1, "G20.1_A1", "G20.1_A2",  "G20.1_SPI2_1", 0.05526, 0.037, 0.039e-3, 0.01e-3, 175, 12, 0.3],
+            [self.label_BL3, "G20.1_A5", "G20.1_A6",  "G20.1_SPI2_2", 0.05529, 0.030, 0.078e-3, 0.01e-3, 175, 12, 0.3],
+            [self.label_BL7, "G20.1_B3", "G20.1_B4",  "G20.1_SPI2_3", 0.05582, 0.030, 0.060e-3, 0.01e-3, 175, 12, 0.3],
+            [self.label_BL9, "G20.1_A9", "G20.1_A10", "G20.1_SPI2_0", 0.05532, 0.030, 0.033e-3, 0.01e-3, 175, 12, 0.3]
             ]
 
-        # TODO: Hier weiter machen
         piclist = [
             ['res\\Pictures\\Messstelle_Temperatur.png', "Materialtemperatur"],
             ['res\\Pictures\\Messstelle_Lufttemperatur.png', "Lufttemperatur"],
@@ -211,49 +218,49 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         backgroundLabel.setPixmap(pixmap)
         
         def x(x_rel):
-            return (offset_x+b)*x_rel
+            return int((offset_x+b)*x_rel)
         
         def y(y_rel):
-            return (offset_y+h)*y_rel
+            return int((offset_y+h)*y_rel)
 
         self.graphicalMeasurements = []
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.120), "UUID",          "TLRT", "°C", "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.250), "UUID",          "TLSBL9", "°C", "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.325), "UUID",          "DDSBL9", "kPa", "DD"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.400), "UUID",          "DSBL9", "bar", "DA"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.490), "UUID",          "TLSA", "bar", "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.620), "G16.1_PC3_0",   "DSA", "bar", "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.120), "G20.1_SPI1_5",  "TLRT",   "°C",   "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.250), "G20.1_SPI2_0",  "TLSBL9", "°C",   "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.325), "G20.1_A10",     "DDSBL9", "kPa",  "DD"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.400), "G20.1_A9",      "DSBL9",  "bar",  "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.490), "G20.1_SPI1_3",  "TLSA",   "bar",  "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.620), "G16.1_PC3_0",   "DSA",    "bar",  "DA"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.175), "UUID",          "RPM", "rpm", "RPM"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.250), "UUID",          "TSA2", "°C", "TE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.325), "UUID",          "TSA1", "°C", "TE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.400), "G16.1_SPI_6",   "SWA", "mm/s", "SWS"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.175), "G20.1_TCNT_0",  "RPM",    "rpm",  "RPM"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.250), "G20.1_SPI1_1",  "TSA2",   "°C",   "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.325), "G20.1_SPI1_0",  "TSA1",   "°C",   "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.400), "G16.1_SPI_6",   "SWA",    "mm/s", "SWS"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.290), y(0.250), "G16.1_SPI_2",   "LTKR", "°C", "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.290), y(0.325), "UUID",          "GTARA1", "°C", "TE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.290), y(0.400), "G16.1_SPI_1",   "GTMRaA", "°C", "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.290), y(0.250), "G16.1_SPI_2",   "LTKR",   "°C",   "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.290), y(0.325), "G16.1_SPI_0",   "GTARA2", "°C",   "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.290), y(0.400), "G16.1_SPI_1",   "GTMRaA", "°C",   "TE"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.610), y(0.025), "UUID",          "TLSBL7", "°C", "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.610), y(0.100), "UUID",          "DDSBL7", "kPa", "DD"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.610), y(0.175), "UUID",          "DSBL7", "bar", "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.610), y(0.025), "G20.1_SPI2_3",  "TLSBL7", "°C",   "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.610), y(0.100), "G20.1_B4",      "DDSBL7", "kPa",  "DD"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.610), y(0.175), "G20.1_B3",      "DSBL7",  "bar",  "DA"))
         
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.370), y(0.025), "UUID",          "TLSBL1", "°C", "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.370), y(0.100), "UUID",          "DDSBL1", "kPa", "DD"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.370), y(0.175), "UUID",          "DSBL1", "bar", "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.370), y(0.025), "G20.1_SPI2_1",  "TLSBL1", "°C",   "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.370), y(0.100), "G20.1_A2",      "DDSBL1", "kPa",  "DD"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.370), y(0.175), "G20.1_A1",      "DSBL1",  "bar",  "DA"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.683), y(0.250), "G16.1_PC3_2",   "LPKR", "°C", "DA"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.683), y(0.325), "UUID",          "GTARB1", "°C", "TE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.683), y(0.400), "G16.1_SPI_3",   "GTMRaB", "°C", "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.683), y(0.250), "G16.1_PC3_2",   "LPKR",   "°C",   "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.683), y(0.325), "G16.1_SPI_4",   "GTARB2", "°C",   "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.683), y(0.400), "G16.1_SPI_3",   "GTMRaB", "°C",   "TE"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.783), y(0.325), "UUID",          "TSB1", "°C", "TE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.783), y(0.400), "G16.1_SPI_7",   "SWB", "mm/s", "SWS"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.800), y(0.710), "G16.1_SPI_5",   "TOelZu", "°C", "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.783), y(0.325), "G20.1_SPI1_2",  "TSB1",   "°C",   "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.783), y(0.400), "G16.1_SPI_7",   "SWB",    "mm/s", "SWS"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.800), y(0.710), "G16.1_SPI_5",   "TOelZu", "°C",   "LTE"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.250), "UUID",          "TLSBL3", "°C", "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.325), "UUID",          "DDSBL3", "kPa", "DD"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.400), "UUID",          "DSBL3", "bar", "DA"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.490), "UUID",          "TLSB", "bar", "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.620), "G16.1_PC3_1",   "DSB", "bar", "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.250), "G20.1_SPI2_2",  "TLSBL3", "°C",   "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.325), "G20.1_A6",      "DDSBL3", "kPa",  "DD"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.400), "G20.1_A5",      "DSBL3",  "bar",  "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.490), "G20.1_SPI1_4",  "TLSB",   "bar",  "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.620), "G16.1_PC3_1",   "DSB",    "bar",  "DA"))
 
 
 
