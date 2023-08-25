@@ -1,4 +1,5 @@
 import math
+from pathlib import Path
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
@@ -54,11 +55,11 @@ class QDMGraphicsNode(QGraphicsItem):
         self.update()
 
     def initAssets(self):
-        self.scaleIcon = QImage("Window_Node_Editor/res/icons/scale_icon.png")
-        self.resizeIcon = QImage("Window_Node_Editor/res/icons/resize_icon.png")
-        self.rotateIcon = QImage("Window_Node_Editor/res/icons/rotate_icon.png")
-        self.filterIcon = QImage("Window_Node_Editor/res/icons/filter_icon.png")
-        self.optionIcon = QImage("Window_Node_Editor/res/icons/option2_icon.png")
+        self.scaleIcon = QImage(str(Path("Window_Node_Editor/res/icons/scale_icon.png")))
+        self.resizeIcon = QImage(str(Path("Window_Node_Editor/res/icons/resize_icon.png")))
+        self.rotateIcon = QImage(str(Path("Window_Node_Editor/res/icons/rotate_icon.png")))
+        self.filterIcon = QImage(str(Path("Window_Node_Editor/res/icons/filter_icon.png")))
+        self.optionIcon = QImage(str(Path("Window_Node_Editor/res/icons/option2_icon.png")))
 
     def initUI(self):
         self.setFlag(QGraphicsItem.ItemIsSelectable)

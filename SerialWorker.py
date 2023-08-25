@@ -53,7 +53,7 @@ class SerialThread(QRunnable):
 
         self.recordingStarted = False
         self.record = False
-        self.recordFilePath = os.getcwd() + "/test.txt"
+        self.recordFilePath = str(Path(os.getcwd() + "/test.txt"))
         self.lastRefreshTime = 0
         self.failCounter = 0
 
@@ -189,7 +189,7 @@ class SerialThread(QRunnable):
             fileName += datetime.now().strftime("%d-%m-%Y_%H-%M-%S") + ".txt"
         if port.upper() == "COM-ALL":
             fileName = fileName.split(".")[0] + "_" + str(self.serialParameters.port) + ".txt"
-        self.recordFilePath = filePath + fileName
+        self.recordFilePath = str(Path(filePath + fileName))
 
         try:
             with open(self.recordFilePath, 'a') as file:
@@ -262,7 +262,7 @@ class SerialThread(QRunnable):
                 fileName += datetime.now().strftime("%d-%m-%Y_%H-%M-%S") + ".txt"
             if port.upper() == "COM-ALL":
                 fileName = fileName.split(".")[0] + "_" + str(self.serialParameters.port) + ".txt"
-            self.recordFilePath = filePath + fileName
+            self.recordFilePath = str(Path(filePath + fileName))
             self.failCounter = 0
 
         if self.serialParameters.readTextIndex == "read_WU_device":

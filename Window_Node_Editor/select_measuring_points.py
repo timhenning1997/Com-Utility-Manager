@@ -36,7 +36,7 @@ class SelectMeasuringPointsWindow(QMainWindow):
         self.table = QTableWidget(len(measuringPoints), len(tableHeadings) + 1)
         self.table.setHorizontalHeaderLabels([""] + tableHeadings)
 
-        plusIcon = QIcon("Window_Node_Editor/res/icons/circle_plus.ico")
+        plusIcon = QIcon(str(Path("Window_Node_Editor/res/icons/circle_plus.ico")))
 
         for colIndex in range(0, len(measuringPoints)):
             plusButton = QPushButton()

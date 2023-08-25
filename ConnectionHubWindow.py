@@ -2,6 +2,8 @@ import json
 import os
 import sys
 import csv
+from pathlib import Path
+
 from CalibrationFunctions import applyCalibrationFunctions
 from collections import OrderedDict
 from datetime import datetime
@@ -59,8 +61,8 @@ class ConnectionHubWindow(QMainWindow):
         self.initUI()
         self.initSignalsAndSlots()
 
-        if os.path.exists(os.getcwd() + "/last_save.json"):
-            self.loadFromFile(os.getcwd() + "/last_save.json")
+        if os.path.exists(str(Path(os.getcwd() + "/last_save.json"))):
+            self.loadFromFile(str(Path(os.getcwd() + "/last_save.json")))
 
         self.show()
 
@@ -332,7 +334,7 @@ class ConnectionHubWindow(QMainWindow):
             self.table.cellWidget(row, 5).setStyleSheet("background-color : gray")
 
     def closeEvent(self, event):
-        self.fileSave(os.getcwd() + "/last_save.json")
+        self.fileSave(str(Path(os.getcwd() + "/last_save.json")))
         for window in self.windows:
             # Bisschen strange: eigentlich wollte ich window.close() benutzen, aber wenn mehr als ein Fenster offen ist, schließt das letzte Fenster nicht mehr --> überprüfen
             window.deleteLater()
@@ -356,7 +358,7 @@ class ConnectionHubWindow(QMainWindow):
         self.table.insertRow(self.table.rowCount())
 
         deleteConnectionButton = QPushButton()
-        deleteConnectionButton.setIcon(QIcon(resource_path("res/Icon/close.ico")))
+        deleteConnectionButton.setIcon(QIcon(resource_path(str(Path("res/Icon/close.ico")))))
         deleteConnectionButton.clicked.connect(lambda: self.deleteConnectionButtonPressed(obj.port))
         self.table.setCellWidget(self.table.rowCount() - 1, 0, deleteConnectionButton)
 

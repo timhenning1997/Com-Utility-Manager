@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5.QtCore import *
@@ -14,7 +16,7 @@ class NodeEditorWnd(QWidget):
 
         self.hubWindow = hubWindow
 
-        self.stylesheet_filename = 'qss/nodestyle.qss'
+        self.stylesheet_filename = str(Path('qss/nodestyle.qss'))
         self.loadStylesheet(self.stylesheet_filename)
 
         self.initUI()
