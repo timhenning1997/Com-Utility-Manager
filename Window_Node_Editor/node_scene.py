@@ -2,7 +2,8 @@ from Window_Node_Editor.node_graphics_scene import QDMGraphicsScene
 
 
 class Scene():
-    def __init__(self):
+    def __init__(self, parent=None):
+        self.parent = parent
         self.nodes = []
 
         self.scene_width = 64000

@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QImage, QIcon
 from PyQt5.QtWidgets import QMainWindow, QTableWidget, QVBoxLayout, QWidget, QTableWidgetItem, QHeaderView, QPushButton, \

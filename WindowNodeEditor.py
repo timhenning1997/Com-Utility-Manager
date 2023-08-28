@@ -10,8 +10,8 @@ class WindowNodeEditor(AbstractWindow):
         super().__init__(hubWindow, "NodeEditor")
         self.resize(400, 400)
 
-        self.mainWidget = NodeEditorWnd(hubWindow=hubWindow)
-        self.setCentralWidget(self.mainWidget)
+        self.nodeEditorWidget = NodeEditorWnd(self, hubWindow=hubWindow)
+        self.setCentralWidget(self.nodeEditorWidget)
 
         self.sceneMousePosX = 0
         self.sceneMousePosY = 0
@@ -27,8 +27,8 @@ class WindowNodeEditor(AbstractWindow):
         self.statusBar().showMessage("")
         self.status_bar_label = QLabel("")
         self.statusBar().addPermanentWidget(self.status_bar_label)
-        self.mainWidget.view.scenePosChanged.connect(self.onScenePosChanged)
-        self.mainWidget.view.sceneScaleChanged.connect(self.onSceneScaleChanged)
+        self.nodeEditorWidget.view.scenePosChanged.connect(self.onScenePosChanged)
+        self.nodeEditorWidget.view.sceneScaleChanged.connect(self.onSceneScaleChanged)
 
     def onScenePosChanged(self, x:int, y:int):
         self.sceneMousePosX = x
@@ -37,18 +37,19 @@ class WindowNodeEditor(AbstractWindow):
 
 
     def onSceneScaleChanged(self, scale: float):
-        self.sceneZoom = int(self.mainWidget.scene.getView().zoom - 20)
-        self.sceneFaktor = self.mainWidget.scene.getView().zoomInFactor
+        self.sceneZoom = int(self.nodeEditorWidget.scene.getView().zoom - 20)
+        self.sceneFaktor = self.nodeEditorWidget.scene.getView().zoomInFactor
         self.sceneScale = int(float(self.sceneFaktor)**self.sceneZoom * 100)
         self.status_bar_label.setText("Zoom: [%d%%]  " % (self.sceneScale) + "Scene Pos: [%d, %d]" % (self.sceneMousePosX, self.sceneMousePosY))
 
     def saveScenePosAndScale(self):
-        sceneCenter = self.mainWidget.view.mapToScene(self.mainWidget.view.rect().center())
+        sceneCenter = self.nodeEditorWidget.view.mapToScene(self.nodeEditorWidget.view.rect().center())
         self.sceneCenterPosX = sceneCenter.x()
         self.sceneCenterPosY = sceneCenter.y() + 11
 
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
-        pass #self.receiveDataLabel.setText(str(data))
+        for node in self.nodeEditorWidget.scene.nodes:
+            node.receiveData(serialParameters, data, dataInfo)
 
     def sendData(self):
         # self.sendSerialData() ist eine interne Funktion, die die activen Ports berücksichtigt
@@ -65,12 +66,12 @@ class WindowNodeEditor(AbstractWindow):
         }
 
     def load(self, data):
-        self.mainWidget.scene.getView().zoom = data["sceneZoom"]
-        self.mainWidget.scene.getView().zoomInFactor = data["sceneFaktor"]
+        self.nodeEditorWidget.scene.getView().zoom = data["sceneZoom"]
+        self.nodeEditorWidget.scene.getView().zoomInFactor = data["sceneFaktor"]
         zoomFactor = data["sceneFaktor"]**(data["sceneZoom"]-20)
-        self.mainWidget.view.scale(zoomFactor, zoomFactor)
-        self.mainWidget.view.sceneScaleChanged.emit(float(zoomFactor))
+        self.nodeEditorWidget.view.scale(zoomFactor, zoomFactor)
+        self.nodeEditorWidget.view.sceneScaleChanged.emit(float(zoomFactor))
 
-        self.mainWidget.view.centerOn(data["sceneCenterPosX"], data["sceneCenterPosY"])
+        self.nodeEditorWidget.view.centerOn(data["sceneCenterPosX"], data["sceneCenterPosY"])
 
         self.saveScenePosAndScale()

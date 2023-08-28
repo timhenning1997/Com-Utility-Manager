@@ -14,6 +14,7 @@ class NodeEditorWnd(QWidget):
     def __init__(self, parent=None, hubWindow=None):
         super().__init__(parent)
 
+        self.parent = parent
         self.hubWindow = hubWindow
 
         self.stylesheet_filename = str(Path('qss/nodestyle.qss'))
@@ -29,7 +30,7 @@ class NodeEditorWnd(QWidget):
         self.setLayout(self.layout)
 
         # crate graphics scene
-        self.scene = Scene()
+        self.scene = Scene(self)
         # self.grScene = self.scene.grScene
 
         #node = Node(self.scene)
