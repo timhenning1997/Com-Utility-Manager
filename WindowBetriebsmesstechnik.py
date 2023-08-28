@@ -169,11 +169,11 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         headerLabelList = ["Gerätename", "Datensatznr.", "Fehlerzähler"]
         
         self.fehlerLabelListe = [ 
-            [self.fehlerLabel_A,    "UUID"],
-            [self.fehlerLabel_B,    "UUID"],
-            [self.fehlerLabel_IW,   "UUID"],
-            [self.fehlerLabel_G201, "UUID"],
-            [self.fehlerLabel_G161, "UUID"]
+            [self.fehlerLabel_A,    "EcoFlex-TeleA_Nummer"],
+            [self.fehlerLabel_B,    "EcoFlex-TeleB_Nummer"],
+            [self.fehlerLabel_IW,   "EcoFlex-TeleIW_Nummer"],
+            [self.fehlerLabel_G201, "G20.1_Nummer"],
+            [self.fehlerLabel_G161, "G16.1_Nummer"]
             ]
         
         self.datensatzLabelListe = [
@@ -306,16 +306,22 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         for graphicalMeasurement in self.graphicalMeasurements:
             vData = self.findCalibratedDataByUUID(data, dataInfo, graphicalMeasurement.uuid)
             if vData is not None:
-                graphicalMeasurement.setValueText(str("{0:10.1f}").format(vData))
+                if graphicalMeasurement.uuid in ["G20.1_A2", "G20.1_A6", "G20.1_B4", "G20.1_A10", "G_20.1_PAD_3"]:
+                    graphicalMeasurement.setValueText(str("{0:10.1f}").format(vData))   # TODO: Offset Verwursten
+                else:
+                    graphicalMeasurement.setValueText(str("{0:10.1f}").format(vData))
                 
         for label in self.dataLabels:
             vData = self.findCalibratedDataByUUID(data, dataInfo, label[1])
             if vData is not None:
-                label[0].setText(str("{0:10.2f}").format(vData))
+                if label[1] == "G_20.1_PAD_3":
+                    label[0].setText(str("{0:10.2f}").format(vData)) # TODO: Offset Verwursten
+                else:
+                    label[0].setText(str("{0:10.2f}").format(vData)) 
                 
         for label in self.massFlowLabels:
             p1  = self.findCalibratedDataByUUID(data, dataInfo, label[1])
-            dp  = self.findCalibratedDataByUUID(data, dataInfo, label[2])
+            dp  = self.findCalibratedDataByUUID(data, dataInfo, label[2]) # TODO: Offset Verwursten
             T1  = self.findCalibratedDataByUUID(data, dataInfo, label[3])
             D   = label[ 4]
             d   = label[ 5]
@@ -334,9 +340,10 @@ class WindowBetriebsmesstechnik(AbstractWindow):
                 label[0].setText(str("{0:1.3f} (\u00B1 {1:2.2f} %)").format(vData, wData))
         
         for label in self.fehlerLabelListe:  
-            vData = serialParameters.errorCounter
-            if vData is not None:
-                label[0].setText(str("{0:}").format(vData))
+            errorCounter = serialParameters.errorCounter
+            testData = self.findCalibratedDataByUUID(data, dataInfo, label[1])
+            if testData is not None:
+                label[0].setText(str("{0:}").format(errorCounter))
 
         for label in self.datensatzLabelListe:
             vData = self.findCalibratedDataByUUID(data, dataInfo, label[1])
