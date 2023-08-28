@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from PyQt5.QtCore import QPoint, Qt
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QPushButton, QWidget, QLineEdit, QMenu, QGroupBox, QHBoxLayout, QGridLayout
 from PyQt5.QtGui import QPixmap, QFont
@@ -74,6 +76,9 @@ class GraphicalMeasurement(QWidget):
 class WindowBetriebsmesstechnik(AbstractWindow):
     def __init__(self, hubWindow):
         super().__init__(hubWindow, "Betriebsmesstechnik")
+
+        self.offsetFlag = False
+        self.offsetDict = {"G20.1_A2": 0, "G20.1_A6": 0, "G20.1_B4": 0, "G20.1_A10": 0, "G_20.1_PAD_3": 0}
 
         # Dem Hauptfenster ein Layout zuweisen
         massestromGridLayout = QGridLayout()
@@ -261,6 +266,10 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         def y(y_rel):
             return int((offset_y+h)*y_rel)
 
+        offsetButton = QPushButton("save offset", msWidget)
+        offsetButton.move(x(0.970), y(0.050))
+        offsetButton.clicked.connect(self.setOffsetFlag)
+
         self.graphicalMeasurements = []
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.120), "G20.1_SPI1_5",  "TLRT",   "°C",   "LTE"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.250), "G20.1_SPI2_0",  "TLSBL9", "°C",   "LTE"))
@@ -300,14 +309,21 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.490), "G20.1_SPI1_4",  "TLSB",   "°C",   "LTE"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.620), "G16.1_PC3_1",   "DSB",    "Pa",  "DA"))
 
-
-
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
+        if self.offsetFlag:
+            with open("offsetKorrektur.txt", "a") as offsetFile:
+                offsetFile.write("____________________________\n")
+                offsetFile.write(str(datetime.now().strftime("%d-%m-%Y_%H-%M-%S")) + "\n")
+
         for graphicalMeasurement in self.graphicalMeasurements:
             vData = self.findCalibratedDataByUUID(data, dataInfo, graphicalMeasurement.uuid)
             if vData is not None:
                 if graphicalMeasurement.uuid in ["G20.1_A2", "G20.1_A6", "G20.1_B4", "G20.1_A10", "G_20.1_PAD_3"]:
-                    graphicalMeasurement.setValueText(str("{0:10.1f}").format(vData))   # TODO: Offset Verwursten
+                    if self.offsetFlag:
+                        with open("offsetKorrektur.txt", "a") as offsetFile:
+                            offsetFile.write(graphicalMeasurement.uuid + " : " + str(vData) + "\n")
+                        self.offsetDict[graphicalMeasurement.uuid] = vData
+                    graphicalMeasurement.setValueText(str("{0:10.1f}").format(vData-self.offsetDict[graphicalMeasurement.uuid]))
                 else:
                     graphicalMeasurement.setValueText(str("{0:10.1f}").format(vData))
                 
@@ -315,13 +331,15 @@ class WindowBetriebsmesstechnik(AbstractWindow):
             vData = self.findCalibratedDataByUUID(data, dataInfo, label[1])
             if vData is not None:
                 if label[1] == "G_20.1_PAD_3":
-                    label[0].setText(str("{0:10.2f}").format(vData)) # TODO: Offset Verwursten
+                    label[0].setText(str("{0:10.2f}").format(vData-self.offsetDict["G_20.1_PAD_3"]))
                 else:
                     label[0].setText(str("{0:10.2f}").format(vData)) 
                 
         for label in self.massFlowLabels:
             p1  = self.findCalibratedDataByUUID(data, dataInfo, label[1])
-            dp  = self.findCalibratedDataByUUID(data, dataInfo, label[2]) # TODO: Offset Verwursten
+            dp  = self.findCalibratedDataByUUID(data, dataInfo, label[2])
+            if dp is not None:
+                dp -= self.offsetDict[label[2]]
             T1  = self.findCalibratedDataByUUID(data, dataInfo, label[3])
             D   = label[ 4]
             d   = label[ 5]
@@ -349,8 +367,11 @@ class WindowBetriebsmesstechnik(AbstractWindow):
             vData = self.findCalibratedDataByUUID(data, dataInfo, label[1])
             if vData is not None:
                 label[0].setText(str("{0:}").format(vData))
-        
-        
+
+        self.offsetFlag = False
+
+    def setOffsetFlag(self):
+        self.offsetFlag = True
 
     def sendData(self):
         # self.sendSerialData() ist eine interne Funktion, die die activen Ports berücksichtigt

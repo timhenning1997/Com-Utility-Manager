@@ -277,6 +277,6 @@ class SerialConnectWindow(QWidget):
         if self.readUntilRB.isChecked():
             serialParam.readTextIndex = "read_until"
             serialParam.readUntil = self.readUntilLineEdit.text()[0]
-        serialParam.maxSignalRate = self.maxSignalRateSpinBox.value()
+        serialParam.maxShownSignalRate = self.maxSignalRateSpinBox.value()
 
         return serialParam

@@ -6,7 +6,7 @@ class SerialParameters:
                  stopbits=serial.STOPBITS_ONE, timeout=None, xonxoff=False, rtscts=False,
                  write_timeout=None, dsrdtr=False, inter_byte_timeout=None, exclusive=None,
                  local_echo=False, appendCR=False, appendLF=False, readTextIndex="read_line", readBytes=1,
-                 readUntil='', DTR=False, maxSignalRate=10, Kennbin = "", Kennung = ""):
+                 readUntil='', DTR=False, maxShownSignalRate=10, Kennbin = "", Kennung = ""):
         self.port = port
         self.baudrate = baudrate
         self.bytesize = bytesize
@@ -23,7 +23,7 @@ class SerialParameters:
         self.readBytes = readBytes
         self.readUntil = readUntil
         self.DTR = DTR
-        self.maxSignalRate = maxSignalRate  # Hz
+        self.maxShownSignalRate = maxShownSignalRate  # Hz
         self.Kennbin = Kennbin
         self.Kennung = Kennung
 
@@ -31,6 +31,7 @@ class SerialParameters:
         self.appendCR = appendCR
         self.appendLF = appendLF
 
+        self.currentSignalRate = 0  # Hz
         self.errorCounter = 0
 
     def serialize(self):
@@ -51,7 +52,7 @@ class SerialParameters:
             "readBytes": self.readBytes,
             "readUntil": self.readUntil,
             "DTR": self.DTR,
-            "maxSignalRate": self.maxSignalRate,
+            "maxShownSignalRate": self.maxShownSignalRate,
             "local_echo": self.local_echo,
             "appendCR": self.appendCR,
             "appendLF": self.appendLF
@@ -74,7 +75,7 @@ class SerialParameters:
         self.readBytes = data["readBytes"]
         self.readUntil = data["readUntil"]
         self.DTR = data["DTR"]
-        self.maxSignalRate = data["maxSignalRate"]
+        self.maxShownSignalRate = data["maxShownSignalRate"]
         self.local_echo = data["local_echo"]
         self.appendCR = data["appendCR"]
         self.appendLF = data["appendLF"]
