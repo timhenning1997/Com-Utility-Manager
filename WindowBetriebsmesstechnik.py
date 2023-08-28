@@ -79,7 +79,7 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         massestromGridLayout = QGridLayout()
         druckversorgungGridLayout = QGridLayout()
         betriebsspannungGridLayout = QGridLayout()
-        legendeGridLayout = QGridLayout()
+        fehlerGridLayout = QGridLayout()
         msWidget = QGroupBox("Messstellenübersicht")
         subLayout = QVBoxLayout()
         mainLayout = QHBoxLayout()
@@ -151,57 +151,90 @@ class WindowBetriebsmesstechnik(AbstractWindow):
             [self.label_BL9, "G20.1_A9", "G20.1_A10", "G20.1_SPI2_0", 0.05532, 0.030, 0.033e-3, 0.01e-3, 175, 12, 0.3]
             ]
 
-        piclist = [
-            [str(Path('res/Pictures/Messstelle_Temperatur.png')), "Materialtemperatur"],
-            [str(Path('res/Pictures/Messstelle_Lufttemperatur.png')), "Lufttemperatur"],
-            [str(Path('res/Pictures/Messstelle_Druck_absolut.png')), "Absolutdruck"],
-            [str(Path('res/Pictures/Messstelle_Druck_differenz.png')), "Differenzdruck"],
-            [str(Path('res/Pictures/Messstelle_Schwinggeschwindigkeit.png')), "Schwinggeschwindigkeit"],
-            [str(Path('res/Pictures/Messstelle_Magnet.png')), "Magnet (Signalgeber)"],
-            [str(Path('res/Pictures/Messstelle_Hallgeber.png')),"Hallsensor (Drehfrequenz)"],
-            [str(Path('res/Pictures/Messstelle_Blende.png')),"Normblende"]
-            ]
+        self.fehlerLabel_A    = QLabel("x")
+        self.fehlerLabel_B    = QLabel("x")
+        self.fehlerLabel_IW   = QLabel("x")
+        self.fehlerLabel_G201 = QLabel("x")
+        self.fehlerLabel_G161 = QLabel("x")
+        
+        self.datensatzLabel_A    = QLabel("xxxx")
+        self.datensatzLabel_B    = QLabel("xxxx")
+        self.datensatzLabel_IW   = QLabel("xxxx")
+        self.datensatzLabel_G201 = QLabel("xxxx")
+        self.datensatzLabel_G161 = QLabel("xxxx")
 
-        for num in range(0, len(piclist)):
-            symbolLabel = QLabel()
-            symbolLabel.setScaledContents(True)
-            pixmap = QPixmap(piclist[num][0])
-            symbolLabel.setPixmap(pixmap)
-            
-            # symbolLabel.setFixedSize(15,15)
-            legendeGridLayout.addWidget(symbolLabel, num, 0, alignment=Qt.AlignCenter)
-            legendeGridLayout.addWidget(QLabel(piclist[num][1]), num, 1)
+        boltFont=QFont()
+        boltFont.setBold(True)
+        
+        headerLabelList = ["Gerätename", "Datensatznr.", "Fehlerzähler"]
+        
+        self.fehlerLabelListe = [ 
+            [self.fehlerLabel_A,    "UUID"],
+            [self.fehlerLabel_B,    "UUID"],
+            [self.fehlerLabel_IW,   "UUID"],
+            [self.fehlerLabel_G201, "UUID"],
+            [self.fehlerLabel_G161, "UUID"]
+            ]
+        
+        self.datensatzLabelListe = [
+            [self.datensatzLabel_A,    "EcoFlex-TeleA_Nummer"],
+            [self.datensatzLabel_B,    "EcoFlex-TeleB_Nummer"],
+            [self.datensatzLabel_IW,   "EcoFlex-TeleIW_Nummer"],
+            [self.datensatzLabel_G201, "G20.1_Nummer"],
+            [self.datensatzLabel_G161, "G16.1_Nummer"]
+            ]
+        
+        for i in range(0, len(headerLabelList)):
+            label = QLabel(headerLabelList[i])
+            label.setFont(boltFont)
+            fehlerGridLayout.addWidget(label, 0, i, alignment=Qt.AlignLeft)
+
+        fehlerGridLayout.addWidget(QLabel("Telemetrie A"),   1, 0, alignment=Qt.AlignLeft)
+        fehlerGridLayout.addWidget(QLabel("Telemetrie B"),   2, 0, alignment=Qt.AlignLeft)
+        fehlerGridLayout.addWidget(QLabel("Telemetrie IW"),  3, 0, alignment=Qt.AlignLeft)
+        fehlerGridLayout.addWidget(QLabel("Gerät G20.1"),    4, 0, alignment=Qt.AlignLeft)
+        fehlerGridLayout.addWidget(QLabel("Gerät G16.1"),    5, 0, alignment=Qt.AlignLeft)
+        fehlerGridLayout.addWidget(self.datensatzLabel_A,    1, 1, alignment=Qt.AlignCenter)
+        fehlerGridLayout.addWidget(self.datensatzLabel_B,    2, 1, alignment=Qt.AlignCenter)
+        fehlerGridLayout.addWidget(self.datensatzLabel_IW,   3, 1, alignment=Qt.AlignCenter)
+        fehlerGridLayout.addWidget(self.datensatzLabel_G201, 4, 1, alignment=Qt.AlignCenter)
+        fehlerGridLayout.addWidget(self.datensatzLabel_G161, 5, 1, alignment=Qt.AlignCenter)
+        fehlerGridLayout.addWidget(self.fehlerLabel_A,       1, 2, alignment=Qt.AlignRight)
+        fehlerGridLayout.addWidget(self.fehlerLabel_B,       2, 2, alignment=Qt.AlignRight)
+        fehlerGridLayout.addWidget(self.fehlerLabel_IW,      3, 2, alignment=Qt.AlignRight)
+        fehlerGridLayout.addWidget(self.fehlerLabel_G201,    4, 2, alignment=Qt.AlignRight)
+        fehlerGridLayout.addWidget(self.fehlerLabel_G161,    5, 2, alignment=Qt.AlignRight)
             
 
         massestromGroubox = QGroupBox("Massestrom")
         druckversorgungGroubox = QGroupBox("Druckversorgung")
         betriebsspannungGroupbox = QGroupBox("Betriebsspannung")
-        legendeGroubox = QGroupBox("Legende")
+        fehlerGroubox = QGroupBox("Datenübertragung")
         msWidget.setStyleSheet("QGroupBox {font-size: 16px;}") 
         massestromGroubox.setStyleSheet("QGroupBox {font-size: 16px;}") 
         druckversorgungGroubox.setStyleSheet("QGroupBox {font-size: 16px;}") 
         betriebsspannungGroupbox.setStyleSheet("QGroupBox {font-size: 16px;}") 
-        legendeGroubox.setStyleSheet("QGroupBox {font-size: 16px;}") 
+        fehlerGroubox.setStyleSheet("QGroupBox {font-size: 16px;}") 
 
         massestromGroubox.setLayout(massestromGridLayout)
         druckversorgungGroubox.setLayout(druckversorgungGridLayout)
         betriebsspannungGroupbox.setLayout(betriebsspannungGridLayout)
-        legendeGroubox.setLayout(legendeGridLayout)
+        fehlerGroubox.setLayout(fehlerGridLayout)
 
         subLayout.addWidget(massestromGroubox)
         subLayout.addWidget(druckversorgungGroubox)
         subLayout.addWidget(betriebsspannungGroupbox)
-        subLayout.addWidget(legendeGroubox)
+        subLayout.addWidget(fehlerGroubox)
         # subLayout.addStretch()
         massestromGroubox.setFixedHeight(160)
         druckversorgungGroubox.setFixedHeight(90)
         betriebsspannungGroupbox.setFixedHeight(120)
-        legendeGroubox.setFixedHeight(240)
+        fehlerGroubox.setFixedHeight(200)
         
         massestromGroubox.setFixedWidth(250)
         druckversorgungGroubox.setFixedWidth(250)
         betriebsspannungGroupbox.setFixedWidth(250)
-        legendeGroubox.setFixedWidth(250)
+        fehlerGroubox.setFixedWidth(250)
         
         mainLayout.addWidget(msWidget)
         mainLayout.addLayout(subLayout)
@@ -300,6 +333,15 @@ class WindowBetriebsmesstechnik(AbstractWindow):
                 wData = blende.dqmp
                 label[0].setText(str("{0:1.3f} (\u00B1 {1:2.2f} %)").format(vData, wData))
         
+        for label in self.fehlerLabelListe:  
+            vData = serialParameters.errorCounter
+            if vData is not None:
+                label[0].setText(str("{0:}").format(vData))
+
+        for label in self.datensatzLabelListe:
+            vData = self.findCalibratedDataByUUID(data, dataInfo, label[1])
+            if vData is not None:
+                label[0].setText(str("{0:}").format(vData))
         
         
 
