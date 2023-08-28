@@ -48,24 +48,24 @@ class GraphicalMeasurement(QWidget):
 
         self.nameLabel = QLabel(self.name, groupbox)
         self.setStyleSheet("QLabel{color: #434343};")
-        boltFont=QFont()
-        boltFont.setBold(True)
-        self.nameLabel.setFont(boltFont)
+        self.boltFont=QFont()
+        self.boltFont.setBold(True)
+        self.nameLabel.setFont(self.boltFont)
         self.nameLabel.move(5, 0)
         self.nameLabel.setFixedSize(60, 20)
 
-        smallFont=QFont('Arial', 8)
+        self.smallFont=QFont('Arial', 8)
 
         self.valueLabel = QLabel("No Data", groupbox)
-        self.valueLabel.setFont(smallFont)
-        self.valueLabel.setAlignment(Qt.AlignLeft)
-        self.valueLabel.move(5, 25)
+        self.valueLabel.setFont(self.smallFont)
+        self.valueLabel.setAlignment(Qt.AlignRight)
+        self.valueLabel.move(25, 25)
         self.valueLabel.setFixedSize(50, 20)
 
         self.unitLabel = QLabel(self.unit, groupbox)
-        self.unitLabel .setFont(smallFont)
-        self.unitLabel.setAlignment(Qt.AlignRight)
-        self.unitLabel.move(40, 25)
+        self.unitLabel .setFont(self.smallFont)
+        self.unitLabel.setAlignment(Qt.AlignLeft)
+        self.unitLabel.move(5, 25)
         self.unitLabel.setFixedSize(35, 20)
 
         self.setLayout(layout)
@@ -199,11 +199,11 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         fehlerGridLayout.addWidget(QLabel("Telemetrie IW"),  3, 0, alignment=Qt.AlignLeft)
         fehlerGridLayout.addWidget(QLabel("Gerät G20.1"),    4, 0, alignment=Qt.AlignLeft)
         fehlerGridLayout.addWidget(QLabel("Gerät G16.1"),    5, 0, alignment=Qt.AlignLeft)
-        fehlerGridLayout.addWidget(self.datensatzLabel_A,    1, 1, alignment=Qt.AlignCenter)
-        fehlerGridLayout.addWidget(self.datensatzLabel_B,    2, 1, alignment=Qt.AlignCenter)
-        fehlerGridLayout.addWidget(self.datensatzLabel_IW,   3, 1, alignment=Qt.AlignCenter)
-        fehlerGridLayout.addWidget(self.datensatzLabel_G201, 4, 1, alignment=Qt.AlignCenter)
-        fehlerGridLayout.addWidget(self.datensatzLabel_G161, 5, 1, alignment=Qt.AlignCenter)
+        fehlerGridLayout.addWidget(self.datensatzLabel_A,    1, 1, alignment=Qt.AlignRight)
+        fehlerGridLayout.addWidget(self.datensatzLabel_B,    2, 1, alignment=Qt.AlignRight)
+        fehlerGridLayout.addWidget(self.datensatzLabel_IW,   3, 1, alignment=Qt.AlignRight)
+        fehlerGridLayout.addWidget(self.datensatzLabel_G201, 4, 1, alignment=Qt.AlignRight)
+        fehlerGridLayout.addWidget(self.datensatzLabel_G161, 5, 1, alignment=Qt.AlignRight)
         fehlerGridLayout.addWidget(self.fehlerLabel_A,       1, 2, alignment=Qt.AlignRight)
         fehlerGridLayout.addWidget(self.fehlerLabel_B,       2, 2, alignment=Qt.AlignRight)
         fehlerGridLayout.addWidget(self.fehlerLabel_IW,      3, 2, alignment=Qt.AlignRight)
@@ -323,9 +323,9 @@ class WindowBetriebsmesstechnik(AbstractWindow):
                         with open("offsetKorrektur.txt", "a") as offsetFile:
                             offsetFile.write(graphicalMeasurement.uuid + " : " + str(vData) + "\n")
                         self.offsetDict[graphicalMeasurement.uuid] = vData
-                    graphicalMeasurement.setValueText(str("{0:10.1f}").format(vData-self.offsetDict[graphicalMeasurement.uuid]))
+                    graphicalMeasurement.setValueText(str("{0:6.1f}").format(vData-self.offsetDict[graphicalMeasurement.uuid]))
                 else:
-                    graphicalMeasurement.setValueText(str("{0:10.1f}").format(vData))
+                    graphicalMeasurement.setValueText(str("{0:6.1f}").format(vData))
                 
         for label in self.dataLabels:
             vData = self.findCalibratedDataByUUID(data, dataInfo, label[1])
