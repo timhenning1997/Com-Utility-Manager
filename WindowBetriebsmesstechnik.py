@@ -266,9 +266,13 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         def y(y_rel):
             return int((offset_y+h)*y_rel)
 
-        offsetButton = QPushButton("save offset", msWidget)
-        offsetButton.move(x(0.970), y(0.050))
+        offsetButton = QPushButton("Set Offset", msWidget)
+        offsetButton.move(x(0.965), y(0.050))
         offsetButton.clicked.connect(self.setOffsetFlag)
+        
+        resetOffsetButton = QPushButton("Reset Offset", msWidget)
+        resetOffsetButton.move(x(0.870), y(0.050))
+        resetOffsetButton.clicked.connect(self.resetOffset)
 
         self.graphicalMeasurements = []
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.120), "G20.1_SPI1_5",  "TLRT",   "°C",   "LTE"))
@@ -372,6 +376,9 @@ class WindowBetriebsmesstechnik(AbstractWindow):
 
     def setOffsetFlag(self):
         self.offsetFlag = True
+        
+    def resetOffset(self):
+        self.offsetDict = {"G20.1_A2": 0, "G20.1_A6": 0, "G20.1_B4": 0, "G20.1_A10": 0, "G_20.1_PAD_3": 0}
 
     def sendData(self):
         # self.sendSerialData() ist eine interne Funktion, die die activen Ports berücksichtigt
