@@ -134,6 +134,7 @@ class SerialThread(QRunnable):
                                         singleLine = np.asarray(data)
                                         if not crc_check:
                                             singleLine = np.append(singleLine, '4650')
+                                            self.serialParameters.errorCounter += 1
                                             if self.record:
                                                 self.failCounter += 1
                                         else:

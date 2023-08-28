@@ -17,7 +17,6 @@ class WindowTablePlotter(AbstractWindow):
         self.receivedValueData = []
         self.currentLengthOfData = 0
         self.shownType = "Hex"
-        self.errorCounter = 0
 
         self.color1 = QColor(26, 26, 26)
         self.color2 = QColor(77, 0, 0)
@@ -193,9 +192,7 @@ class WindowTablePlotter(AbstractWindow):
 
             self.dataCounterLabel.setText(str(int(data[0], 16)))
             self.dataSetLengthLabel.setText(str(serialParameters.Kennung))
-            if data[-1] and (str(data[-1]) == "4650"):
-                self.errorCounter += 1
-                self.errorCounterLabel.setText(str(self.errorCounter))
+            self.errorCounterLabel.setText(str(serialParameters.errorCounter))
 
             temp_data = []
             temp_receivedValueData = []

@@ -31,6 +31,8 @@ class SerialParameters:
         self.appendCR = appendCR
         self.appendLF = appendLF
 
+        self.errorCounter = 0
+
     def serialize(self):
         return {
             "port": self.port,
