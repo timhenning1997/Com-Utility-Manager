@@ -215,11 +215,11 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         druckversorgungGroubox = QGroupBox("Druckversorgung")
         betriebsspannungGroupbox = QGroupBox("Betriebsspannung")
         fehlerGroubox = QGroupBox("Datenübertragung")
-        msWidget.setStyleSheet("QGroupBox {font-size: 16px;}") 
-        massestromGroubox.setStyleSheet("QGroupBox {font-size: 16px;}") 
-        druckversorgungGroubox.setStyleSheet("QGroupBox {font-size: 16px;}") 
-        betriebsspannungGroupbox.setStyleSheet("QGroupBox {font-size: 16px;}") 
-        fehlerGroubox.setStyleSheet("QGroupBox {font-size: 16px;}") 
+        #msWidget.setStyleSheet("QGroupBox {font-size: 16px;}") 
+        #massestromGroubox.setStyleSheet("QGroupBox {font-size: 16px;}") 
+        #druckversorgungGroubox.setStyleSheet("QGroupBox {font-size: 16px;}") 
+        #betriebsspannungGroupbox.setStyleSheet("QGroupBox {font-size: 16px;}") 
+        #fehlerGroubox.setStyleSheet("QGroupBox {font-size: 16px;}") 
 
         massestromGroubox.setLayout(massestromGridLayout)
         druckversorgungGroubox.setLayout(druckversorgungGridLayout)
@@ -314,16 +314,19 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.620), "G16.1_PC3_1",   "DSB",    "Pa",  "DA"))
 
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
+        resetOffsetFlag = False
         if self.offsetFlag:
             with open("offsetKorrektur.txt", "a") as offsetFile:
                 offsetFile.write("____________________________\n")
                 offsetFile.write(str(datetime.now().strftime("%d-%m-%Y_%H-%M-%S")) + "\n")
-
+        
         for graphicalMeasurement in self.graphicalMeasurements:
             vData = self.findCalibratedDataByUUID(data, dataInfo, graphicalMeasurement.uuid)
+            
             if vData is not None:
-                if graphicalMeasurement.uuid in ["G20.1_A2", "G20.1_A6", "G20.1_B4", "G20.1_A10", "G_20.1_PAD_3"]:
-                    if self.offsetFlag:
+                if graphicalMeasurement.uuid in ["G20.1_A2", "G20.1_A6", "G20.1_B4", "G20.1_A10"]:
+                    if self.offsetFlag == True:
+                        resetOffsetFlag = True
                         with open("offsetKorrektur.txt", "a") as offsetFile:
                             offsetFile.write(graphicalMeasurement.uuid + " : " + str(vData) + "\n")
                         self.offsetDict[graphicalMeasurement.uuid] = vData
@@ -372,7 +375,8 @@ class WindowBetriebsmesstechnik(AbstractWindow):
             if vData is not None:
                 label[0].setText(str("{0:}").format(vData))
 
-        self.offsetFlag = False
+        if resetOffsetFlag == True:
+            self.offsetFlag = False
 
     def setOffsetFlag(self):
         self.offsetFlag = True

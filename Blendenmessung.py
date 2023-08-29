@@ -31,6 +31,8 @@ class Blendenmessung():
         self.dT1 = dT1                  # Fehler der Temperaturmessung
         self.dD  = dD                   # Fehler des Rohrdurchmessers
         self.dd  = dd                   # Fehler des Blendendurchmessers
+
+        self.doNotCalculate = False
         
         self.roh1   = PropsSI('D','P',self.p1,'T',self.T1,'air') # Dichte des Fluids vor der Blende
         self.mu1    = PropsSI('V','P',self.p1,'T',self.T1,'air') # Dyn. Viskosität des Fluids vor der Blende
@@ -39,6 +41,9 @@ class Blendenmessung():
         self.Rs     = 287.1
         
         self.beta   = d/D       # Durchmesserverhältnis
+
+        if self.dp <= 0:
+            self.doNotCalculate = True
         
         
         self.kappa  = self.cp/self.cv   # Isentropenexponent
@@ -51,63 +56,69 @@ class Blendenmessung():
    
     
     def Massestrom(self):
-             
-        self.C = []         # Durchflusskoeffizient
-        self.X = []         # Variable im linearen Algorithmus X1 = ReD = C * A1
-        self.dx = []        # Differenz der Invariante und der Variable --> Konvergenzkriterium
-        
-        # Invariante A1
-        self.A1 = self.e*self.d**2*sqrt(2*self.dp*self.roh1)/(self.mu1*self.D*sqrt(1-self.beta**4)) 
-        
-        self.C.append(0.606)                    # Startwert von C = 0.606 für Blenden
-        self.X.append(self.C[0] * self.A1)      # X1 = ReD = C * A1
-        self.dx.append(self.X[0] - self.A1)     # Eigentlich (X1 - A1) / A1
-        
-        self.i = 2
-        
-        # Linearer Algorithmus
-        while abs(self.dx[-1]) > 10**(-self.n):
-        # while abs((self.A1 - self.X[-1])/self.A1) > 10**(-self.n):
+
+        if self.doNotCalculate:
+            self.qm  = 0.0
+            self.ReD = 0.0
+            # print("Es liegt ein Fehler vor!")
+        else:
+
+            self.C = []         # Durchflusskoeffizient
+            self.X = []         # Variable im linearen Algorithmus X1 = ReD = C * A1
+            self.dx = []        # Differenz der Invariante und der Variable --> Konvergenzkriterium
             
-            self.A  = (19000*self.beta/(self.X[-1]))**0.8   # 
+            # Invariante A1
+            self.A1 = self.e*self.d**2*sqrt(2*self.dp*self.roh1)/(self.mu1*self.D*sqrt(1-self.beta**4)) 
             
-            if self.D > 71.12:
+            self.C.append(0.606)                    # Startwert von C = 0.606 für Blenden
+            self.X.append(self.C[0] * self.A1)      # X1 = ReD = C * A1
+            self.dx.append(self.X[0] - self.A1)     # Eigentlich (X1 - A1) / A1
+            
+            self.i = 2
+            
+            # Linearer Algorithmus
+            while abs(self.dx[-1]) > 10**(-self.n):
+            # while abs((self.A1 - self.X[-1])/self.A1) > 10**(-self.n):
                 
-                self.C.append(
-                    0.5961 + 0.0261*self.beta**2 - 0.216*self.beta**8 
-                    + 0.000521*((10**6*self.beta)/(self.X[-1]))**0.7 
-                    + (0.0188 + 0.0063 * self.A)*self.beta**3.5*(10**6/self.X[-1])**0.3) 
-                + (0.043 + 0.08 - 0.123) * (1-0.11*self.A) * self.beta**4/(1-self.beta**4)
+                self.A  = (19000*self.beta/(self.X[-1]))**0.8   # 
+                
+                if self.D > 71.12:
+                    
+                    self.C.append(
+                        0.5961 + 0.0261*self.beta**2 - 0.216*self.beta**8 
+                        + 0.000521*((10**6*self.beta)/(self.X[-1]))**0.7 
+                        + (0.0188 + 0.0063 * self.A)*self.beta**3.5*(10**6/self.X[-1])**0.3) 
+                    + (0.043 + 0.08 - 0.123) * (1-0.11*self.A) * self.beta**4/(1-self.beta**4)
+                        # Eckdruckentnahme --> 2. Zeile aus der Norm entfällt!!!
+                
+                else:
+                    self.C.append(
+                        0.5961 + 0.0261*self.beta**2 - 0.216*self.beta**8 
+                        + 0.000521*((10**6*self.beta)/(self.X[-1]))**0.7 
+                        + (0.0188 + 0.0063 * self.A)*self.beta**3.5*(10**6/self.X[-1])**0.3) 
+                    + (0.043 + 0.08 - 0.123) * (1-0.11*self.A) * self.beta**4/(1-self.beta**4) 
+                    + (0.011*(0.75-self.beta)*(2.8-self.D/25.4)) 
                     # Eckdruckentnahme --> 2. Zeile aus der Norm entfällt!!!
-               
-            else:
-                self.C.append(
-                    0.5961 + 0.0261*self.beta**2 - 0.216*self.beta**8 
-                    + 0.000521*((10**6*self.beta)/(self.X[-1]))**0.7 
-                    + (0.0188 + 0.0063 * self.A)*self.beta**3.5*(10**6/self.X[-1])**0.3) 
-                + (0.043 + 0.08 - 0.123) * (1-0.11*self.A) * self.beta**4/(1-self.beta**4) 
-                + (0.011*(0.75-self.beta)*(2.8-self.D/25.4)) 
-                # Eckdruckentnahme --> 2. Zeile aus der Norm entfällt!!!
-            """
-            if self.i == 2:
+                """
+                if self.i == 2:
+                    self.X.append(self.C[-1]*self.A1)
+                else:
+                    self.X.append(self.X[-1]-self.dx[-1]*((self.X[-1] - self.X[-2])/(self.dx[-1] - self.dx[-2])))
+                """
+                
                 self.X.append(self.C[-1]*self.A1)
-            else:
+                self.dx.append(self.X[-1] - self.X[-2])
                 self.X.append(self.X[-1]-self.dx[-1]*((self.X[-1] - self.X[-2])/(self.dx[-1] - self.dx[-2])))
-            """
+                
+                # print([self.C[self.i-1], self.X[self.i-1], self.dx[self.i-1]])
+                
+                self.i = self.i + 1
             
-            self.X.append(self.C[-1]*self.A1)
-            self.dx.append(self.X[-1] - self.X[-2])
-            self.X.append(self.X[-1]-self.dx[-1]*((self.X[-1] - self.X[-2])/(self.dx[-1] - self.dx[-2])))
+            # Berechnung des Massestromes nach EN ISO 5167-1: 3.3.2.1 
+            self.qm = pi/4 * self.mu1 * self.D * self.X[-1] 
             
-            # print([self.C[self.i-1], self.X[self.i-1], self.dx[self.i-1]])
-            
-            self.i = self.i + 1
+            self.ReD = self.X[-1]                            # ReD = X1 = C * A1
         
-        # Berechnung des Massestromes nach EN ISO 5167-1: 3.3.2.1 
-        self.qm = pi/4 * self.mu1 * self.D * self.X[-1] 
-        
-        self.ReD = self.X[-1]                            # ReD = X1 = C * A1
-    
     
     def Zulaessigkeit_pre(self):    # Prüfen der Durchmesserverhältnisse und Reynoldszahlen
         
@@ -140,38 +151,44 @@ class Blendenmessung():
     
     def Fehlerrechnung(self):
         
-        self.droh1 = sqrt((self.dT1**2*self.p1**2)/(self.Rs**2*self.T1**4)+self.dp1**2/(self.Rs**2*self.T1**2))
-        
-        self.dC = 0
-        
-        if self.beta >= 0.1 and self.beta < 0.2:
-            self.dC = (0.7 - self.beta)/100*self.C[-1]
-        
-        if self.beta >= 0.2 and self.beta < 0.6:
-            self.dC = (0.5)/100*self.C[-1]
-        
-        if self.beta >= 0.6 and self.beta <= 0.75:
-            self.dC = (1.667*self.beta-0.5)/100*self.C[-1]
+        if self.doNotCalculate:
+            self.dqmp = 0.0
+            self.dqm  = 0.0
+            # print("Es liegt ein Fehler vor!")
+        else:
+
+            self.droh1 = sqrt((self.dT1**2*self.p1**2)/(self.Rs**2*self.T1**4)+self.dp1**2/(self.Rs**2*self.T1**2))
             
-        if self.D < 71.12E-3:
-            self.dC0 = (0.9*(0.75-self.beta)*(2.8-(self.D/25.4)))/100*self.C[-1]
-            self.dC = (self.dC + self.dC0)/2 # sqrt(self.dC**2 + self.dC0**2)
-        
-        if self.beta > 0.5 and self.X[-1] < 10000:
-            self.dC1 = 0.5/100*self.C
-            self.dC = (self.dC + self.dC1)/2 # sqrt(self.dC**2 + self.dC1**2)
-        
-        self.de = self.e * 3.5*self.dp/self.kappa/self.p1/100
-        
-        # Nach DIN EN ISO 5167-1: 8.2.2.1
-        self.dqm = self.qm * sqrt((self.dC/self.C[-1])**2           # Fehler des Durchflusskoeffizienten
-                    + (self.de/self.e)**2 + 1/4*(self.ddp/self.dp)**2  # Fehler der Expansionszahl
-                    + 1/4*(self.droh1/self.roh1)**2                    # Fehler der Dichte (T, p)
-                    + (2*self.beta**4/(1-self.beta**4))**2 * (self.dD/self.D)**2 # Fehler des Rohrdurchmessers
-                    + (2/(1-self.beta**4))**2 * (self.dd/self.d)**2    # Fehler des Blendendurchmessers
-                    )
-        
-        self.dqmp = self.dqm/self.qm*100
+            self.dC = 0
+            
+            if self.beta >= 0.1 and self.beta < 0.2:
+                self.dC = (0.7 - self.beta)/100*self.C[-1]
+            
+            if self.beta >= 0.2 and self.beta < 0.6:
+                self.dC = (0.5)/100*self.C[-1]
+            
+            if self.beta >= 0.6 and self.beta <= 0.75:
+                self.dC = (1.667*self.beta-0.5)/100*self.C[-1]
+                
+            if self.D < 71.12E-3:
+                self.dC0 = (0.9*(0.75-self.beta)*(2.8-(self.D/25.4)))/100*self.C[-1]
+                self.dC = (self.dC + self.dC0)/2 # sqrt(self.dC**2 + self.dC0**2)
+            
+            if self.beta > 0.5 and self.X[-1] < 10000:
+                self.dC1 = 0.5/100*self.C[-1]
+                self.dC = (self.dC + self.dC1)/2 # sqrt(self.dC**2 + self.dC1**2)
+            
+            self.de = self.e * 3.5*self.dp/self.kappa/self.p1/100
+            
+            # Nach DIN EN ISO 5167-1: 8.2.2.1
+            self.dqm = self.qm * sqrt((self.dC/self.C[-1])**2           # Fehler des Durchflusskoeffizienten
+                        + (self.de/self.e)**2 + 1/4*(self.ddp/self.dp)**2  # Fehler der Expansionszahl
+                        + 1/4*(self.droh1/self.roh1)**2                    # Fehler der Dichte (T, p)
+                        + (2*self.beta**4/(1-self.beta**4))**2 * (self.dD/self.D)**2 # Fehler des Rohrdurchmessers
+                        + (2/(1-self.beta**4))**2 * (self.dd/self.d)**2    # Fehler des Blendendurchmessers
+                        )
+            
+            self.dqmp = self.dqm/self.qm*100
     
     
     def Ausgabe(self, mitfehlerrechnen=True):
