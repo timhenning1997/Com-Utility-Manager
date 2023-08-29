@@ -150,10 +150,10 @@ class WindowBetriebsmesstechnik(AbstractWindow):
             ]
         
         self.massFlowLabels = [
-            [self.label_BL1, "G20.1_A1", "G20.1_A2",  "G20.1_SPI2_1", 0.05526, 0.037, 0.039e-3, 0.01e-3, 175, 12, 0.3],
-            [self.label_BL3, "G20.1_A5", "G20.1_A6",  "G20.1_SPI2_2", 0.05529, 0.030, 0.078e-3, 0.01e-3, 175, 12, 0.3],
-            [self.label_BL7, "G20.1_B3", "G20.1_B4",  "G20.1_SPI2_3", 0.05582, 0.030, 0.060e-3, 0.01e-3, 175, 12, 0.3],
-            [self.label_BL9, "G20.1_A9", "G20.1_A10", "G20.1_SPI2_0", 0.05532, 0.030, 0.033e-3, 0.01e-3, 175, 12, 0.3]
+            [self.label_BL1, "G20.1_A1", "G20.1_A2",  "G20.1_SPI2_1", 0.05526, 30.055e-3, 0.039e-3, 0.01e-3, 175, 12, 0.3],
+            [self.label_BL3, "G20.1_A5", "G20.1_A6",  "G20.1_SPI2_2", 0.05529, 30.060e-3, 0.078e-3, 0.01e-3, 175, 12, 0.3],
+            [self.label_BL7, "G20.1_B3", "G20.1_B4",  "G20.1_SPI2_3", 0.05582, 29.033e-3, 0.060e-3, 0.01e-3, 175, 12, 0.3],
+            [self.label_BL9, "G20.1_A9", "G20.1_A10", "G20.1_SPI2_0", 0.05532, 36.970e-3, 0.033e-3, 0.01e-3, 175, 12, 0.3]
             ]
 
         self.fehlerLabel_A    = QLabel("x")
@@ -236,9 +236,9 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         betriebsspannungGroupbox.setFixedHeight(120)
         fehlerGroubox.setFixedHeight(200)
         
-        massestromGroubox.setFixedWidth(250)
-        druckversorgungGroubox.setFixedWidth(250)
-        betriebsspannungGroupbox.setFixedWidth(250)
+        massestromGroubox.setFixedWidth(300)
+        druckversorgungGroubox.setFixedWidth(300)
+        betriebsspannungGroupbox.setFixedWidth(300)
         fehlerGroubox.setFixedWidth(250)
         
         mainLayout.addWidget(msWidget)
