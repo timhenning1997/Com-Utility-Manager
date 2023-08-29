@@ -159,7 +159,6 @@ class Blendenmessung():
 
             self.droh1 = sqrt((self.dT1**2*self.p1**2)/(self.Rs**2*self.T1**4)+self.dp1**2/(self.Rs**2*self.T1**2))
             
-<<<<<<< Updated upstream
             self.dC = 0
             
             if self.beta >= 0.1 and self.beta < 0.2:
@@ -190,27 +189,6 @@ class Blendenmessung():
                         )
             
             self.dqmp = self.dqm/self.qm*100
-=======
-        if self.D < 71.12E-3:
-            self.dC0 = (0.9*(0.75-self.beta)*(2.8-(self.D/25.4)))/100*self.C[-1]
-            self.dC = (self.dC + self.dC0)/2 # sqrt(self.dC**2 + self.dC0**2)
-        
-        if self.beta > 0.5 and self.X[-1] < 10000:
-            self.dC1 = 0.5/100*self.C[-1]
-            self.dC = (self.dC + self.dC1)/2 # sqrt(self.dC**2 + self.dC1**2)
-        
-        self.de = self.e * 3.5*self.dp/self.kappa/self.p1/100
-        
-        # Nach DIN EN ISO 5167-1: 8.2.2.1
-        self.dqm = self.qm * sqrt((self.dC/self.C[-1])**2           # Fehler des Durchflusskoeffizienten
-                    + (self.de/self.e)**2 + 1/4*(self.ddp/self.dp)**2  # Fehler der Expansionszahl
-                    + 1/4*(self.droh1/self.roh1)**2                    # Fehler der Dichte (T, p)
-                    + (2*self.beta**4/(1-self.beta**4))**2 * (self.dD/self.D)**2 # Fehler des Rohrdurchmessers
-                    + (2/(1-self.beta**4))**2 * (self.dd/self.d)**2    # Fehler des Blendendurchmessers
-                    )
-        
-        self.dqmp = self.dqm/self.qm*100
->>>>>>> Stashed changes
     
     
     def Ausgabe(self, mitfehlerrechnen=True):
