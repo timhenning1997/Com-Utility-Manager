@@ -239,7 +239,7 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         massestromGroubox.setFixedWidth(300)
         druckversorgungGroubox.setFixedWidth(300)
         betriebsspannungGroupbox.setFixedWidth(300)
-        fehlerGroubox.setFixedWidth(250)
+        fehlerGroubox.setFixedWidth(300)
         
         mainLayout.addWidget(msWidget)
         mainLayout.addLayout(subLayout)
