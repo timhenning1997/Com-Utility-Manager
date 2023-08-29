@@ -78,7 +78,7 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         super().__init__(hubWindow, "Betriebsmesstechnik")
 
         self.offsetFlag = False
-        self.offsetDict = {"G20.1_A2": 0, "G20.1_A6": 0, "G20.1_B4": 0, "G20.1_A10": 0, "G_20.1_PAD_3": 0}
+        self.offsetDict = {"G20.1_A2": 0, "G20.1_A6": 0, "G20.1_B4": 0, "G20.1_A10": 0, "G20.1_PAD_3": 0}
 
         # Dem Hauptfenster ein Layout zuweisen
         massestromGridLayout = QGridLayout()
@@ -337,8 +337,13 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         for label in self.dataLabels:
             vData = self.findCalibratedDataByUUID(data, dataInfo, label[1])
             if vData is not None:
-                if label[1] == "G_20.1_PAD_3":
-                    label[0].setText(str("{0:10.2f}").format(vData-self.offsetDict["G_20.1_PAD_3"]))
+                if label[1] == "G20.1_PAD_3":
+                    if self.offsetFlag == True:
+                        print("lel")
+                        self.offsetDict["G20.1_PAD_3"] = vData
+                        with open("offsetKorrektur.txt", "a") as offsetFile:
+                            offsetFile.write("G20.1_PAD_3" + " : " + str(vData) + "\n")
+                    label[0].setText(str("{0:10.2f}").format(vData-self.offsetDict["G20.1_PAD_3"]))
                 else:
                     label[0].setText(str("{0:10.2f}").format(vData)) 
                 
@@ -382,7 +387,7 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         self.offsetFlag = True
         
     def resetOffset(self):
-        self.offsetDict = {"G20.1_A2": 0, "G20.1_A6": 0, "G20.1_B4": 0, "G20.1_A10": 0, "G_20.1_PAD_3": 0}
+        self.offsetDict = {"G20.1_A2": 0, "G20.1_A6": 0, "G20.1_B4": 0, "G20.1_A10": 0, "G20.1_PAD_3": 0}
 
     def sendData(self):
         # self.sendSerialData() ist eine interne Funktion, die die activen Ports berücksichtigt
