@@ -6,6 +6,7 @@ from ConnectionHubWindow import ConnectionHubWindow
 if __name__ == '__main__':
     app = QApplication(sys.argv)
 
+    #TODO: Für finale Version herausnehmen und in Optionen packen
     font = app.font()
     font.setPointSize(10)
     app.setFont(font)
