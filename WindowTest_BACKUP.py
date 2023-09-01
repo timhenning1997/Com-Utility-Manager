@@ -8,7 +8,7 @@ class WindowTest(AbstractWindow):
     def __init__(self, hubWindow):
         super().__init__(hubWindow, "Test")
 
-        
+        # Dem Hauptfenster ein Layout zuweisen
         mainLayout = QHBoxLayout()
 
         mainWidget = QWidget()

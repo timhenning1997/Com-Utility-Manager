@@ -60,13 +60,16 @@ def applyCalibrationFunctions(calData, data):
             t1 = int(data[i], 16) / 65535
             t2 = int(data[diffChannels[0]], 16) / 65535
             t3 = int(data[diffChannels[1]], 16) / 65535
-            coeff1 = calData[i][2]
-            coeff3 = calData[diffChannels[1]][2]
+            coeff1 = calData[i][2][0]               # Koeffizienten der Thermopaarung
+            coeff2 = calData[i][2][1]               # Koeffizienten der Spannungskalibrierung
+            coeff3 = calData[diffChannels[1]][2]    # Koeffizienten der Thermistorkalibrierung
 
-            tempRes1 = 0
-            tempRes2 = 0
+            tempRes1 = 0    # Differenztemperatur der Messstelle zur Referenzstelle
+            tempRes2 = 0    # Temperatur der Referenzstelle
+            
             for k in range(0, len(coeff1)):
-                tempRes1 += coeff1[k] * (t1-t2) ** (len(coeff1)-1-k)
+                tempRes1 += coeff1[k] * ((t1-t2) * coeff2[0] + coeff2[1]) ** (len(coeff1)-1-k)
+                # tempRes1 += coeff1[k] * (t1-t2) ** (len(coeff1)-1-k)
 
             for k in range(0, len(coeff3)):
                 tempRes2 += coeff3[k] * t3 ** (len(coeff3)-1-k)
