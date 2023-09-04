@@ -282,7 +282,7 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.490), "G20.1_SPI1_3",  "TLSA",   "°C",   "LTE"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.620), "G16.1_PC3_0",   "DSA",    "Pa",  "DA"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.175), "G20.1_TCNT_0",  "RPM",    "rpm",  "RPM"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.175), "G20.1_Periode_0",  "RPM",    "rpm",  "RPM"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.250), "G20.1_SPI1_1",  "TSA2",   "°C",   "TE"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.325), "G20.1_SPI1_0",  "TSA1",   "°C",   "TE"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.400), "G16.1_SPI_6",   "SWA",    "mm/s", "SWS"))
@@ -339,7 +339,6 @@ class WindowBetriebsmesstechnik(AbstractWindow):
             if vData is not None:
                 if label[1] == "G20.1_PAD_3":
                     if self.offsetFlag == True:
-                        print("lel")
                         self.offsetDict["G20.1_PAD_3"] = vData
                         with open("offsetKorrektur.txt", "a") as offsetFile:
                             offsetFile.write("G20.1_PAD_3" + " : " + str(vData) + "\n")
