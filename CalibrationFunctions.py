@@ -53,30 +53,44 @@ def applyCalibrationFunctions(calData, data):
             calibratedData["UUID"].append(calData[i][0])
             calibratedData["DATA"].append(res)
 
+
+
+
+
         elif calData[i][3] == "POL16TED2":
             diffChannels = calData[i][4]        # Liste der Differenzkanäle ("D2" ~ 2 Differenzkanälen [Thermoelement, Thermistor])
             if not isValidDiffChannels(diffChannels, data, 2):
                 continue
-            t1 = int(data[i], 16) / 65535
-            t2 = int(data[diffChannels[0]], 16) / 65535
-            t3 = int(data[diffChannels[1]], 16) / 65535
-            coeff1 = calData[i][2][0]               # Koeffizienten der Thermopaarung
-            coeff2 = calData[i][2][1]               # Koeffizienten der Spannungskalibrierung
-            coeff3 = calData[diffChannels[1]][2]    # Koeffizienten der Thermistorkalibrierung
+            t1 = int(data[i], 16) / 65535                   # dig des TE Messwertes
+            t2 = int(data[diffChannels[0]], 16) / 65535     # dig der TE Ref-Stelle
+            t3 = int(data[diffChannels[1]], 16) / 65535     # dig des Ref-Thermistors
+            coeff1 = calData[i][2][0]                       # Koeffizienten der Thermopaarung
+            coeff2 = calData[i][2][1]                       # Koeffizienten der Spannungskalibrierung
+            coeff3 = calData[diffChannels[1]][2]            # Koeffizienten der Thermistorkalibrierung
 
             tempRes1 = 0    # Differenztemperatur der Messstelle zur Referenzstelle
             tempRes2 = 0    # Temperatur der Referenzstelle
+            vRes     = 0    # Thermospannung
             
+            # Umrechnen der Digitdifferenz in eine TE-Spannung
+            for k in range(0, len(coeff2)):
+                vRes += coeff2[k] * (t1-t2) ** (len(coeff2)-1-k)
+            
+            # Umrechnen der TE-Spannung in eine Temperatur
             for k in range(0, len(coeff1)):
-                tempRes1 += coeff1[k] * ((t1-t2) * coeff2[0] + coeff2[1]) ** (len(coeff1)-1-k)
+                tempRes1 += coeff1[k] * vRes ** (len(coeff1)-1-k)
                 # tempRes1 += coeff1[k] * (t1-t2) ** (len(coeff1)-1-k)
 
+            # Umrechnen der Ref-Th Digit in eine Temperatur
             for k in range(0, len(coeff3)):
                 tempRes2 += coeff3[k] * t3 ** (len(coeff3)-1-k)
 
             res = tempRes1 + tempRes2
             calibratedData["UUID"].append(calData[i][0])
             calibratedData["DATA"].append(res)
+
+
+
 
         elif calData[i][3] == "POL16DruckPlusBaro":
             diffChannels = calData[i][4]
