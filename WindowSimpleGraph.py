@@ -115,6 +115,8 @@ class WindowSimpleGraph(AbstractWindow):
         self.setCentralWidget(mainWidget)
 
     def initUI(self):
+        self.setWindowTitle(self._windowType)
+
         tableMenu = QMenu("&Table", self)
         act = QAction("Show/Hide Columns", self)
         act.setEnabled(False)
