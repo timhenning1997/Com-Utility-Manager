@@ -8,7 +8,7 @@ from CalibrationFunctions import applyCalibrationFunctions
 from collections import OrderedDict
 from datetime import datetime
 
-from PyQt5.QtCore import QThreadPool, pyqtSignal, Qt, QSize
+from PyQt5.QtCore import QThreadPool, pyqtSignal, Qt, QSize, QTimer
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtWidgets import QMainWindow, QPushButton, QAction, QApplication, QFileDialog, QMenu, QTableWidget, \
     QHBoxLayout, QWidget, QHeaderView, QTableWidgetItem, QMessageBox, QTextEdit, QLineEdit, QVBoxLayout, QSplitter, \
@@ -304,6 +304,19 @@ class ConnectionHubWindow(QMainWindow):
             self.table.cellWidget(row, 5).setText("Start Recording")
             self.table.cellWidget(row, 5).setStyleSheet("background-color : gray")
         print("Lost connection with: " + obj.port)
+
+        if obj.autoReconnect == True:
+            self.autoReconnectConnectionTimer = QTimer()
+            self.autoReconnectConnectionTimer.timeout.connect(lambda: self.autoReconnectConnection(obj, self.autoReconnectConnectionTimer))
+            self.autoReconnectConnectionTimer.start(500)
+
+    def autoReconnectConnection(self, serialParameter: SerialParameters, timer: QTimer):
+        for port in self.connectedPorts:
+            if port.port == serialParameter.port:
+                timer.stop()
+                return None
+        self.connectToSerial(None, serialParameter)
+
 
     def printReceivedData(self, obj, data, dataType = None):
         if dataType is not None:

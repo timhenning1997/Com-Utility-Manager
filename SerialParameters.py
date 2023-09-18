@@ -6,7 +6,7 @@ class SerialParameters:
                  stopbits=serial.STOPBITS_ONE, timeout=None, xonxoff=False, rtscts=False,
                  write_timeout=None, dsrdtr=False, inter_byte_timeout=None, exclusive=None,
                  local_echo=False, appendCR=False, appendLF=False, readTextIndex="read_line", readBytes=1,
-                 readUntil='', DTR=False, maxShownSignalRate=10, Kennbin = "", Kennung = ""):
+                 readUntil='', DTR=False, maxShownSignalRate=10, Kennbin = "", Kennung = "", autoReconnect = False):
         self.port = port
         self.baudrate = baudrate
         self.bytesize = bytesize
@@ -26,6 +26,7 @@ class SerialParameters:
         self.maxShownSignalRate = maxShownSignalRate  # Hz
         self.Kennbin = Kennbin
         self.Kennung = Kennung
+        self.autoReconnect = autoReconnect
 
         self.local_echo = local_echo
         self.appendCR = appendCR
@@ -55,7 +56,8 @@ class SerialParameters:
             "maxShownSignalRate": self.maxShownSignalRate,
             "local_echo": self.local_echo,
             "appendCR": self.appendCR,
-            "appendLF": self.appendLF
+            "appendLF": self.appendLF,
+            "autoReconnect": self.autoReconnect
         }
 
     def deserialize(self, data):
@@ -79,3 +81,4 @@ class SerialParameters:
         self.local_echo = data["local_echo"]
         self.appendCR = data["appendCR"]
         self.appendLF = data["appendLF"]
+        self.autoReconnect = data["autoReconnect"]

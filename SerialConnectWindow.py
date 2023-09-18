@@ -185,8 +185,12 @@ class SerialConnectWindow(QWidget):
         self.maxSignalRateSpinBox.setRange(1, 9999)
         self.maxSignalRateSpinBox.setValue(5)
 
+        autoReconnectLabel = QLabel("Auto reconnect")
+        self.autoReconnectCheckBox = QCheckBox("")
+
         optionsLayout = QFormLayout()
         optionsLayout.addRow(maxSignalRateLabel, self.maxSignalRateSpinBox)
+        optionsLayout.addRow(autoReconnectLabel, self.autoReconnectCheckBox)
         # optionsLayout.addWidget(-------------, 0, 0, 1, 1)
 
         optionsGroupbox = QGroupBox("Options")
@@ -278,5 +282,6 @@ class SerialConnectWindow(QWidget):
             serialParam.readTextIndex = "read_until"
             serialParam.readUntil = self.readUntilLineEdit.text()[0]
         serialParam.maxShownSignalRate = self.maxSignalRateSpinBox.value()
+        serialParam.autoReconnect = self.autoReconnectCheckBox.isChecked()
 
         return serialParam
