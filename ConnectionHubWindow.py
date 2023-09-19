@@ -767,16 +767,20 @@ class ConnectionHubWindow(QMainWindow):
             window.close()
 
         self.resize(data['_windowSize'][0], data['_windowSize'][1])
-        if (QApplication.primaryScreen().size().width() < data['_windowPosition'][0] + data['_windowSize'][0] or
-            data['_windowPosition'][0] < 0 or QApplication.primaryScreen().size().height() < data['_windowPosition'][
-                1] + data['_windowSize'][1] or data['_windowPosition'][1] < 0) and self.returnMsgBoxAnswerYesNo(
-                "Out Of Screen",
-                "Window \"Hub\" is out of screen!\nDo you want to move it inside the screen?") == QMessageBox.Yes:
-            self.move(max(0, min(data['_windowPosition'][0],
-                                 QApplication.primaryScreen().size().width() - data['_windowSize'][0])), max(0, min(
-                data['_windowPosition'][1], QApplication.primaryScreen().size().height() - data['_windowSize'][1])))
-        else:
-            self.move(data['_windowPosition'][0], data['_windowPosition'][1])
+
+        # Check if Window is outside of screen:    Auskommentiert, weil unnütz für die meisten Fälle
+        #if (QApplication.primaryScreen().size().width() < data['_windowPosition'][0] + data['_windowSize'][0] or
+        #    data['_windowPosition'][0] < 0 or QApplication.primaryScreen().size().height() < data['_windowPosition'][
+        #        1] + data['_windowSize'][1] or data['_windowPosition'][1] < 0) and self.returnMsgBoxAnswerYesNo(
+        #        "Out Of Screen",
+        #        "Window \"Hub\" is out of screen!\nDo you want to move it inside the screen?") == QMessageBox.Yes:
+        #    self.move(max(0, min(data['_windowPosition'][0],
+        #                         QApplication.primaryScreen().size().width() - data['_windowSize'][0])), max(0, min(
+        #        data['_windowPosition'][1], QApplication.primaryScreen().size().height() - data['_windowSize'][1])))
+        #else:
+        #    self.move(data['_windowPosition'][0], data['_windowPosition'][1])
+        self.move(data['_windowPosition'][0], data['_windowPosition'][1])
+
         if data['_windowMaximized'] == True:
             self.showMaximized()
 
@@ -805,7 +809,8 @@ class ConnectionHubWindow(QMainWindow):
             self.checkForValidRecordPath(serialParameter.port, port_data["savePath"])
             row = self.tableFindComRow(serialParameter.port)
             self.table.cellWidget(row, 7).setText(port_data["saveName"])
-            self.checkForValidCalibrationFile(serialParameter.port, port_data["calibrationPath"])
+            if port_data["calibrationPath"] != "":
+                self.checkForValidCalibrationFile(serialParameter.port, port_data["calibrationPath"])
             self.connectToSerial(None, serialParameter)
 
         for measuringPointListFileData in data['measuringPointListFiles']:

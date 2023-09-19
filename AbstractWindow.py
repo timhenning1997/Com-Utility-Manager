@@ -53,6 +53,17 @@ class AbstractWindow(QMainWindow):
         self.menuFilter = FilterMenu(self._hubWindow.connectedPorts, self)
         self.menuBar().addMenu(self.menuFilter)
 
+        windowMenu = QMenu("&Window", self)
+        self.actFrameless = QAction('&Frameless', self, triggered=self.onFrameless)
+        self.actFrameless.setCheckable(True)
+        self.actFrameless.setChecked(False)
+        self.actStayOnTop = QAction('&StayOnTop', self, triggered=self.onStayOnTop)
+        self.actStayOnTop.setCheckable(True)
+        self.actStayOnTop.setChecked(False)
+        windowMenu.addAction(self.actFrameless)
+        windowMenu.addAction(self.actStayOnTop)
+        self.menuBar().addMenu(windowMenu)
+
         self.initUI()
         self.show()
 
@@ -66,6 +77,7 @@ class AbstractWindow(QMainWindow):
             "_windowPosition": [self.pos().x(), self.pos().y()],
             "_filterMenu": self.menuFilter.serialize(),
             "_windowSaveInfo": self.save(),
+            "_windowFlags": [self.actFrameless.isChecked(), self.actStayOnTop.isChecked()]
         }
 
     def save(self):
@@ -77,11 +89,20 @@ class AbstractWindow(QMainWindow):
             return False
 
         self.resize(data['_windowSize'][0], data['_windowSize'][1])
-        if (QApplication.primaryScreen().size().width() < data['_windowPosition'][0] + data['_windowSize'][0] or data['_windowPosition'][0] < 0 or QApplication.primaryScreen().size().height() < data['_windowPosition'][1] + data['_windowSize'][1] or data['_windowPosition'][1] < 0) and self.returnMsgBoxAnswerYesNo("Out Of Screen", "Window \"" + str(self._windowType) + "\" is out of screen!\nDo you want to move it inside the screen?") == QMessageBox.Yes:
-            self.move(max(0, min(data['_windowPosition'][0], QApplication.primaryScreen().size().width() - data['_windowSize'][0])), max(0, min(data['_windowPosition'][1],QApplication.primaryScreen().size().height() - data['_windowSize'][1])))
-        else:
-            self.move(data['_windowPosition'][0], data['_windowPosition'][1])
+
+        # Check if Window is outside of screen:    Auskommentiert, weil unnütz für die meisten Fälle
+        #if (QApplication.primaryScreen().size().width() < data['_windowPosition'][0] + data['_windowSize'][0] or data['_windowPosition'][0] < 0 or QApplication.primaryScreen().size().height() < data['_windowPosition'][1] + data['_windowSize'][1] or data['_windowPosition'][1] < 0) and self.returnMsgBoxAnswerYesNo("Out Of Screen", "Window \"" + str(self._windowType) + "\" is out of screen!\nDo you want to move it inside the screen?") == QMessageBox.Yes:
+        #    self.move(max(0, min(data['_windowPosition'][0], QApplication.primaryScreen().size().width() - data['_windowSize'][0])), max(0, min(data['_windowPosition'][1],QApplication.primaryScreen().size().height() - data['_windowSize'][1])))
+        #else:
+        #    self.move(data['_windowPosition'][0], data['_windowPosition'][1])
+        self.move(data['_windowPosition'][0], data['_windowPosition'][1])
+
         self.menuFilter.deserialize(data["_filterMenu"])
+
+        self.actFrameless.setChecked(data['_windowFlags'][0])
+        self.actStayOnTop.setChecked(data['_windowFlags'][1])
+        self.onFrameless(data['_windowFlags'][0])
+        self.onStayOnTop(data['_windowFlags'][1])
 
         self.load(data['_windowSaveInfo'])
         return True
@@ -119,6 +140,22 @@ class AbstractWindow(QMainWindow):
                     raise TypeError("%s is not a valid JSON file" % os.path.basename(fname))
                 except Exception as e:
                     print(e)
+
+    def onFrameless(self, checked: bool):
+        if checked:
+            self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint)
+            self.show()
+        else:
+            self.setWindowFlags(self.windowFlags() & ~Qt.FramelessWindowHint)
+            self.show()
+
+    def onStayOnTop(self, checked: bool):
+        if checked:
+            self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
+            self.show()
+        else:
+            self.setWindowFlags(self.windowFlags() & ~Qt.WindowStaysOnTopHint)
+            self.show()
 
     def returnMsgBoxAnswerYesNo(self, title: str = "Message", text: str = ""):
         dlg = QMessageBox(self)
