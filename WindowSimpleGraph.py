@@ -56,6 +56,7 @@ class WindowSimpleGraph(AbstractWindow):
         self.graphWidget = PlotWidget()
         self.graphWidget.showGrid(x=True, y=True)
         self.graphWidget.setBackground(None)
+        #self.graphWidget.addLegend()
 
         maxDataPointsLabel = QLabel("Max Data Points:")
 
@@ -238,9 +239,8 @@ class WindowSimpleGraph(AbstractWindow):
             self.colorCounter = 0
         else:
             self.colorCounter += 1
-        self.graphLines[measuringPointUUID].dataLine = self.graphWidget.plot([], [], pen=pen)
+        self.graphLines[measuringPointUUID].dataLine = self.graphWidget.plot([], [], pen=pen, name=UUID)
         self.graphLines[measuringPointUUID].maxLength = self.maxValueSpinBox.value()
-
 
     def tableFindComRow(self, UUID: str):
         for countY in range(0, self.table.rowCount()):

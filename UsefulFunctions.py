@@ -31,7 +31,7 @@ def strToIntElseNone(s: str):
         int(s)
     except ValueError:
         return None
-    return float(s)
+    return int(s)
 
 def returnFloat(s: str):
     try:

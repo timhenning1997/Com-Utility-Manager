@@ -23,6 +23,7 @@ from WindowTerminal import WindowTerminal
 from WindowTablePlotter import WindowTablePlotter
 from WindowNodeEditor import WindowNodeEditor
 from WindowSimpleGraph import WindowSimpleGraph
+from WindowRawDataGraph import WindowRawDataGraph
 from WindowBetriebsmesstechnik import WindowBetriebsmesstechnik
 from WindowTeleTableView import WindowTeleTableView
 from WindowSynthetischeDaten import WindowSynthetischeDaten
@@ -191,6 +192,7 @@ class ConnectionHubWindow(QMainWindow):
         actCreateTablePlotter = QAction('Table &Plotter', self, triggered=self.createTablePlotter)
         actCreateNodeEditor = QAction('&Node Editor', self, triggered=self.createNodeEditor)
         actCreateSimpleGraphWindow = QAction('&Simple Graph', self, triggered=self.createSimpleGraphWindow)
+        actCreateRawDataGraphWindow = QAction('&Raw Data Graph', self, triggered=self.createRawDataGraphWindow)
         actCreateBetriebsmesstechnikWindow = QAction('&Betriebsmesstechnik', self, triggered=self.createBetriebsmesstechnikWindow)
         actCreateTeleTableViewWindow = QAction('Tele Table &View', self, triggered=self.createTeleTableViewWindow)
         actCreateSynthetischeDatenWindow = QAction('Synthetische &Daten', self, triggered=self.createSynthetischeDatenWindow)
@@ -199,6 +201,7 @@ class ConnectionHubWindow(QMainWindow):
         toolMenu.addAction(actCreateTablePlotter)
         toolMenu.addAction(actCreateNodeEditor)
         toolMenu.addAction(actCreateSimpleGraphWindow)
+        toolMenu.addAction(actCreateRawDataGraphWindow)
         toolMenu.addAction(actCreateBetriebsmesstechnikWindow)
         toolMenu.addAction(actCreateTeleTableViewWindow)
         toolMenu.addAction(actCreateSynthetischeDatenWindow)
@@ -634,6 +637,12 @@ class ConnectionHubWindow(QMainWindow):
         self.connectWindowToSignals(window)
         return window
 
+    def createRawDataGraphWindow(self):
+        window = WindowRawDataGraph(self)
+        self.windows.append(window)
+        self.connectWindowToSignals(window)
+        return window
+
     def createBetriebsmesstechnikWindow(self):
         window = WindowBetriebsmesstechnik(self)
         self.windows.append(window)
@@ -816,6 +825,8 @@ class ConnectionHubWindow(QMainWindow):
                 self.createNodeEditor().deserialize(window_data)
             if window_data["_windowType"] == "SimpleGraph":
                 self.createSimpleGraphWindow().deserialize(window_data)
+            if window_data["_windowType"] == "RawDataGraph":
+                self.createRawDataGraphWindow().deserialize(window_data)
             if window_data["_windowType"] == "Betriebsmesstechnik":
                 self.createBetriebsmesstechnikWindow().deserialize(window_data)
             if window_data["_windowType"] == "TeleTableView":
