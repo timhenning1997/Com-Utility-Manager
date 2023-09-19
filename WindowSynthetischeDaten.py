@@ -51,6 +51,7 @@ class WindowSynthetischeDaten(AbstractWindow):
         self.timerSpinBox = QSpinBox()
         self.timerSpinBox.setRange(1, 1000000)
         self.timerSpinBox.setValue(100)
+        self.timerSpinBox.setSuffix(" ms")
         startTimerButton = QPushButton("Start timer")
         startTimerButton.clicked.connect(self.startTimerClicked)
         stopTimerButton = QPushButton("Stop timer")

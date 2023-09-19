@@ -1,9 +1,10 @@
+import binascii
 import math
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QPushButton, QWidget, QHBoxLayout, QTableWidget, QGridLayout, \
-    QColorDialog, QTableWidgetItem, QComboBox
+    QColorDialog, QTableWidgetItem, QComboBox, QSpinBox
 from AbstractWindow import AbstractWindow
 from SerialParameters import SerialParameters
 
@@ -15,6 +16,8 @@ class WindowTablePlotter(AbstractWindow):
 
         self.receivedData = []
         self.receivedValueData = []
+        self.receivedMaxMinData = []
+        self.savedMaxMinData = {}
         self.currentLengthOfData = 0
         self.shownType = "Hex"
 
@@ -37,7 +40,15 @@ class WindowTablePlotter(AbstractWindow):
         self.shownTypeCB = QComboBox()
         self.shownTypeCB.addItem("Show: Hex")
         self.shownTypeCB.addItem("Show: Values")
+        self.shownTypeCB.addItem("Show: Max-Min")
         self.shownTypeCB.currentTextChanged.connect(self.changeShownType)
+
+        self.maxMinDataPointsSpinBox = QSpinBox()
+        self.maxMinDataPointsSpinBox.setPrefix("of last: ")
+        self.maxMinDataPointsSpinBox.setSuffix(" Data points")
+        self.maxMinDataPointsSpinBox.setRange(2, 1000)
+        self.maxMinDataPointsSpinBox.setValue(5)
+        self.maxMinDataPointsSpinBox.hide()
 
         colorOptionsLayout = QHBoxLayout()
         colorOptionsLayout.setContentsMargins(0, 0, 0, 0)
@@ -46,6 +57,7 @@ class WindowTablePlotter(AbstractWindow):
         colorOptionsLayout.addWidget(self.colorPicker2Button)
         colorOptionsLayout.addStretch()
         colorOptionsLayout.addWidget(self.shownTypeCB)
+        colorOptionsLayout.addWidget(self.maxMinDataPointsSpinBox)
 
         addColumnButton = QPushButton("+ Column")
         addColumnButton.clicked.connect(self.addColumn)
@@ -107,10 +119,14 @@ class WindowTablePlotter(AbstractWindow):
         self.color2 = QColor(color)
 
     def changeShownType(self):
+        self.maxMinDataPointsSpinBox.hide()
         if self.shownTypeCB.currentText() == "Show: Hex":
             self.shownType = "Hex"
         elif self.shownTypeCB.currentText() == "Show: Values":
             self.shownType = "Values"
+        elif self.shownTypeCB.currentText() == "Show: Max-Min":
+            self.shownType = "MaxMin"
+            self.maxMinDataPointsSpinBox.show()
 
     def clearTable(self, dataLength: int = 0):
         counter = 0
@@ -152,13 +168,16 @@ class WindowTablePlotter(AbstractWindow):
             for countX in range(0, self.table.columnCount()):
                 tableContendIndex = countY * (self.table.columnCount()) + countX
                 if len(self.receivedData[1:]) > tableContendIndex:
+                    number = int(self.receivedData[1:][tableContendIndex], 16)
                     if self.shownType == "Hex":
                         self.table.setItem(countY, countX, QTableWidgetItem(str(self.receivedData[1:][tableContendIndex])))
+                        self.table.item(countY, countX).setBackground(self.interpolateColor(self.color1, self.color2, number / 65535))
                     elif self.shownType == "Values":
                         self.table.setItem(countY, countX, QTableWidgetItem(str(self.receivedValueData[1:][tableContendIndex])))
-
-                    number = int(self.receivedData[1:][tableContendIndex], 16)
-                    self.table.item(countY, countX).setBackground(self.interpolateColor(self.color1, self.color2, number/65535))
+                        self.table.item(countY, countX).setBackground(self.interpolateColor(self.color1, self.color2, number / 65535))
+                    elif self.shownType == "MaxMin":
+                        self.table.setItem(countY, countX, QTableWidgetItem(str(self.receivedMaxMinData[1:][tableContendIndex])))
+                        self.table.item(countY, countX).setBackground(QColor(Qt.transparent))
                 else:
                     self.table.setItem(countY, countX, QTableWidgetItem(""))
                 self.table.item(countY, countX).setTextAlignment(Qt.AlignCenter)
@@ -184,6 +203,20 @@ class WindowTablePlotter(AbstractWindow):
             for numberIndex in range(0, len(data)):
                 self.receivedValueData.append(int(data[numberIndex], 16))
 
+            kennung = binascii.hexlify(serialParameters.Kennbin).decode("utf-8").upper()
+            self.receivedMaxMinData = []
+            if self.shownType == "MaxMin":
+                if kennung not in self.savedMaxMinData.keys():
+                    self.savedMaxMinData[kennung] = []
+                    for numberIndex in range(0, len(data)):
+                        self.savedMaxMinData[kennung].append([int(data[numberIndex], 16)])
+                        self.receivedMaxMinData.append(int(data[numberIndex], 16))
+                else:
+                    for numberIndex in range(0, len(data)):
+                        self.savedMaxMinData[kennung][numberIndex].append(int(data[numberIndex], 16))
+                        self.savedMaxMinData[kennung][numberIndex] = self.savedMaxMinData[kennung][numberIndex][-self.maxMinDataPointsSpinBox.value():]
+                        self.receivedMaxMinData.append(max(self.savedMaxMinData[kennung][numberIndex])-min(self.savedMaxMinData[kennung][numberIndex]))
+
             if len(data[1:]) != self.currentLengthOfData:
                 self.currentLengthOfData = len(data[1:])
                 self.clearTable(len(data[1:]))
@@ -196,27 +229,33 @@ class WindowTablePlotter(AbstractWindow):
 
             temp_data = []
             temp_receivedValueData = []
+            temp_receivedMaxMinData = []
             if len(data) > 1:
                 temp_data = data[1:]
             if len(self.receivedValueData) > 1:
                 temp_receivedValueData = self.receivedValueData[1:]
+            if len(self.receivedMaxMinData) > 1:
+                temp_receivedMaxMinData = self.receivedMaxMinData[1:]
 
             for numberIndex in range(0, len(temp_data)):
                 rowCount = numberIndex // self.colNumber
                 colCount = numberIndex % self.colNumber
 
-                if self.shownType == "Hex":
+                if self.shownType == "Hex" and len(temp_data) > 0:
                     self.table.item(rowCount, colCount).setText(temp_data[numberIndex].upper())
-                elif self.shownType == "Values":
+                    self.table.item(rowCount, colCount).setBackground(self.interpolateColor(self.color1, self.color2, temp_receivedValueData[numberIndex] / 65535))
+                elif self.shownType == "Values" and len(temp_receivedValueData) > 0:
                     self.table.item(rowCount, colCount).setText(str(temp_receivedValueData[numberIndex]))
-
-                self.table.item(rowCount, colCount).setBackground(self.interpolateColor(self.color1, self.color2, temp_receivedValueData[numberIndex]/65535))
+                    self.table.item(rowCount, colCount).setBackground(self.interpolateColor(self.color1, self.color2, temp_receivedValueData[numberIndex] / 65535))
+                elif self.shownType == "MaxMin" and len(temp_receivedMaxMinData) > 0:
+                    self.table.item(rowCount, colCount).setText(str(temp_receivedMaxMinData[numberIndex]))
+                    self.table.item(rowCount, colCount).setBackground(QColor(Qt.transparent))
 
     def save(self):
-        return {"rowCount": self.table.rowCount(),
-                "colCount": self.table.columnCount(),
-                "color1": self.color1.name(),
-                "color2": self.color2.name()}
+            return {"rowCount": self.table.rowCount(),
+                    "colCount": self.table.columnCount(),
+                    "color1": self.color1.name(),
+                    "color2": self.color2.name()}
 
     def load(self, data):
         self.resizeTable(data["rowCount"], data["colCount"])
