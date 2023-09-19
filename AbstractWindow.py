@@ -66,6 +66,7 @@ class AbstractWindow(QMainWindow):
 
         self.initUI()
         self.show()
+        self.adjustSize()
 
     def initUI(self):
         self.setWindowTitle(self._windowType)
@@ -105,6 +106,7 @@ class AbstractWindow(QMainWindow):
         self.onStayOnTop(data['_windowFlags'][1])
 
         self.load(data['_windowSaveInfo'])
+
         return True
 
     def load(self, data):
@@ -144,18 +146,16 @@ class AbstractWindow(QMainWindow):
     def onFrameless(self, checked: bool):
         if checked:
             self.setWindowFlags(self.windowFlags() | Qt.FramelessWindowHint)
-            self.show()
         else:
             self.setWindowFlags(self.windowFlags() & ~Qt.FramelessWindowHint)
-            self.show()
+        self.show()
 
     def onStayOnTop(self, checked: bool):
         if checked:
             self.setWindowFlags(self.windowFlags() | Qt.WindowStaysOnTopHint)
-            self.show()
         else:
             self.setWindowFlags(self.windowFlags() & ~Qt.WindowStaysOnTopHint)
-            self.show()
+        self.show()
 
     def returnMsgBoxAnswerYesNo(self, title: str = "Message", text: str = ""):
         dlg = QMessageBox(self)
