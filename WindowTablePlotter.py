@@ -126,6 +126,7 @@ class WindowTablePlotter(AbstractWindow):
             self.shownType = "Values"
         elif self.shownTypeCB.currentText() == "Show: Max-Min":
             self.shownType = "MaxMin"
+            self.savedMaxMinData.clear()
             self.maxMinDataPointsSpinBox.show()
 
     def clearTable(self, dataLength: int = 0):
