@@ -300,6 +300,7 @@ class SerialThread(QRunnable):
 
     def kill(self, port):
         if port.upper() == "COM-ALL" or port.upper() == self.serialParameters.port.upper():
+            self.serialParameters.autoReconnect = False
             self.is_killed = True
 
     def pause(self, port):

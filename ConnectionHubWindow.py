@@ -316,6 +316,7 @@ class ConnectionHubWindow(QMainWindow):
     def autoReconnectConnection(self, serialParameter: SerialParameters, timer: QTimer):
         for port in self.connectedPorts:
             if port.port == serialParameter.port:
+                self.recordButtonPressed(serialParameter)
                 timer.stop()
                 return None
         self.connectToSerial(None, serialParameter)
