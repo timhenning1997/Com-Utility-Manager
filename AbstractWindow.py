@@ -113,7 +113,6 @@ class AbstractWindow(QMainWindow):
         pass
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
-        print(self._hubWindow)
         self._hubWindow.deleteWindowFromList(self)
         return None
 

@@ -8,6 +8,23 @@ from PyQt5.QtWidgets import QLabel, QVBoxLayout, QPushButton, QWidget, QHBoxLayo
 from AbstractWindow import AbstractWindow
 from SerialParameters import SerialParameters
 
+class MySpinBox(QSpinBox):
+
+    def __init__(self):
+        super().__init__()
+        self.lineEdit().setVisible(False)
+        self.setFixedWidth(30)
+    def focusInEvent(self, event):
+        self.setFixedWidth(150)
+        self.lineEdit().setVisible(True)
+        super().focusInEvent(event)
+
+    def focusOutEvent(self, event):
+        self.setFixedWidth(30)
+        self.lineEdit().setVisible(False)
+        super().focusOutEvent(event)
+
+
 
 class WindowTablePlotter(AbstractWindow):
     def __init__(self, hubWindow):
@@ -20,6 +37,8 @@ class WindowTablePlotter(AbstractWindow):
         self.savedMaxMinData = {}
         self.currentLengthOfData = 0
         self.shownType = "Hex"
+        self.minValue = 0
+        self.maxValue = 65535
 
         self.color1 = QColor(26, 26, 26)
         self.color2 = QColor(77, 0, 0)
@@ -37,6 +56,18 @@ class WindowTablePlotter(AbstractWindow):
         self.colorPicker2Button.clicked.connect(self.colorPicker2)
         self.colorPicker2Button.setContentsMargins(0, 0, 0, 0)
 
+        separatorLabel = QLabel("|")
+        self.minValueSpinBox = MySpinBox()
+        self.minValueSpinBox.setRange(-999999, 999999)
+        self.minValueSpinBox.setValue(0)
+        self.minValueSpinBox.setPrefix("min: ")
+        self.minValueSpinBox.valueChanged.connect(self.changeMinMaxValues)
+        self.maxValueSpinBox = MySpinBox()
+        self.maxValueSpinBox.setRange(-999999, 999999)
+        self.maxValueSpinBox.setValue(65535)
+        self.maxValueSpinBox.setPrefix("max: ")
+        self.maxValueSpinBox.valueChanged.connect(self.changeMinMaxValues)
+
         self.shownTypeCB = QComboBox()
         self.shownTypeCB.addItem("Show: Hex")
         self.shownTypeCB.addItem("Show: Values")
@@ -53,7 +84,10 @@ class WindowTablePlotter(AbstractWindow):
         colorOptionsLayout = QHBoxLayout()
         colorOptionsLayout.setContentsMargins(0, 0, 0, 0)
         colorOptionsLayout.setSpacing(1)
+        colorOptionsLayout.addWidget(self.minValueSpinBox)
         colorOptionsLayout.addWidget(self.colorPicker1Button)
+        colorOptionsLayout.addWidget(separatorLabel)
+        colorOptionsLayout.addWidget(self.maxValueSpinBox)
         colorOptionsLayout.addWidget(self.colorPicker2Button)
         colorOptionsLayout.addStretch()
         colorOptionsLayout.addWidget(self.shownTypeCB)
@@ -156,6 +190,18 @@ class WindowTablePlotter(AbstractWindow):
         for count in range(0, self.table.columnCount()):
             self.table.setColumnWidth(count, width)
 
+    def changeMinMaxValues(self):
+        self.minValue = self.minValueSpinBox.value()
+        self.maxValue = self.maxValueSpinBox.value()
+
+    def focusInMinMaxValues(self):
+        self.minValueSpinBox.adjustSize()
+        self.maxValueSpinBox.adjustSize()
+
+    def focusOutMinMaxValues(self):
+        self.minValueSpinBox.setFixedWidth(30)
+        self.maxValueSpinBox.setFixedWidth(30)
+
     def resizeTable(self, rowCount: int, columnCount: int):
         if rowCount == 0:
             rowCount = int(math.ceil(len(self.receivedData[1:]) / columnCount))
@@ -172,10 +218,10 @@ class WindowTablePlotter(AbstractWindow):
                     number = int(self.receivedData[1:][tableContendIndex], 16)
                     if self.shownType == "Hex":
                         self.table.setItem(countY, countX, QTableWidgetItem(str(self.receivedData[1:][tableContendIndex])))
-                        self.table.item(countY, countX).setBackground(self.interpolateColor(self.color1, self.color2, number / 65535))
+                        self.table.item(countY, countX).setBackground(self.interpolateColor(self.color1, self.color2, (number - self.minValue) / (self.maxValue-self.minValue)))
                     elif self.shownType == "Values":
                         self.table.setItem(countY, countX, QTableWidgetItem(str(self.receivedValueData[1:][tableContendIndex])))
-                        self.table.item(countY, countX).setBackground(self.interpolateColor(self.color1, self.color2, number / 65535))
+                        self.table.item(countY, countX).setBackground(self.interpolateColor(self.color1, self.color2, (number - self.minValue) / (self.maxValue-self.minValue)))
                     elif self.shownType == "MaxMin":
                         self.table.setItem(countY, countX, QTableWidgetItem(str(self.receivedMaxMinData[1:][tableContendIndex])))
                         self.table.item(countY, countX).setBackground(QColor(Qt.transparent))
@@ -244,10 +290,10 @@ class WindowTablePlotter(AbstractWindow):
 
                 if self.shownType == "Hex" and len(temp_data) > 0:
                     self.table.item(rowCount, colCount).setText(temp_data[numberIndex].upper())
-                    self.table.item(rowCount, colCount).setBackground(self.interpolateColor(self.color1, self.color2, temp_receivedValueData[numberIndex] / 65535))
+                    self.table.item(rowCount, colCount).setBackground(self.interpolateColor(self.color1, self.color2, (temp_receivedValueData[numberIndex]-self.minValue) / (self.maxValue-self.minValue)))
                 elif self.shownType == "Values" and len(temp_receivedValueData) > 0:
                     self.table.item(rowCount, colCount).setText(str(temp_receivedValueData[numberIndex]))
-                    self.table.item(rowCount, colCount).setBackground(self.interpolateColor(self.color1, self.color2, temp_receivedValueData[numberIndex] / 65535))
+                    self.table.item(rowCount, colCount).setBackground(self.interpolateColor(self.color1, self.color2, (temp_receivedValueData[numberIndex]-self.minValue) / (self.maxValue-self.minValue)))
                 elif self.shownType == "MaxMin" and len(temp_receivedMaxMinData) > 0:
                     self.table.item(rowCount, colCount).setText(str(temp_receivedMaxMinData[numberIndex]))
                     self.table.item(rowCount, colCount).setBackground(QColor(Qt.transparent))
@@ -256,7 +302,9 @@ class WindowTablePlotter(AbstractWindow):
             return {"rowCount": self.table.rowCount(),
                     "colCount": self.table.columnCount(),
                     "color1": self.color1.name(),
-                    "color2": self.color2.name()}
+                    "color2": self.color2.name(),
+                    "minValue": self.minValue,
+                    "maxValue": self.maxValue}
 
     def load(self, data):
         self.resizeTable(data["rowCount"], data["colCount"])
@@ -264,3 +312,7 @@ class WindowTablePlotter(AbstractWindow):
         self.colorPicker1Button.setStyleSheet("background-color : " + self.color1.name())
         self.color2.setNamedColor(data["color2"])
         self.colorPicker2Button.setStyleSheet("background-color : " + self.color2.name())
+        self.minValue = data["minValue"]
+        self.minValueSpinBox.setValue(data["minValue"])
+        self.maxValue = data["maxValue"]
+        self.maxValueSpinBox.setValue(data["maxValue"])
