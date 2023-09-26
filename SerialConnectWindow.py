@@ -136,7 +136,7 @@ class SerialConnectWindow(QWidget):
         self.timeoutCombobox.addItem("4")
         self.timeoutCombobox.addItem("5")
         self.timeoutCombobox.addItem("10")
-        self.timeoutCombobox.setCurrentText("0.3")
+        self.timeoutCombobox.setCurrentText("1")
 
         self.readLinesRB = QRadioButton("Read line")
         self.readBytesRB = QRadioButton("Read bytes")

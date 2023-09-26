@@ -46,7 +46,7 @@ class WindowTerminal(AbstractWindow):
         self.sendButton.clicked.connect(self.sendData)
         self.sendBytesCombobox = QComboBox()
         self.sendBytesCombobox.addItem("Send as string")
-        self.sendBytesCombobox.addItem("Send as byte")
+        #self.sendBytesCombobox.addItem("Send as byte")
         self.sendBytesCombobox.addItem("Send as 0F35 command")
         self.newLineCharCombobox = QComboBox()
         self.newLineCharCombobox.setFixedWidth(65)
@@ -98,7 +98,7 @@ class WindowTerminal(AbstractWindow):
         if self.sendBytesCombobox.currentText() == "Send as byte":
             data = self.lineEdit.text().encode('utf-8')
         elif self.sendBytesCombobox.currentText() == "Send as string":
-            data = self.lineEdit.text()
+            data = self.lineEdit.text().encode('utf-8')
         elif self.sendBytesCombobox.currentText() == "Send as 0F35 command":
             byte = self.lineEdit.text()
             try:
