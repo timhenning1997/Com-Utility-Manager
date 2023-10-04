@@ -175,8 +175,9 @@ class AbstractWindow(QMainWindow):
         try:
             kennung = binascii.hexlify(serialParameters.Kennbin).decode("utf-8")
         except:
-            print("Kennung nicht vorhanden!")
-        if kennung not in self.menuFilter.allKennung:
+            pass
+            #print("Kennung nicht vorhanden!")
+        if kennung not in self.menuFilter.allKennung and kennung != "":
             #print("new Kennung: ", kennung)
             self.menuFilter.addKennungWithoutPressed(kennung)
         if any(port in self.menuFilter.activePorts for port in [serialParameters.port, "COM-ALL"]):

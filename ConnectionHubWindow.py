@@ -13,6 +13,7 @@ from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtWidgets import QMainWindow, QPushButton, QAction, QApplication, QFileDialog, QMenu, QTableWidget, \
     QHBoxLayout, QWidget, QHeaderView, QTableWidgetItem, QMessageBox, QTextEdit, QLineEdit, QVBoxLayout, QSplitter, \
     QLabel
+from MeasuringPointListWindow import MeasuringPointListWindow
 from PortMenu import PortMenu
 from SerialConnectWindow import SerialConnectWindow
 from SerialWorker import SerialThread
@@ -27,6 +28,7 @@ from WindowRawDataGraph import WindowRawDataGraph
 from WindowBetriebsmesstechnik import WindowBetriebsmesstechnik
 from WindowTeleTableView import WindowTeleTableView
 from WindowSynthetischeDaten import WindowSynthetischeDaten
+from WindowTempCalFritteuse import WindowTempCalFritoese
 from WindowTest import WindowTest
 
 
@@ -109,7 +111,7 @@ class ConnectionHubWindow(QMainWindow):
         tableSplitter = QSplitter(Qt.Vertical)
         tableSplitter.addWidget(self.table)
         tableSplitter.addWidget(self.measuringPointListTable)
-        tableSplitter.setSizes([1000, 100])
+        tableSplitter.setSizes([1000, 200])
 
         mainLayout = QVBoxLayout()
         mainLayout.addWidget(tableSplitter)
@@ -196,6 +198,7 @@ class ConnectionHubWindow(QMainWindow):
         actCreateBetriebsmesstechnikWindow = QAction('&Betriebsmesstechnik', self, triggered=self.createBetriebsmesstechnikWindow)
         actCreateTeleTableViewWindow = QAction('Tele Table &View', self, triggered=self.createTeleTableViewWindow)
         actCreateSynthetischeDatenWindow = QAction('Synthetische &Daten', self, triggered=self.createSynthetischeDatenWindow)
+        actCreateTempCalFritoeseWindow = QAction('Temp. Cal. &Fritteuse', self,triggered=self.createTempCalFritoeseWindow)
         actCreateTestWindow = QAction('T&est', self, triggered=self.createTestWindow)
         toolMenu.addAction(actCreateTerminal)
         toolMenu.addAction(actCreateTablePlotter)
@@ -205,6 +208,7 @@ class ConnectionHubWindow(QMainWindow):
         toolMenu.addAction(actCreateBetriebsmesstechnikWindow)
         toolMenu.addAction(actCreateTeleTableViewWindow)
         toolMenu.addAction(actCreateSynthetischeDatenWindow)
+        toolMenu.addAction(actCreateTempCalFritoeseWindow)
         toolMenu.addAction(actCreateTestWindow)
 
         self.menuBar().addMenu(fileMenu)
@@ -426,7 +430,8 @@ class ConnectionHubWindow(QMainWindow):
     def measuringPointListTableAddRow(self, filePath):
         self.measuringPointListTable.insertRow(self.measuringPointListTable.rowCount())
 
-        measuringPointListLabel = QLabel(os.path.basename(filePath))
+        measuringPointListLabel = QPushButton(os.path.basename(filePath))
+        measuringPointListLabel.clicked.connect(lambda: self.showMeasuringPointListTable(filePath))
         measuringPointListLabel.setProperty("path", filePath)
         measuringPointListLabel.setToolTip(measuringPointListLabel.property("path"))
         self.measuringPointListTable.setCellWidget(self.measuringPointListTable.rowCount() - 1, 0, measuringPointListLabel)
@@ -584,6 +589,10 @@ class ConnectionHubWindow(QMainWindow):
                                             "HEADINGS": headings,
                                             "DATA": dataInfo_t})
 
+    def showMeasuringPointListTable(self, path: str):
+        self.mplw = MeasuringPointListWindow(path, self.measuringPointListFiles)
+        self.mplw.show()
+
     def calibrateRawData(self, port: str, data):
         if port in self.calibrationFiles:
             if str(len(data) - 1) in self.calibrationFiles[port]:
@@ -659,6 +668,12 @@ class ConnectionHubWindow(QMainWindow):
     def createSynthetischeDatenWindow(self):
         window = WindowSynthetischeDaten(self)
         self.windows.append(window)
+        return window
+
+    def createTempCalFritoeseWindow(self):
+        window = WindowTempCalFritoese(self)
+        self.windows.append(window)
+        self.connectWindowToSignals(window)
         return window
 
     def createTestWindow(self):
@@ -839,5 +854,7 @@ class ConnectionHubWindow(QMainWindow):
                 self.createTeleTableViewWindow().deserialize(window_data)
             if window_data["_windowType"] == "SynthetischeDaten":
                 self.createSynthetischeDatenWindow().deserialize(window_data)
+            if window_data["_windowType"] == "TempCalFritteuse":
+                self.createTempCalFritoeseWindow().deserialize(window_data)
             if window_data["_windowType"] == "Test":
                 self.createTestWindow().deserialize(window_data)

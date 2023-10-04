@@ -78,7 +78,7 @@ class SerialThread(QRunnable):
             if not self.is_paused:
                 try:
                     if self.serialArduino.isOpen():
-                        if self.serialParameters.readTextIndex == "read_lines":
+                        if self.serialParameters.readTextIndex == "read_line":
                             readLine = self.read_line()  # self.serialArduino.readline()
                             if not readLine == b'':
                                 #try:

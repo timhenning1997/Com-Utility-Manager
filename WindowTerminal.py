@@ -53,7 +53,7 @@ class WindowTerminal(AbstractWindow):
         self.newLineCharCombobox.addItem("None      |Kein Zeilenende")
         self.newLineCharCombobox.addItem("NL           |Neue Zeile")
         self.newLineCharCombobox.addItem("CR           |Zeilenumbruch")
-        self.newLineCharCombobox.addItem("NL&CR   |Sowhol CR als auch NL")
+        self.newLineCharCombobox.addItem("CR&NL   |Sowhol CR als auch NL")
 
         sendLayout = QHBoxLayout()
         sendLayout.addWidget(self.lineEdit)
@@ -122,12 +122,13 @@ class WindowTerminal(AbstractWindow):
                 msg.exec_()
                 return
         self.lineEdit.setText("")
-        if self.newLineCharCombobox.currentText() == "Neue Zeile (NL)":
+        if self.newLineCharCombobox.currentText() == "NL           |Neue Zeile":
             data += b'\n'
-        if self.newLineCharCombobox.currentText() == "Zeilenumbruch (CR)":
+        if self.newLineCharCombobox.currentText() == "CR           |Zeilenumbruch":
             data += b'\r'
-        if self.newLineCharCombobox.currentText() == "Sowhol CR als auch NL":
+        if self.newLineCharCombobox.currentText() == "CR&NL   |Sowhol CR als auch NL":
             data += b'\r\n'
+        print("asdasda")
         self.sendSerialData(data)
 
     def save(self):

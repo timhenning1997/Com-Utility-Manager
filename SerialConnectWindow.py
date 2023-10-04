@@ -271,7 +271,7 @@ class SerialConnectWindow(QWidget):
         if isFloat(self.timeoutCombobox.currentText()):
             serialParam.timeout = returnFloat(self.timeoutCombobox.currentText())
         if self.readLinesRB.isChecked():
-            serialParam.readTextIndex = "read_lines"
+            serialParam.readTextIndex = "read_line"
         if self.readWUDRB.isChecked():
             serialParam.readTextIndex = "read_WU_device"
         if self.readLoggingRawRB.isChecked():
