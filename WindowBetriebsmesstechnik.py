@@ -78,7 +78,7 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         super().__init__(hubWindow, "Betriebsmesstechnik")
 
         self.offsetFlag = False
-        self.offsetDict = {"G20.1_A2": 0, "G20.1_A6": 0, "G20.1_B4": 0, "G20.1_A10": 0, "G20.1_PAD_3": 0}
+        self.offsetDict = {"G20-1_A2": 0, "G20-1_A6": 0, "G20-1_B4": 0, "G20-1_A10": 0, "G20-1_PAD_3": 0}
 
         # Dem Hauptfenster ein Layout zuweisen
         massestromGridLayout = QGridLayout()
@@ -142,18 +142,18 @@ class WindowBetriebsmesstechnik(AbstractWindow):
 
         
         self.dataLabels = [
-            [self.label_Vordruck,       "G20.1_PAD_4"], 
-            [self.label_Filterdruck,    "G20.1_PAD_3"], 
+            [self.label_Vordruck,       "G20-1_PAD_4"], 
+            [self.label_Filterdruck,    "G20-1_PAD_3"], 
             [self.label_Telemetrie_A,   "UTeleA"],      # TODO: Richtige UUIDs einpflegen
             [self.label_Telemetrie_B,   "UTeleB"],      # TODO: Richtige UUIDs einpflegen
             [self.label_Telemetrie_IW,  "UTeleIW"]      # TODO: Richtige UUIDs einpflegen
             ]
         
         self.massFlowLabels = [
-            [self.label_BL1, "G20.1_A1", "G20.1_A2",  "G20.1_SPI2_1", 0.05526, 30.055e-3, 0.039e-3, 0.01e-3, 175, 12, 0.3],
-            [self.label_BL3, "G20.1_A5", "G20.1_A6",  "G20.1_SPI2_2", 0.05529, 30.060e-3, 0.078e-3, 0.01e-3, 175, 12, 0.3],
-            [self.label_BL7, "G20.1_B3", "G20.1_B4",  "G20.1_SPI2_3", 0.05582, 29.033e-3, 0.060e-3, 0.01e-3, 175, 12, 0.3],
-            [self.label_BL9, "G20.1_A9", "G20.1_A10", "G20.1_SPI2_0", 0.05532, 36.970e-3, 0.033e-3, 0.01e-3, 175, 12, 0.3]
+            [self.label_BL1, "G20-1_A1", "G20-1_A2",  "G20-1_SPI2_1", 0.05526, 30.055e-3, 0.039e-3, 0.01e-3, 175, 12, 0.3],
+            [self.label_BL3, "G20-1_A5", "G20-1_A6",  "G20-1_SPI2_2", 0.05529, 30.060e-3, 0.078e-3, 0.01e-3, 175, 12, 0.3],
+            [self.label_BL7, "G20-1_B3", "G20-1_B4",  "G20-1_SPI2_3", 0.05582, 29.033e-3, 0.060e-3, 0.01e-3, 175, 12, 0.3],
+            [self.label_BL9, "G20-1_A9", "G20-1_A10", "G20-1_SPI2_0", 0.05532, 36.970e-3, 0.033e-3, 0.01e-3, 175, 12, 0.3]
             ]
 
         self.fehlerLabel_A    = QLabel("x")
@@ -174,19 +174,19 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         headerLabelList = ["Gerätename", "Datensatznr.", "Fehlerzähler"]
         
         self.fehlerLabelListe = [ 
-            [self.fehlerLabel_A,    "EcoFlex-TeleA_Nummer"],
-            [self.fehlerLabel_B,    "EcoFlex-TeleB_Nummer"],
-            [self.fehlerLabel_IW,   "EcoFlex-TeleIW_Nummer"],
-            [self.fehlerLabel_G201, "G20.1_Nummer"],
-            [self.fehlerLabel_G161, "G16.1_Nummer"]
+            [self.fehlerLabel_A,    "TeleA_Nummer"],
+            [self.fehlerLabel_B,    "TeleB_Nummer"],
+            [self.fehlerLabel_IW,   "TeleIW_Nummer"],
+            [self.fehlerLabel_G201, "G20-1_Nummer"],
+            [self.fehlerLabel_G161, "G16-1_Nummer"]
             ]
         
         self.datensatzLabelListe = [
-            [self.datensatzLabel_A,    "EcoFlex-TeleA_Nummer"],
-            [self.datensatzLabel_B,    "EcoFlex-TeleB_Nummer"],
-            [self.datensatzLabel_IW,   "EcoFlex-TeleIW_Nummer"],
-            [self.datensatzLabel_G201, "G20.1_Nummer"],
-            [self.datensatzLabel_G161, "G16.1_Nummer"]
+            [self.datensatzLabel_A,    "TeleA_Nummer"],
+            [self.datensatzLabel_B,    "TeleB_Nummer"],
+            [self.datensatzLabel_IW,   "TeleIW_Nummer"],
+            [self.datensatzLabel_G201, "G20-1_Nummer"],
+            [self.datensatzLabel_G161, "G16-1_Nummer"]
             ]
         
         for i in range(0, len(headerLabelList)):
@@ -275,43 +275,43 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         resetOffsetButton.clicked.connect(self.resetOffset)
 
         self.graphicalMeasurements = []
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.120), "G20.1_SPI1_5",  "TLRT",   "°C",   "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.250), "G20.1_SPI2_0",  "TLSBL9", "°C",   "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.325), "G20.1_A10",     "DDSBL9", "Pa",  "DD"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.400), "G20.1_A9",      "DSBL9",  "Pa",  "DA"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.490), "G20.1_SPI1_3",  "TLSA",   "°C",   "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.620), "G16.1_PC3_0",   "DSA",    "Pa",  "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.120), "G20-1_SPI1_5",  "TLRT",   "°C",   "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.250), "G20-1_SPI2_0",  "TLSBL9", "°C",   "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.325), "G20-1_A10",     "DDSBL9", "Pa",  "DD"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.400), "G20-1_A9",      "DSBL9",  "Pa",  "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.490), "G20-1_SPI1_3",  "TLSA",   "°C",   "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.620), "G16-1_PC3_0",   "DSA",    "Pa",  "DA"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.175), "G20.1_Periode_0",  "RPM",    "rpm",  "RPM"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.250), "G20.1_SPI1_1",  "TSA2",   "°C",   "TE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.325), "G20.1_SPI1_0",  "TSA1",   "°C",   "TE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.400), "G16.1_SPI_6",   "SWA",    "mm/s", "SWS"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.175), "G20-1_Periode_0",  "RPM",    "rpm",  "RPM"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.250), "G20-1_SPI1_1",  "TSA2",   "°C",   "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.325), "G20-1_SPI1_0",  "TSA1",   "°C",   "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.400), "G16-1_SPI_6",   "SWA",    "mm/s", "SWS"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.290), y(0.250), "G16.1_SPI_2",   "LTKR",   "°C",   "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.290), y(0.325), "G16.1_SPI_0",   "GTARA2", "°C",   "TE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.290), y(0.400), "G16.1_SPI_1",   "GTMRaA", "°C",   "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.290), y(0.250), "G16-1_SPI_2",   "LTKR",   "°C",   "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.290), y(0.325), "G16-1_SPI_0",   "GTARA2", "°C",   "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.290), y(0.400), "G16-1_SPI_1",   "GTMRaA", "°C",   "TE"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.610), y(0.025), "G20.1_SPI2_3",  "TLSBL7", "°C",   "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.610), y(0.100), "G20.1_B4",      "DDSBL7", "Pa",  "DD"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.610), y(0.175), "G20.1_B3",      "DSBL7",  "Pa",  "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.610), y(0.025), "G20-1_SPI2_3",  "TLSBL7", "°C",   "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.610), y(0.100), "G20-1_B4",      "DDSBL7", "Pa",  "DD"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.610), y(0.175), "G20-1_B3",      "DSBL7",  "Pa",  "DA"))
         
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.370), y(0.025), "G20.1_SPI2_1",  "TLSBL1", "°C",   "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.370), y(0.100), "G20.1_A2",      "DDSBL1", "Pa",  "DD"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.370), y(0.175), "G20.1_A1",      "DSBL1",  "Pa",  "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.370), y(0.025), "G20-1_SPI2_1",  "TLSBL1", "°C",   "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.370), y(0.100), "G20-1_A2",      "DDSBL1", "Pa",  "DD"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.370), y(0.175), "G20-1_A1",      "DSBL1",  "Pa",  "DA"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.683), y(0.250), "G16.1_PC3_2",   "LPKR",   "Pa",  "DA"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.683), y(0.325), "G16.1_SPI_4",   "GTARB2", "°C",   "TE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.683), y(0.400), "G16.1_SPI_3",   "GTMRaB", "°C",   "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.683), y(0.250), "G16-1_PC3_2",   "LPKR",   "Pa",  "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.683), y(0.325), "G16-1_SPI_4",   "GTARB2", "°C",   "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.683), y(0.400), "G16-1_SPI_3",   "GTMRaB", "°C",   "TE"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.783), y(0.325), "G20.1_SPI1_2",  "TSB1",   "°C",   "TE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.783), y(0.400), "G16.1_SPI_7",   "SWB",    "mm/s", "SWS"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.800), y(0.710), "G16.1_SPI_5",   "TOelZu", "°C",   "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.783), y(0.325), "G20-1_SPI1_2",  "TSB1",   "°C",   "TE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.783), y(0.400), "G16-1_SPI_7",   "SWB",    "mm/s", "SWS"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.800), y(0.710), "G16-1_SPI_5",   "TOelZu", "°C",   "LTE"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.250), "G20.1_SPI2_2",  "TLSBL3", "°C",   "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.325), "G20.1_A6",      "DDSBL3", "Pa",  "DD"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.400), "G20.1_A5",      "DSBL3",  "Pa",  "DA"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.490), "G20.1_SPI1_4",  "TLSB",   "°C",   "LTE"))
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.620), "G16.1_PC3_1",   "DSB",    "Pa",  "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.250), "G20-1_SPI2_2",  "TLSBL3", "°C",   "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.325), "G20-1_A6",      "DDSBL3", "Pa",  "DD"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.400), "G20-1_A5",      "DSBL3",  "Pa",  "DA"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.490), "G20-1_SPI1_4",  "TLSB",   "°C",   "LTE"))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.950), y(0.620), "G16-1_PC3_1",   "DSB",    "Pa",  "DA"))
 
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
         resetOffsetFlag = False
@@ -324,7 +324,7 @@ class WindowBetriebsmesstechnik(AbstractWindow):
             vData = self.findCalibratedDataByUUID(data, dataInfo, graphicalMeasurement.uuid)
             
             if vData is not None:
-                if graphicalMeasurement.uuid in ["G20.1_A2", "G20.1_A6", "G20.1_B4", "G20.1_A10"]:
+                if graphicalMeasurement.uuid in ["G20-1_A2", "G20-1_A6", "G20-1_B4", "G20-1_A10"]:
                     if self.offsetFlag == True:
                         resetOffsetFlag = True
                         with open("offsetKorrektur.txt", "a") as offsetFile:
@@ -337,12 +337,12 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         for label in self.dataLabels:
             vData = self.findCalibratedDataByUUID(data, dataInfo, label[1])
             if vData is not None:
-                if label[1] == "G20.1_PAD_3":
+                if label[1] == "G20-1_PAD_3":
                     if self.offsetFlag == True:
-                        self.offsetDict["G20.1_PAD_3"] = vData
+                        self.offsetDict["G20-1_PAD_3"] = vData
                         with open("offsetKorrektur.txt", "a") as offsetFile:
-                            offsetFile.write("G20.1_PAD_3" + " : " + str(vData) + "\n")
-                    label[0].setText(str("{0:10.2f}").format(vData-self.offsetDict["G20.1_PAD_3"]))
+                            offsetFile.write("G20-1_PAD_3" + " : " + str(vData) + "\n")
+                    label[0].setText(str("{0:10.2f}").format(vData-self.offsetDict["G20-1_PAD_3"]))
                 else:
                     label[0].setText(str("{0:10.2f}").format(vData)) 
                 
@@ -386,7 +386,7 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         self.offsetFlag = True
         
     def resetOffset(self):
-        self.offsetDict = {"G20.1_A2": 0, "G20.1_A6": 0, "G20.1_B4": 0, "G20.1_A10": 0, "G20.1_PAD_3": 0}
+        self.offsetDict = {"G20-1_A2": 0, "G20-1_A6": 0, "G20-1_B4": 0, "G20-1_A10": 0, "G20-1_PAD_3": 0}
 
     def sendData(self):
         # self.sendSerialData() ist eine interne Funktion, die die activen Ports berücksichtigt
