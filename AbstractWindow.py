@@ -2,6 +2,7 @@ import binascii
 import json
 import os
 import sys
+import uuid
 from typing import Union
 
 from PyQt5 import QtGui
@@ -42,6 +43,7 @@ class AbstractWindow(QMainWindow):
 
         self._windowType = windowType
         self._hubWindow = hubWindow
+        self._uuid = str(uuid.uuid4())
 
         fileMenu = QMenu("&File", self)
         actSaveAs = QAction('&Save window layout', self, triggered=self.onFileSaveAs)
@@ -237,6 +239,28 @@ class AbstractWindow(QMainWindow):
 
     def stopSerialRecording(self, serialParameters: SerialParameters):
         pass
+
+    def setGlobalVars(self, dictionary: dict, senderID: str = None):
+        if senderID is None:
+            senderID = self._uuid
+        self._hubWindow.setGlobalVars(dictionary, senderID)
+
+    def setGlobalVarsEntry(self, key: str, value, senderID: str = None):
+        if senderID is None:
+            senderID = self._uuid
+        self._hubWindow.setGlobalVarsEntry(key, value, senderID)
+
+    def globalVarsChanged(self, id: str):
+        pass
+
+    def getGlobalVars(self):
+        return self._hubWindow.globalVars
+
+    def getGlobalVarsEntry(self, key: str):
+        if key in self._hubWindow.globalVars.keys():
+            return self._hubWindow.globalVars[key]
+        else:
+            return None
 
     def sendSerialData(self, data):
         self.sendSerialWriteSignal.emit("|".join(self.menuFilter.activePorts), data)

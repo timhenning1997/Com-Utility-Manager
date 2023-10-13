@@ -95,6 +95,7 @@ class WindowTerminal(AbstractWindow):
             self.textEdit.moveCursor(QTextCursor.End)
 
     def sendData(self):
+        self.setGlobalVarsEntry("name", ["Tim", 23])
         if self.sendBytesCombobox.currentText() == "Send as byte":
             data = self.lineEdit.text().encode('utf-8')
         elif self.sendBytesCombobox.currentText() == "Send as string":
@@ -128,7 +129,6 @@ class WindowTerminal(AbstractWindow):
             data += b'\r'
         if self.newLineCharCombobox.currentText() == "CR&NL   |Sowhol CR als auch NL":
             data += b'\r\n'
-        print("asdasda")
         self.sendSerialData(data)
 
     def save(self):
