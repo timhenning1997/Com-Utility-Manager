@@ -50,7 +50,7 @@ class ConnectionHubWindow(QMainWindow):
     failedSendSerialDataSignal = pyqtSignal(object, object)
     startedSerialRecordingSignal = pyqtSignal(object)
     stoppedSerialRecordingSignal = pyqtSignal(object)
-    globalVarsChangedSignal = pyqtSignal(str)
+    globalVarsChangedSignal = pyqtSignal(str, str)
 
     def __init__(self):
         super().__init__()
@@ -741,17 +741,17 @@ class ConnectionHubWindow(QMainWindow):
                         self.globalVars = {}
                         self.showInfoBox("Wrong format!", "JSON file should only contain exactly one dictionary.")
                     else:
-                        self.globalVarsChangedSignal.emit("")
+                        self.globalVarsChangedSignal.emit("", "ALL")
                 except Exception as e:
                     self.showInfoBox("Loading failed!", repr(e))
 
-    def setGlobalVars(self, dictionary: dict, senderID: str = ""):
+    def setGlobalVars(self, dictionary: dict, senderID: str = "", keyChanged: str = "ALL"):
         self.globalVars = dictionary
-        self.globalVarsChangedSignal.emit(senderID)
+        self.globalVarsChangedSignal.emit(senderID, keyChanged)
 
-    def setGlobalVarsEntry(self, key: str, value, senderID: str = ""):
+    def setGlobalVarsEntry(self, key: str, value, senderID: str = "", keyChanged: str = ""):
         self.globalVars[key] = value
-        self.globalVarsChangedSignal.emit(senderID)
+        self.globalVarsChangedSignal.emit(senderID, keyChanged)
 
     def fileSave(self, filename: str = None):
         QApplication.setOverrideCursor(Qt.WaitCursor)
@@ -808,6 +808,7 @@ class ConnectionHubWindow(QMainWindow):
             ('ports', ports),
             ('measuringPointListFiles', measuringPointListFiles),
             ('windows', windows),
+            ('globalVars', self.globalVars)
         ])
 
     def deserialize(self, data: dict) -> bool:
@@ -895,3 +896,6 @@ class ConnectionHubWindow(QMainWindow):
                 self.createTempCalFritoeseWindow().deserialize(window_data)
             if window_data["_windowType"] == "Test":
                 self.createTestWindow().deserialize(window_data)
+
+        self.globalVars = data['globalVars']
+        print(self.globalVars)

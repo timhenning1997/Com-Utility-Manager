@@ -243,14 +243,14 @@ class AbstractWindow(QMainWindow):
     def setGlobalVars(self, dictionary: dict, senderID: str = None):
         if senderID is None:
             senderID = self._uuid
-        self._hubWindow.setGlobalVars(dictionary, senderID)
+        self._hubWindow.setGlobalVars(dictionary, senderID, "ALL")
 
     def setGlobalVarsEntry(self, key: str, value, senderID: str = None):
         if senderID is None:
             senderID = self._uuid
-        self._hubWindow.setGlobalVarsEntry(key, value, senderID)
+        self._hubWindow.setGlobalVarsEntry(key, value, senderID, key)
 
-    def globalVarsChanged(self, id: str):
+    def globalVarsChanged(self, id: str, keyChanged: str):
         pass
 
     def getGlobalVars(self):
