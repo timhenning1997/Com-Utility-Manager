@@ -898,4 +898,3 @@ class ConnectionHubWindow(QMainWindow):
                 self.createTestWindow().deserialize(window_data)
 
         self.globalVars = data['globalVars']
-        print(self.globalVars)
