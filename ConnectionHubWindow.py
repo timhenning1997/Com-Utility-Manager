@@ -12,8 +12,8 @@ from PyQt5.QtCore import QThreadPool, pyqtSignal, Qt, QSize, QTimer
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtWidgets import QMainWindow, QPushButton, QAction, QApplication, QFileDialog, QMenu, QTableWidget, \
     QHBoxLayout, QWidget, QHeaderView, QTableWidgetItem, QMessageBox, QTextEdit, QLineEdit, QVBoxLayout, QSplitter, \
-    QLabel
-from MeasuringPointListWindow import MeasuringPointListWindow
+    QLabel, QScrollArea
+from HelperWindows import MeasuringPointListWindow, ScrollableLabelWindow
 from PortMenu import PortMenu
 from SerialConnectWindow import SerialConnectWindow
 from SerialWorker import SerialThread
@@ -144,10 +144,12 @@ class ConnectionHubWindow(QMainWindow):
         actOpen = QAction('&Open layout', self, triggered=self.onFileOpen)
         actMeasurementListOpen = QAction('Open &Measurement list', self, triggered=self.onMeasurementListOpen)
         actGlobalVarsOpen = QAction('Open &Global variables', self, triggered=self.onGlobalVarsOpen)
+        actGlobalVarsShow = QAction('Show Global &variables', self, triggered=self.showGlobalVars)
         fileMenu.addAction(actSaveAs)
         fileMenu.addAction(actOpen)
         fileMenu.addAction(actMeasurementListOpen)
         fileMenu.addAction(actGlobalVarsOpen)
+        fileMenu.addAction(actGlobalVarsShow)
 
         tableMenu = QMenu("&Table", self)
         act = QAction("Show/Hide Columns", self)
@@ -597,6 +599,10 @@ class ConnectionHubWindow(QMainWindow):
         self.mplw = MeasuringPointListWindow(path, self.measuringPointListFiles)
         self.mplw.show()
 
+    def showGlobalVars(self):
+        self.globalVarsLabel = ScrollableLabelWindow(json.dumps(self.globalVars, indent=2))
+        self.globalVarsLabel.show()
+
     def calibrateRawData(self, port: str, data):
         if port in self.calibrationFiles:
             if str(len(data) - 1) in self.calibrationFiles[port]:
@@ -898,3 +904,4 @@ class ConnectionHubWindow(QMainWindow):
                 self.createTestWindow().deserialize(window_data)
 
         self.globalVars = data['globalVars']
+

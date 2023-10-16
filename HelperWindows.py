@@ -1,6 +1,8 @@
+import json
+
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QGridLayout, QHBoxLayout, QPushButton, QFrame, QGroupBox, QWidget, QTableWidgetItem, \
-    QTableWidget, QVBoxLayout
+    QTableWidget, QVBoxLayout, QScrollArea, QLabel
 
 
 class MeasuringPointListWindow(QWidget):
@@ -67,3 +69,21 @@ class MeasuringPointListWindow(QWidget):
         # __________ QPushButton Function __________
         self.okButton.clicked.connect(self.close)
         self.cancelButton.clicked.connect(self.close)
+
+
+class ScrollableLabelWindow(QScrollArea):
+    def __init__(self, text: str = ""):
+        QScrollArea.__init__(self)
+
+        self.setWidgetResizable(True)
+        content = QWidget(self)
+        self.setWidget(content)
+        lay = QVBoxLayout(content)
+        self.label = QLabel(content)
+        self.label.setAlignment(Qt.AlignLeft | Qt.AlignTop)
+        self.label.setWordWrap(True)
+        lay.addWidget(self.label)
+        self.label.setText(text)
+
+    def setText(self, text: str = ""):
+        self.label.setText(text)
