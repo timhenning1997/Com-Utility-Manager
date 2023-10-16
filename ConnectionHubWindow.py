@@ -29,6 +29,7 @@ from WindowBetriebsmesstechnik import WindowBetriebsmesstechnik
 from WindowTeleTableView import WindowTeleTableView
 from WindowSynthetischeDaten import WindowSynthetischeDaten
 from WindowTempCalFritteuse import WindowTempCalFritoese
+from WindowStationaritaet import WindowStationaritaet
 from WindowTest import WindowTest
 
 
@@ -205,6 +206,7 @@ class ConnectionHubWindow(QMainWindow):
         actCreateTeleTableViewWindow = QAction('Tele Table &View', self, triggered=self.createTeleTableViewWindow)
         actCreateSynthetischeDatenWindow = QAction('Synthetische &Daten', self, triggered=self.createSynthetischeDatenWindow)
         actCreateTempCalFritoeseWindow = QAction('Temp. Cal. &Fritteuse', self,triggered=self.createTempCalFritoeseWindow)
+        actCreateStationaritaetWindow = QAction('Stat&ionaritaet', self,triggered=self.createStationaritaetWindow)
         actCreateTestWindow = QAction('T&est', self, triggered=self.createTestWindow)
         toolMenu.addAction(actCreateTerminal)
         toolMenu.addAction(actCreateTablePlotter)
@@ -215,6 +217,7 @@ class ConnectionHubWindow(QMainWindow):
         toolMenu.addAction(actCreateTeleTableViewWindow)
         toolMenu.addAction(actCreateSynthetischeDatenWindow)
         toolMenu.addAction(actCreateTempCalFritoeseWindow)
+        toolMenu.addAction(actCreateStationaritaetWindow)
         toolMenu.addAction(actCreateTestWindow)
 
         self.menuBar().addMenu(fileMenu)
@@ -694,6 +697,12 @@ class ConnectionHubWindow(QMainWindow):
         self.windows.append(window)
         self.connectWindowToSignals(window)
         return window
+    
+    def createStationaritaetWindow(self):
+        window = WindowStationaritaet(self)
+        self.windows.append(window)
+        self.connectWindowToSignals(window)
+        return window
 
     def createTestWindow(self):
         window = WindowTest(self)
@@ -900,6 +909,8 @@ class ConnectionHubWindow(QMainWindow):
                 self.createSynthetischeDatenWindow().deserialize(window_data)
             if window_data["_windowType"] == "TempCalFritteuse":
                 self.createTempCalFritoeseWindow().deserialize(window_data)
+            if window_data["_windowType"] == "Stationaritaet":
+                self.createStationaritaetWindow().deserialize(window_data)
             if window_data["_windowType"] == "Test":
                 self.createTestWindow().deserialize(window_data)
 
