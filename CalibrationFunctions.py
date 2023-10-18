@@ -131,6 +131,73 @@ def applyCalibrationFunctions(calData, data):
             calibratedData["UUID"].append(calData[i][0])
             calibratedData["DATA"].append(res)
 
+        # elif calData[i][3] == "TIME":
+        #     diffChannels = calData[i][4]
+        #     if not isValidDiffChannels(diffChannels, data, 1):
+        #         continue
+        #     tcnt0 = int(data[i], 16)
+        #     tcnt1 = int(data[diffChannels[0]], 16)
+        #     fT = calData[i][2][0]
+            
+        #     res = (tcnt0 * 65536 + tcnt1) / fT
+            
+        #     t_diff = [0]
+        #     for j in range(1, len(res)):
+        #         if (res[j] - res[j-1]) > 0 :
+        #             t_diff.append(res[j] - res[j-1] + t_diff[j-1])
+        #         else:
+        #             t_diff.append(res[j] + 2**32/fT - res[j-1] + t_diff[-1])
+        #     t_diff = np.array(t_diff)
+            
+        #     calibratedData["UUID"].append(calData[i][0])
+        #     calibratedData["DATA"].append(t_diff)
+            
+        elif calData[i][3] == "UKONTR":
+            diffChannels = calData[i][4]
+            if not isValidDiffChannels(diffChannels, data, 1):
+                continue
+            padx  = int(data[i], 16)
+            pad0  = int(data[diffChannels[0]], 16)
+            koeff = calData[i][2][0]
+            
+            res = koeff * padx/pad0
+            
+            calibratedData["UUID"].append(calData[i][0])
+            calibratedData["DATA"].append(res)
+            
+        elif calData[i][3] == "UREF":
+            padx  = int(data[i], 16)
+            koeff = calData[i][2][0]
+            
+            res = koeff * 1023/padx
+            
+            calibratedData["UUID"].append(calData[i][0])
+            calibratedData["DATA"].append(res)
+            
+        # elif calData[i][3] == "TPROZ":
+        #     padx  = int(data[i], 16)
+        #     T25 = calData[i][2][0]
+        #     Ra  = calData[i][2][1]
+        #     R25 = calData[i][2][2]
+        #     B   = calData[i][2][3]
+            
+        #     res = (1/T25 + np.log(Ra*(1023/padx-1)/R25)/B)**(-1) - 273.15
+            
+        #     calibratedData["UUID"].append(calData[i][0])
+        #     calibratedData["DATA"].append(res)
+            
+        # elif calData[i][3] == "TPROZ_OV":
+        #     padx  = int(data[i], 16)
+        #     T25 = calData[i][2][0]
+        #     R25 = calData[i][2][1]
+        #     B   = calData[i][2][2]
+            
+        #     Rth = 68000 / (31.3 * padx/1023 - 1) - 2200
+        #     res = (1/T25 + np.log(Rth/R25)/B)**(-1) - 273.15
+            
+        #     calibratedData["UUID"].append(calData[i][0])
+        #     calibratedData["DATA"].append(res)
+        
         elif calData[i][3] == "NTC":
             pass    # TODO: Weitere fehlende KalFunkTypen hinzufügen
 
