@@ -174,17 +174,17 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         headerLabelList = ["Gerätename", "Datensatznr.", "Fehlerzähler"]
         
         self.fehlerLabelListe = [ 
-            [self.fehlerLabel_A,    "TeleA_Nummer"],
-            [self.fehlerLabel_B,    "TeleB_Nummer"],
-            [self.fehlerLabel_IW,   "TeleIW_Nummer"],
+            [self.fehlerLabel_A,    "Tele-A_Nummer"],
+            [self.fehlerLabel_B,    "Tele-B_Nummer"],
+            [self.fehlerLabel_IW,   "Tele-IW_Nummer"],
             [self.fehlerLabel_G201, "G20-1_Nummer"],
             [self.fehlerLabel_G161, "G16-1_Nummer"]
             ]
         
         self.datensatzLabelListe = [
-            [self.datensatzLabel_A,    "TeleA_Nummer"],
-            [self.datensatzLabel_B,    "TeleB_Nummer"],
-            [self.datensatzLabel_IW,   "TeleIW_Nummer"],
+            [self.datensatzLabel_A,    "Tele-A_Nummer"],
+            [self.datensatzLabel_B,    "Tele-B_Nummer"],
+            [self.datensatzLabel_IW,   "Tele-IW_Nummer"],
             [self.datensatzLabel_G201, "G20-1_Nummer"],
             [self.datensatzLabel_G161, "G16-1_Nummer"]
             ]
