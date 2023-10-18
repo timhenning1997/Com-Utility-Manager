@@ -153,3 +153,4 @@ cython_debug/
 last_save.json
 offsetKorrektur.txt
 .python-version
+/LogFiles/CalibratorCommunication.txt

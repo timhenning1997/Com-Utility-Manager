@@ -12,8 +12,8 @@ from PyQt5.QtCore import QThreadPool, pyqtSignal, Qt, QSize, QTimer
 from PyQt5.QtGui import QIcon, QFont
 from PyQt5.QtWidgets import QMainWindow, QPushButton, QAction, QApplication, QFileDialog, QMenu, QTableWidget, \
     QHBoxLayout, QWidget, QHeaderView, QTableWidgetItem, QMessageBox, QTextEdit, QLineEdit, QVBoxLayout, QSplitter, \
-    QLabel
-from MeasuringPointListWindow import MeasuringPointListWindow
+    QLabel, QScrollArea
+from HelperWindows import MeasuringPointListWindow, ScrollableLabelWindow
 from PortMenu import PortMenu
 from SerialConnectWindow import SerialConnectWindow
 from SerialWorker import SerialThread
@@ -29,6 +29,7 @@ from WindowBetriebsmesstechnik import WindowBetriebsmesstechnik
 from WindowTeleTableView import WindowTeleTableView
 from WindowSynthetischeDaten import WindowSynthetischeDaten
 from WindowTempCalFritteuse import WindowTempCalFritoese
+from WindowStationaritaet import WindowStationaritaet
 from WindowTest import WindowTest
 
 
@@ -49,7 +50,8 @@ class ConnectionHubWindow(QMainWindow):
     receiveCalibratedSerialDataSignal = pyqtSignal(object, object, object)
     failedSendSerialDataSignal = pyqtSignal(object, object)
     startedSerialRecordingSignal = pyqtSignal(object)
-    stopedSerialRecordingSignal = pyqtSignal(object)
+    stoppedSerialRecordingSignal = pyqtSignal(object)
+    globalVarsChangedSignal = pyqtSignal(str, str)
 
     def __init__(self):
         super().__init__()
@@ -58,6 +60,7 @@ class ConnectionHubWindow(QMainWindow):
         self.connectedPorts = []
         self.calibrationFiles = {}
         self.measuringPointListFiles = []
+        self.globalVars = {}
 
         self._windowType = "Hub"
 
@@ -127,7 +130,7 @@ class ConnectionHubWindow(QMainWindow):
         self.receiveSerialDataSignal.connect(self.printReceivedData)
         self.failedSendSerialDataSignal.connect(self.printFailedSendData)
         self.startedSerialRecordingSignal.connect(self.printStartRecording)
-        self.stopedSerialRecordingSignal.connect(self.printStopRecording)
+        self.stoppedSerialRecordingSignal.connect(self.printStopRecording)
 
     def createStatusBar(self):
         self.statusBar().showMessage("")
@@ -141,9 +144,13 @@ class ConnectionHubWindow(QMainWindow):
         actSaveAs = QAction('&Save layout', self, triggered=self.onFileSaveAs)
         actOpen = QAction('&Open layout', self, triggered=self.onFileOpen)
         actMeasurementListOpen = QAction('Open &Measurement list', self, triggered=self.onMeasurementListOpen)
+        actGlobalVarsOpen = QAction('Open &Global variables', self, triggered=self.onGlobalVarsOpen)
+        actGlobalVarsShow = QAction('Show Global &variables', self, triggered=self.showGlobalVars)
         fileMenu.addAction(actSaveAs)
         fileMenu.addAction(actOpen)
         fileMenu.addAction(actMeasurementListOpen)
+        fileMenu.addAction(actGlobalVarsOpen)
+        fileMenu.addAction(actGlobalVarsShow)
 
         tableMenu = QMenu("&Table", self)
         act = QAction("Show/Hide Columns", self)
@@ -199,6 +206,7 @@ class ConnectionHubWindow(QMainWindow):
         actCreateTeleTableViewWindow = QAction('Tele Table &View', self, triggered=self.createTeleTableViewWindow)
         actCreateSynthetischeDatenWindow = QAction('Synthetische &Daten', self, triggered=self.createSynthetischeDatenWindow)
         actCreateTempCalFritoeseWindow = QAction('Temp. Cal. &Fritteuse', self,triggered=self.createTempCalFritoeseWindow)
+        actCreateStationaritaetWindow = QAction('Stat&ionaritaet', self,triggered=self.createStationaritaetWindow)
         actCreateTestWindow = QAction('T&est', self, triggered=self.createTestWindow)
         toolMenu.addAction(actCreateTerminal)
         toolMenu.addAction(actCreateTablePlotter)
@@ -209,6 +217,7 @@ class ConnectionHubWindow(QMainWindow):
         toolMenu.addAction(actCreateTeleTableViewWindow)
         toolMenu.addAction(actCreateSynthetischeDatenWindow)
         toolMenu.addAction(actCreateTempCalFritoeseWindow)
+        toolMenu.addAction(actCreateStationaritaetWindow)
         toolMenu.addAction(actCreateTestWindow)
 
         self.menuBar().addMenu(fileMenu)
@@ -232,7 +241,7 @@ class ConnectionHubWindow(QMainWindow):
         serialThread.signals.receivedData.connect(lambda obj, data: self.receiveSerialDataSignal.emit(obj, data))
         serialThread.signals.failedSendData.connect(lambda obj, data: self.failedSendSerialDataSignal.emit(obj, data))
         serialThread.signals.startRecording.connect(lambda obj: self.startedSerialRecordingSignal.emit(obj))
-        serialThread.signals.stopRecording.connect(lambda obj: self.stopedSerialRecordingSignal.emit(obj))
+        serialThread.signals.stopRecording.connect(lambda obj: self.stoppedSerialRecordingSignal.emit(obj))
 
         self.sendSerialWriteSignal.connect(serialThread.writeSerial)
         self.killSerialConnectionSignal.connect(serialThread.kill)
@@ -593,6 +602,10 @@ class ConnectionHubWindow(QMainWindow):
         self.mplw = MeasuringPointListWindow(path, self.measuringPointListFiles)
         self.mplw.show()
 
+    def showGlobalVars(self):
+        self.globalVarsLabel = ScrollableLabelWindow(json.dumps(self.globalVars, indent=2))
+        self.globalVarsLabel.show()
+
     def calibrateRawData(self, port: str, data):
         if port in self.calibrationFiles:
             if str(len(data) - 1) in self.calibrationFiles[port]:
@@ -609,13 +622,22 @@ class ConnectionHubWindow(QMainWindow):
         dlg.setIcon(QMessageBox.Question)
         return dlg.exec()
 
+    def showInfoBox(self, title: str = "Message", text: str = ""):
+        dlg = QMessageBox(self)
+        dlg.setWindowTitle(title)
+        dlg.setText(text)
+        dlg.setStandardButtons(QMessageBox.Ok)
+        dlg.setIcon(QMessageBox.Information)
+        return dlg.exec()
+
     def connectWindowToSignals(self, window: AbstractWindow):
         self.madeSerialConnectionSignal.connect(window.madeSerialConnection)
         self.lostSerialConnectionSignal.connect(window.lostSerialConnection)
         self.receiveCalibratedSerialDataSignal.connect(window.receiveCalibratedSerialData)
         self.failedSendSerialDataSignal.connect(window.failedSendSerialData)
         self.startedSerialRecordingSignal.connect(window.startedSerialRecording)
-        self.stopedSerialRecordingSignal.connect(window.stopSerialRecording)
+        self.stoppedSerialRecordingSignal.connect(window.stopSerialRecording)
+        self.globalVarsChangedSignal.connect(window.globalVarsChanged)
 
         window.sendSerialWriteSignal.connect(self.serialWriteData)
         window.killSerialConnectionSignal.connect(self.killSerialConnection)
@@ -675,6 +697,12 @@ class ConnectionHubWindow(QMainWindow):
         self.windows.append(window)
         self.connectWindowToSignals(window)
         return window
+    
+    def createStationaritaetWindow(self):
+        window = WindowStationaritaet(self)
+        self.windows.append(window)
+        self.connectWindowToSignals(window)
+        return window
 
     def createTestWindow(self):
         window = WindowTest(self)
@@ -715,6 +743,30 @@ class ConnectionHubWindow(QMainWindow):
                 self.measuringPointListTableAddRow(filePath)
             else:
                 print("File not existing!")
+
+    def onGlobalVarsOpen(self):
+        fname, filter = QFileDialog.getOpenFileName(self, 'Open graph from file', "", "*.json", "",
+                                                    QFileDialog.DontUseNativeDialog)
+        if fname != '' and os.path.isfile(fname):
+            with open(fname, "r") as file:
+                raw_data = file.read()
+                try:
+                    self.globalVars = json.loads(raw_data)
+                    if type(self.globalVars) != dict:
+                        self.globalVars = {}
+                        self.showInfoBox("Wrong format!", "JSON file should only contain exactly one dictionary.")
+                    else:
+                        self.globalVarsChangedSignal.emit("", "ALL")
+                except Exception as e:
+                    self.showInfoBox("Loading failed!", repr(e))
+
+    def setGlobalVars(self, dictionary: dict, senderID: str = "", keyChanged: str = "ALL"):
+        self.globalVars = dictionary
+        self.globalVarsChangedSignal.emit(senderID, keyChanged)
+
+    def setGlobalVarsEntry(self, key: str, value, senderID: str = "", keyChanged: str = ""):
+        self.globalVars[key] = value
+        self.globalVarsChangedSignal.emit(senderID, keyChanged)
 
     def fileSave(self, filename: str = None):
         QApplication.setOverrideCursor(Qt.WaitCursor)
@@ -771,6 +823,7 @@ class ConnectionHubWindow(QMainWindow):
             ('ports', ports),
             ('measuringPointListFiles', measuringPointListFiles),
             ('windows', windows),
+            ('globalVars', self.globalVars)
         ])
 
     def deserialize(self, data: dict) -> bool:
@@ -856,5 +909,10 @@ class ConnectionHubWindow(QMainWindow):
                 self.createSynthetischeDatenWindow().deserialize(window_data)
             if window_data["_windowType"] == "TempCalFritteuse":
                 self.createTempCalFritoeseWindow().deserialize(window_data)
+            if window_data["_windowType"] == "Stationaritaet":
+                self.createStationaritaetWindow().deserialize(window_data)
             if window_data["_windowType"] == "Test":
                 self.createTestWindow().deserialize(window_data)
+
+        self.globalVars = data['globalVars']
+

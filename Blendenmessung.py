@@ -40,15 +40,14 @@ class Blendenmessung():
         self.cv     = PropsSI('CVMASS','T',self.T1,'P',self.p1,'air') # isochoric heat capacity [J/Kg*K]
         self.Rs     = 287.1
         
-        self.beta   = d/D       # Durchmesserverhältnis
+        
 
-        if self.dp <= 0:
+        if self.dp <= 0 or D <= 0.0 or d <= 0.0 or T1 <= 273.15:
             self.doNotCalculate = True
-        
-        
-        self.kappa  = self.cp/self.cv   # Isentropenexponent
-        # e = epsilon --> Expansionszahl
-        self.e      = 1-(0.351+0.256*self.beta**4+0.93*self.beta**8)*(1-(self.p2/self.p1)**(1/self.kappa))         
+        else:
+            self.beta   = d/D       # Durchmesserverhältnis
+            self.kappa  = self.cp/self.cv   # Isentropenexponent
+            self.e      = 1-(0.351+0.256*self.beta**4+0.93*self.beta**8)*(1-(self.p2/self.p1)**(1/self.kappa)) # Expansionszahl (epsilon)   
         
         self.error_msg = ""
         

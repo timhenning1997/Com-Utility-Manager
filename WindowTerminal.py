@@ -128,7 +128,6 @@ class WindowTerminal(AbstractWindow):
             data += b'\r'
         if self.newLineCharCombobox.currentText() == "CR&NL   |Sowhol CR als auch NL":
             data += b'\r\n'
-        print("asdasda")
         self.sendSerialData(data)
 
     def save(self):
