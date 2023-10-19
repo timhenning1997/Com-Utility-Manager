@@ -91,7 +91,7 @@ class WindowStationaritaet(AbstractWindow):
         TM34    = self.findCalibratedDataByUUID(data, dataInfo, "Tele-B_PAD7_5") # TM34
         TM35    = self.findCalibratedDataByUUID(data, dataInfo, "Tele-B_PAD7_6") # TM35
         TM40    = self.findCalibratedDataByUUID(data, dataInfo, "Tele-B_PAD6_4") # TM40
-        RPM     = self.findCalibratedDataByUUID(data, dataInfo, "G20-1_Periode_0") # RPM
+        RPM     = self.findCalibratedDataByUUID(data, dataInfo, "G16-1_Periode_0") # RPM
         DSA     = self.findCalibratedDataByUUID(data, dataInfo, "G16-1_PC3_1") # DSA
         DSBL9   = self.findCalibratedDataByUUID(data, dataInfo, "G20-1_A9") # DSBL9
         DdSBL9  = self.findCalibratedDataByUUID(data, dataInfo, "G20-1_A10") # DdSBL9
