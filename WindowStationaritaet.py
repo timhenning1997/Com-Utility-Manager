@@ -108,7 +108,7 @@ class WindowStationaritaet(AbstractWindow):
             
             if self.MantelT_anzahlEmpfangenerDaten % 10 == 0 and self.MantelT_anzahlEmpfangenerDaten > 5:
                 
-                x       = np.array(self.MantelT_time) - self.MantelT_time[0] / 3600
+                x       = (np.array(self.MantelT_time) - self.MantelT_time[0]) / 3600
                 grad    = np.polyfit(x, self.MantelT, 1)[0]
                 diff    = max(self.MantelT)- min(self.MantelT)
                 puffer  = min(100, (self.MantelT_time[-1] - self.MantelT_time[0]) / self.zeitraum * 100)
@@ -140,7 +140,7 @@ class WindowStationaritaet(AbstractWindow):
             
             if self.Drehzahl_anzahlEmpfangenerDaten % 10 == 0 and self.Drehzahl_anzahlEmpfangenerDaten > 5:
                 
-                x       = np.array(self.Drehzahl_time) - self.Drehzahl_time[0] / 3600
+                x       = (np.array(self.Drehzahl_time) - self.Drehzahl_time[0]) / 3600
                 grad    = np.polyfit(x, self.Drehzahl, 1)[0]
                 diff    = max(self.Drehzahl)- min(self.Drehzahl)
                 puffer  = min(100, (self.Drehzahl_time[-1] - self.Drehzahl_time[0]) / self.zeitraum * 100)
@@ -172,7 +172,7 @@ class WindowStationaritaet(AbstractWindow):
             
             if self.Druck_anzahlEmpfangenerDaten % 10 == 0 and self.Druck_anzahlEmpfangenerDaten > 5:
                 
-                x       = np.array(self.Druck_time) - self.Druck_time[0] / 3600
+                x       = (np.array(self.Druck_time) - self.Druck_time[0]) / 3600
                 grad    = np.polyfit(x, self.Druck, 1)[0]
                 diff    = max(self.Druck)- min(self.Druck)
                 puffer  = min(100, (self.Druck_time[-1] - self.Druck_time[0]) / self.zeitraum * 100)
@@ -206,7 +206,7 @@ class WindowStationaritaet(AbstractWindow):
             
             if self.Massestrom_anzahlEmpfangenerDaten % 10 == 0 and self.Massestrom_anzahlEmpfangenerDaten > 5:
                 
-                x       = np.array(self.Massestrom_time) - self.Massestrom_time[0] / 3600
+                x       = (np.array(self.Massestrom_time) - self.Massestrom_time[0]) / 3600
                 grad    = np.polyfit(x, self.Massestrom, 1)[0]
                 diff    = max(self.Massestrom)- min(self.Massestrom)
                 puffer  = min(100, (self.Massestrom_time[-1] - self.Massestrom_time[0]) / self.zeitraum * 100)
@@ -238,7 +238,7 @@ class WindowStationaritaet(AbstractWindow):
             
             if self.ZuluftT_anzahlEmpfangenerDaten % 10 == 0 and self.ZuluftT_anzahlEmpfangenerDaten > 5:
                 
-                x       = np.array(self.ZuluftT_time) - self.ZuluftT_time[0] / 3600
+                x       = (np.array(self.ZuluftT_time) - self.ZuluftT_time[0]) / 3600
                 grad    = np.polyfit(x, self.ZuluftT, 1)[0]
                 diff    = max(self.ZuluftT)- min(self.ZuluftT)
                 puffer  = min(100, (self.ZuluftT_time[-1] - self.ZuluftT_time[0]) / self.zeitraum * 100)
