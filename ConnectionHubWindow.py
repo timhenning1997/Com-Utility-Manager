@@ -825,6 +825,10 @@ class ConnectionHubWindow(QMainWindow):
         for window in self.windows:
             window.close()
 
+        while self.measuringPointListTable.rowCount() > 0:
+            self.measuringPointListTable.removeRow(0)
+        self.measuringPointListFiles = []
+
         self.resize(data['_windowSize'][0], data['_windowSize'][1])
 
         # Check if Window is outside of screen:    Auskommentiert, weil unnütz für die meisten Fälle
