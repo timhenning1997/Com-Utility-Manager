@@ -457,7 +457,7 @@ class WindowTempCalFritoese(AbstractWindow):
                             bufferIsEmpty = True
                     if bufferIsEmpty == False:
                         dataList = []
-                        headerList = ["Time", "Set temp.", "Actual temp.", "Headers"]
+                        headerList = ["Time", "Unix Time", "Set temp.", "Actual temp."]
                         if self.portFilter == []:
                             for key in self.incomingDataBuffer.keys():
                                 for counter, data in enumerate(self.incomingDataBuffer[key]):
@@ -478,10 +478,10 @@ class WindowTempCalFritoese(AbstractWindow):
                                 self.incomingDataBuffer[port] = []
                         # self.saveDataBuffer.append([time.time(), self.toDec(answer[4:8]) / 100, dataList])
                         with open(Path(self.filePath, self.fileName.replace(".txt", "") + self._separateFileStr + ".txt"), 'a') as file:
-                            line = str(time.time()) + "\t"
+                            line = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + "\t"
+                            line += str(time.time()) + "\t"
                             line += str(self.setPointTemp) + "\t"
                             line += str(self.toDec(answer[4:8])/100) + "\t"
-                            line += "\"[" + ", ".join(headerList) + "]\"\t"
                             line += "\t".join(dataList) + "\n"
                             file.write(line)
 
@@ -493,6 +493,11 @@ class WindowTempCalFritoese(AbstractWindow):
                                 self.currentWorkingRow += 1
                                 self.setState("setNextTemperature")
                             else:
+                                with open(Path(self.filePath, self.fileName.replace(".txt", "") + self._separateFileStr + ".txt"), 'r+') as file:
+                                    content = file.read()
+                                    file.seek(0, 0)
+                                    file.write("\t".join(headerList) + "\n" + content)
+
                                 print("measuring done!")
                                 self.currentWorkingRow = 0
                                 self.setState("stopTemperatureControl")
