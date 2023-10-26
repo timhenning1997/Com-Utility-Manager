@@ -262,8 +262,11 @@ class AbstractWindow(QMainWindow):
         else:
             return None
 
-    def sendSerialData(self, data):
-        self.sendSerialWriteSignal.emit("|".join(self.menuFilter.activePorts), data)
+    def sendSerialData(self, data, ports: list = None):
+        if ports is None:
+            self.sendSerialWriteSignal.emit("|".join(self.menuFilter.activePorts), data)
+        else:
+            self.sendSerialWriteSignal.emit("|".join(ports), data)
 
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
         pass

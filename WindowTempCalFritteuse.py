@@ -25,7 +25,7 @@ class GraphLine:
         self.y = []
         self.dataLine = None
 
-        self.maxLength = 60000
+        self.maxLength = 4000
 
     def appendDataPoint(self, y: float, x: float = None):
         if self.dataLine is None:
@@ -52,7 +52,7 @@ class WindowTempCalFritoese(AbstractWindow):
         self.isActiveCommunication = False
         self.commMessageBacklog = []
         self.currentCommMassage = []
-        self.maxCommBacklogSize = 10
+        self.maxCommBacklogSize = 3
 
         self.tempInBoundsStartTimer = 0
 
@@ -60,6 +60,7 @@ class WindowTempCalFritoese(AbstractWindow):
         self.incomingDataBuffer = {}
         self.saveDataBuffer = []
         self.gatheredDataCounter = 0
+        self._separateFileStr = ""
 
         self.filePath = str(Path(os.getcwd()))
         self.fileName = "calibration"
@@ -86,7 +87,7 @@ class WindowTempCalFritoese(AbstractWindow):
 
         self.askForCurrentTempTimer = QTimer(self)
         self.askForCurrentTempTimer.timeout.connect(self.askForTemp)
-        self.askForCurrentTempTimer.start(2000)
+        self.askForCurrentTempTimer.start(2500)
 
         self.addressDict = {"00": ["vSP", "Setpoint, temperature controller", "0.01°C"],
                             "01": ["vTI", "Internal temperature", "0.01°C"],
@@ -105,13 +106,23 @@ class WindowTempCalFritoese(AbstractWindow):
                             }
 
         # _____________________Tab Settings____________________
+        fritteusenComPortLabel = QLabel("Fritteusen COM")
+        fritteusenComPortLabel.setFixedWidth(100)
+        self.fritteusenComPortLineEdit = QLineEdit("")
+        self.fritteusenComPortLineEdit.setPlaceholderText("COMXY")
+        self.fritteusenComPortLineEdit.setFixedWidth(60)
+        fritteusenComPortLayout = QHBoxLayout()
+        fritteusenComPortLayout.addWidget(fritteusenComPortLabel)
+        fritteusenComPortLayout.addWidget(self.fritteusenComPortLineEdit)
+        fritteusenComPortLayout.addStretch()
+
         filePathLabel = QLabel("File path")
         filePathLabel.setFixedWidth(100)
         self.openFilePathDialogButton = QPushButton()
         self.openFilePathDialogButton.setFixedWidth(40)
         self.openFilePathDialogButton.setIcon(QIcon(resource_path("res/Icon/folder.ico")))
         self.openFilePathDialogButton.setIconSize(QSize(25, 25))
-        self.openFilePathDialogButton.clicked.connect(self.recordPathButtonPressed)
+        self.openFilePathDialogButton.clicked.connect(self.openFilePathButtonPressed)
         self.showFilePathLabel = QLabel(str(Path(os.getcwd())))
         filePathLayout = QHBoxLayout()
         filePathLayout.addWidget(filePathLabel)
@@ -120,13 +131,21 @@ class WindowTempCalFritoese(AbstractWindow):
 
         fileNameLabel = QLabel("File name")
         fileNameLabel.setFixedWidth(100)
-        self.fileNameLineEdit = QLineEdit("calibration")
-        fileExtensionLabel = QLabel(".csv")
+        self.fileNameLineEdit = QLineEdit("DATE_TIME_calibration")
+        self.fileNameLineEdit.setToolTip("DATE: replaced to jjjj-mm-dd | TIME: replaced to hh-mm-ss")
+        fileExtensionLabel = QLabel(".txt")
         fileExtensionLabel.setFixedWidth(60)
         fileNameLayout = QHBoxLayout()
         fileNameLayout.addWidget(fileNameLabel)
         fileNameLayout.addWidget(self.fileNameLineEdit)
         fileNameLayout.addWidget(fileExtensionLabel)
+
+        separateFilesLabel = QLabel("")
+        separateFilesLabel.setFixedWidth(110)
+        self.separateFilesCB = QCheckBox("separate files")
+        separateFilesLayout = QHBoxLayout()
+        separateFilesLayout.addWidget(separateFilesLabel)
+        separateFilesLayout.addWidget(self.separateFilesCB)
 
         portFilterLabel = QLabel("Recorded ports")
         portFilterLabel.setFixedWidth(100)
@@ -141,7 +160,7 @@ class WindowTempCalFritoese(AbstractWindow):
         portFilterLayout.addSpacing(66)
 
         fromLabel = QLabel("From")
-        fromLabel.setFixedWidth(100)
+        fromLabel.setFixedWidth(140)
         self.fromSpinBox = QSpinBox()
         self.fromSpinBox.setFixedWidth(80)
         self.fromSpinBox.setRange(0, 1000)
@@ -162,7 +181,7 @@ class WindowTempCalFritoese(AbstractWindow):
         fromToLayout.addStretch()
 
         inLabel = QLabel("In")
-        inLabel.setFixedWidth(100)
+        inLabel.setFixedWidth(140)
         self.inSpinBox = QSpinBox()
         self.inSpinBox.setFixedWidth(80)
         self.inSpinBox.setRange(1, 1000)
@@ -175,7 +194,7 @@ class WindowTempCalFritoese(AbstractWindow):
         inStepsLayout.addStretch()
 
         hysteresisLabel = QLabel("Hysteresis")
-        hysteresisLabel.setFixedWidth(100)
+        hysteresisLabel.setFixedWidth(140)
         self.hysteresisCB = QCheckBox()
         self.hysteresisCB.setChecked(True)
         hysteresisLayout = QHBoxLayout()
@@ -184,7 +203,7 @@ class WindowTempCalFritoese(AbstractWindow):
         hysteresisLayout.addStretch()
 
         holdTimeLabel = QLabel("Hold time")
-        holdTimeLabel.setFixedWidth(100)
+        holdTimeLabel.setFixedWidth(140)
         self.holdTimeSpinBox = QSpinBox()
         self.holdTimeSpinBox.setFixedWidth(80)
         self.holdTimeSpinBox.setRange(0, 9999)
@@ -195,8 +214,8 @@ class WindowTempCalFritoese(AbstractWindow):
         holdTimeLayout.addWidget(self.holdTimeSpinBox)
         holdTimeLayout.addStretch()
 
-        allowedTempDeviationLabel = QLabel("Temp deviation")
-        allowedTempDeviationLabel.setFixedWidth(100)
+        allowedTempDeviationLabel = QLabel("Approach temp diff")
+        allowedTempDeviationLabel.setFixedWidth(140)
         self.allowedTempDeviationSpinBox = QDoubleSpinBox()
         self.allowedTempDeviationSpinBox.setFixedWidth(80)
         self.allowedTempDeviationSpinBox.setRange(0, 9999)
@@ -207,8 +226,20 @@ class WindowTempCalFritoese(AbstractWindow):
         allowedTempDeviationLayout.addWidget(self.allowedTempDeviationSpinBox)
         allowedTempDeviationLayout.addStretch()
 
+        allowedHoldTempDeviationLabel = QLabel("Hold temp diff")
+        allowedHoldTempDeviationLabel.setFixedWidth(140)
+        self.allowedHoldTempDeviationSpinBox = QDoubleSpinBox()
+        self.allowedHoldTempDeviationSpinBox.setFixedWidth(80)
+        self.allowedHoldTempDeviationSpinBox.setRange(0, 9999)
+        self.allowedHoldTempDeviationSpinBox.setValue(0.1)
+        self.allowedHoldTempDeviationSpinBox.setSuffix(" K")
+        allowedHoldTempDeviationLayout = QHBoxLayout()
+        allowedHoldTempDeviationLayout.addWidget(allowedHoldTempDeviationLabel)
+        allowedHoldTempDeviationLayout.addWidget(self.allowedHoldTempDeviationSpinBox)
+        allowedHoldTempDeviationLayout.addStretch()
+
         measurementsLabel = QLabel("Measurements")
-        measurementsLabel.setFixedWidth(100)
+        measurementsLabel.setFixedWidth(140)
         self.measurementsSpinBox = QSpinBox()
         self.measurementsSpinBox.setFixedWidth(80)
         self.measurementsSpinBox.setRange(0, 9999)
@@ -217,6 +248,15 @@ class WindowTempCalFritoese(AbstractWindow):
         measurementsLayout.addWidget(measurementsLabel)
         measurementsLayout.addWidget(self.measurementsSpinBox)
         measurementsLayout.addStretch()
+
+        saveTypeLabel = QLabel("Save as")
+        saveTypeLabel.setFixedWidth(140)
+        self.saveTypeComboBox = QComboBox()
+        self.saveTypeComboBox.addItems(["value", "raw"])
+        saveTypeLayout = QHBoxLayout()
+        saveTypeLayout.addWidget(saveTypeLabel)
+        saveTypeLayout.addWidget(self.saveTypeComboBox)
+        saveTypeLayout.addStretch()
 
         self.createTablePB = QPushButton("Create table")
         self.createTablePB.setFixedSize(150, 50)
@@ -231,15 +271,19 @@ class WindowTempCalFritoese(AbstractWindow):
         groupBoxLayout.addLayout(hysteresisLayout)
         groupBoxLayout.addLayout(holdTimeLayout)
         groupBoxLayout.addLayout(allowedTempDeviationLayout)
+        groupBoxLayout.addLayout(allowedHoldTempDeviationLayout)
         groupBoxLayout.addLayout(measurementsLayout)
+        groupBoxLayout.addLayout(saveTypeLayout)
         groupBoxLayout.addLayout(createTableLayout)
 
         groupbox = QGroupBox("Measuring procedure")
         groupbox.setLayout(groupBoxLayout)
 
         scrollLayout = QVBoxLayout()
+        scrollLayout.addLayout(fritteusenComPortLayout)
         scrollLayout.addLayout(filePathLayout)
         scrollLayout.addLayout(fileNameLayout)
+        scrollLayout.addLayout(separateFilesLayout)
         scrollLayout.addLayout(portFilterLayout)
         scrollLayout.addSpacing(20)
         scrollLayout.addWidget(groupbox)
@@ -339,9 +383,6 @@ class WindowTempCalFritoese(AbstractWindow):
         mainWidget.setLayout(mainLayout)
         self.setCentralWidget(mainWidget)
 
-        with open(Path('LogFiles/CalibratorCommunication.txt'), 'w') as f:
-            f.write(datetime.now().strftime("_____%d/%m/%Y_____") + "\n")
-
     def runStateMachine(self, answerReceived: bool = False, answer: str = ""):
         if self.currentState == "idle":
             pass
@@ -394,6 +435,7 @@ class WindowTempCalFritoese(AbstractWindow):
                             self.gatheredDataCounter = 0
                             self.setCellStatus(self.currentWorkingRow, 1, text=str(self.holdTime) + "/" + str(self.holdTime) + " s", status="DONE")
                             self.setCellStatus(self.currentWorkingRow, 2, status="WORKING")
+                            self._separateFileStr = "_" + str(self.currentWorkingRow) if self.separateFilesCB.isChecked() else ""
                             self.setState("measuring")
                     else:
                         self.tempInBoundsStartTimer = time.time()
@@ -414,21 +456,35 @@ class WindowTempCalFritoese(AbstractWindow):
                         else:
                             bufferIsEmpty = True
                     if bufferIsEmpty == False:
-                        with open(Path(self.filePath, self.fileName.replace(".csv", "") + ".csv"), 'a') as f_object:
-                            writer_object = writer(f_object)
-                            dataList = []
-                            if self.portFilter == []:
-                                for key in self.incomingDataBuffer.keys():
-                                    for data in self.incomingDataBuffer[key]:
+                        dataList = []
+                        headerList = ["Time", "Unix Time", "Set temp.", "Actual temp."]
+                        if self.portFilter == []:
+                            for key in self.incomingDataBuffer.keys():
+                                for counter, data in enumerate(self.incomingDataBuffer[key]):
+                                    if self.saveTypeComboBox.currentText() == "raw":
                                         dataList.append(data)
-                                    self.incomingDataBuffer[key] = []
-                            else:
-                                for port in self.portFilter:
-                                    for data in self.incomingDataBuffer[port]:
+                                    else:
+                                        dataList.append(str(int(data, 16)))
+                                    headerList.append(str(key) + "_" + str(counter))
+                                self.incomingDataBuffer[key] = []
+                        else:
+                            for port in self.portFilter:
+                                for counter, data in enumerate(self.incomingDataBuffer[port]):
+                                    if self.saveTypeComboBox.currentText() == "raw":
                                         dataList.append(data)
-                                    self.incomingDataBuffer[port] = []
-                            # self.saveDataBuffer.append([time.time(), self.toDec(answer[4:8]) / 100, dataList])
-                            writer_object.writerow([time.time(), self.setPointTemp, self.toDec(answer[4:8])/100] + dataList)
+                                    else:
+                                        dataList.append(str(int(data, 16)))
+                                    headerList.append(str(port) + "_" + str(counter))
+                                self.incomingDataBuffer[port] = []
+                        # self.saveDataBuffer.append([time.time(), self.toDec(answer[4:8]) / 100, dataList])
+                        with open(Path(self.filePath, self.fileName.replace(".txt", "") + self._separateFileStr + ".txt"), 'a') as file:
+                            line = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + "\t"
+                            line += str(time.time()) + "\t"
+                            line += str(self.setPointTemp) + "\t"
+                            line += str(self.toDec(answer[4:8])/100) + "\t"
+                            line += "\t".join(dataList) + "\n"
+                            file.write(line)
+
                         self.gatheredDataCounter += 1
                         self.setCellStatus(self.currentWorkingRow, 2, text=str(self.gatheredDataCounter) + "/" + str(self.requiredDataNumber), status="WORKING")
                         if self.gatheredDataCounter >= self.requiredDataNumber:
@@ -437,6 +493,11 @@ class WindowTempCalFritoese(AbstractWindow):
                                 self.currentWorkingRow += 1
                                 self.setState("setNextTemperature")
                             else:
+                                with open(Path(self.filePath, self.fileName.replace(".txt", "") + self._separateFileStr + ".txt"), 'r+') as file:
+                                    content = file.read()
+                                    file.seek(0, 0)
+                                    file.write("\t".join(headerList) + "\n" + content)
+
                                 print("measuring done!")
                                 self.currentWorkingRow = 0
                                 self.setState("stopTemperatureControl")
@@ -488,13 +549,15 @@ class WindowTempCalFritoese(AbstractWindow):
     def createTable(self):
         self.filePath = self.showFilePathLabel.text()
         self.fileName = self.fileNameLineEdit.text()
+        self.fileName = self.fileName.replace("DATE", datetime.now().strftime("%Y-%m-%d"))
+        self.fileName = self.fileName.replace("TIME", datetime.now().strftime("%H-%M-%S"))
         startTemp = self.fromSpinBox.value()
         endTemp = self.toSpinBox.value()
         steps = self.inSpinBox.value()
         hysteresis = self.hysteresisCB.isChecked()
         holdTime = self.holdTimeSpinBox.value()
         self.setPointDiffReached = self.allowedTempDeviationSpinBox.value()
-        self.setPointDiffHold = self.allowedTempDeviationSpinBox.value()
+        self.setPointDiffHold = self.allowedHoldTempDeviationSpinBox.value()
         measurements = self.measurementsSpinBox.value()
 
         while self.table.rowCount() > 0:
@@ -505,7 +568,7 @@ class WindowTempCalFritoese(AbstractWindow):
             self.addRow(temp, holdTime, measurements)
 
         if hysteresis:
-            for i in range(1, steps + 1):
+            for i in range(0, steps + 1):
                 temp = int(endTemp - (endTemp - startTemp) / steps * i)
                 self.addRow(temp, holdTime, measurements)
         self.setTableEditMode(True)
@@ -617,9 +680,7 @@ class WindowTempCalFritoese(AbstractWindow):
         for port in text.split(","):
             self.portFilter.append(port.strip().upper())
 
-
-
-    def recordPathButtonPressed(self, port):
+    def openFilePathButtonPressed(self, port):
         path = QFileDialog.getExistingDirectory(None, "Select Folder", "", QFileDialog.DontUseNativeDialog | QFileDialog.ShowDirsOnly)
         self.checkForValidSavePath(path)
 
@@ -632,6 +693,8 @@ class WindowTempCalFritoese(AbstractWindow):
         if serialParameters.readTextIndex == "read_line" and dataInfo["dataType"] == "RAW-Values" and type(data) == bytes:
             data = data.decode()
             if re.match(r"\{S[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]", data):
+                if self.fritteusenComPortLineEdit.text() == "":
+                    self.fritteusenComPortLineEdit.setText(serialParameters.port)
                 self.receiveCalibratorAnswer(data.strip())
         if serialParameters.readTextIndex == "read_WU_device" and dataInfo["dataType"] == "RAW-Values":
             self.incomingDataBuffer[serialParameters.port.upper()] = data
@@ -651,25 +714,15 @@ class WindowTempCalFritoese(AbstractWindow):
         self.textEdit.append("")
         self.textEdit.moveCursor(QTextCursor.End)
 
-        # ____________Write to log file__________________
-        with open(Path('LogFiles/CalibratorCommunication.txt'), 'a') as f:
-            f.write(" " + datetime.now().strftime("%H:%M:%S:%f"))
-            f.write(message[0:2] + " " + message[2:4] + " " + message[4:8])
-            if addess in self.addressDict.keys():
-                f.write("    | " + self.addressDict[addess][0].ljust(10) + " [" + self.addressDict[addess][1] + "]: " + str(value))
-                if self.addressDict[addess][2] != "":
-                    f.write(" * " + self.addressDict[addess][2])
-            f.write("\n")
-
         # ____________Append to graph__________________
-        if addess == "01" and self.currentCommMassage[3] == "askForTemp":
+        if len(self.currentCommMassage) > 0 and addess == "01" and self.currentCommMassage[3] == "askForTemp":
             self.graphLines["SetPoint"].appendDataPoint(self.setPointTemp)
             self.graphLines["Temp"].appendDataPoint(value/100)
         elif addess == "71" and self.currentCommMassage[3] == "askForTemp":
             self.graphLines["SetPoint"].appendDataPoint(self.setPointTemp)
 
         # ____________Run state machine__________________
-        if self.currentCommMassage[3] == "stateMachine":
+        if len(self.currentCommMassage) > 0 and self.currentCommMassage[3] == "stateMachine":
             self.runStateMachine(True, message)
         if len(self.commMessageBacklog) > 0:
             c = self.commMessageBacklog.pop(0)
@@ -679,9 +732,6 @@ class WindowTempCalFritoese(AbstractWindow):
         self.textEdit.setPlainText(self.textEdit.toPlainText() + ".....")
         self.textEdit.append("")
         self.textEdit.moveCursor(QTextCursor.End)
-
-        with open(Path('LogFiles/CalibratorCommunication.txt'), 'a') as f:
-            f.write(" " + datetime.now().strftime("%H:%M:%S:%f") + " .....\n")
 
         self.isActiveCommunication = False
         if self.currentCommMassage[4] > 0:
@@ -711,15 +761,19 @@ class WindowTempCalFritoese(AbstractWindow):
         self.isActiveCommunication = True
         self.waitforAnswerTimer.start(timeout)
         #self.textEdit.setPlainText(self.textEdit.toPlainText() + datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + " | ")
+        plainText = self.textEdit.toPlainText()
+        if len(plainText) > 6000:
+            self.textEdit.setPlainText(plainText[-5000:])
         self.textEdit.setPlainText(self.textEdit.toPlainText() + "{M " + address + " " + str(value) + "   -->   ")
         self.textEdit.moveCursor(QTextCursor.End)
-        with open(Path('LogFiles/CalibratorCommunication.txt'), 'a') as f:
-            f.write(datetime.now().strftime("%H:%M:%S:%f") + " {M " + address + " " + str(value) + "   -->   ")
         self.currentCommMassage = [address, value, timeout, sender, retryCount]
         self.sendData("{M" + address + str(value) + "\r\n")
 
     def sendData(self, data):
-        self.sendSerialData(data.encode('utf-8'))
+        if self.fritteusenComPortLineEdit.text() == "":
+            self.sendSerialData(data.encode('utf-8'))
+        else:
+            self.sendSerialData(data.encode('utf-8'), [self.fritteusenComPortLineEdit.text()])
 
     def toHex(self, decValue: int):
         return format(decValue, 'x').upper().zfill(4)
@@ -728,8 +782,37 @@ class WindowTempCalFritoese(AbstractWindow):
         return int(hexValue, 16)
 
     def save(self):
-        # Mögliche Rückgabewerte sind String/Int/Float/List/Dict
-        return ""
+        saveDict = {
+            "fritteusenComPort": self.fritteusenComPortLineEdit.text(),
+            "filePath": self.showFilePathLabel.text(),
+            "fileName": self.fileNameLineEdit.text(),
+            "separateFiles": self.separateFilesCB.isChecked(),
+            "recordedPorts": self.portFilterLineEdit.text(),
+            "fromSB": self.fromSpinBox.value(),
+            "toSB": self.toSpinBox.value(),
+            "inSB": self.inSpinBox.value(),
+            "hysteresisCB": self.hysteresisCB.isChecked(),
+            "holdTimeSB": self.holdTimeSpinBox.value(),
+            "tempDivSB": self.allowedTempDeviationSpinBox.value(),
+            "holdTempDivSB": self.allowedHoldTempDeviationSpinBox.value(),
+            "measurementsSB": self.measurementsSpinBox.value(),
+            "saveType": self.saveTypeComboBox.currentText()
+        }
+        return saveDict
 
     def load(self, data):
-        pass
+        self.fritteusenComPortLineEdit.setText(data["fritteusenComPort"])
+        self.checkForValidSavePath(data["filePath"])
+        self.fileNameLineEdit.setText(data["fileName"])
+        self.separateFilesCB.setChecked(data["separateFiles"])
+        self.portFilterLineEdit.setText(data["recordedPorts"])
+        self.fromSpinBox.setValue(data["fromSB"])
+        self.toSpinBox.setValue(data["toSB"])
+        self.inSpinBox.setValue(data["inSB"])
+        self.hysteresisCB.setChecked(data["hysteresisCB"])
+        self.holdTimeSpinBox.setValue(data["holdTimeSB"])
+        self.allowedTempDeviationSpinBox.setValue(data["tempDivSB"])
+        self.allowedHoldTempDeviationSpinBox.setValue(data["holdTempDivSB"])
+        self.measurementsSpinBox.setValue(data["measurementsSB"])
+        self.saveTypeComboBox.setCurrentText(data["saveType"])
+
