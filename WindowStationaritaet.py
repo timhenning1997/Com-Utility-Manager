@@ -20,7 +20,7 @@ class WindowStationaritaet(AbstractWindow):
         }
         
         rowNames = ["Mantel T", "Drehzahl", "Druck", "Massestrom", "Zuluft T"]
-        columnNames = ["Mittelwert", "Max-Min", "Gradient", "Zeitpuffer", "Stationarität"]
+        columnNames = ["Aktuell", "Mittelwert", "Max-Min", "Gradient", "Zeitpuffer", "Stationarität"]
         
         rows = len(rowNames)
         columns = len(columnNames)
@@ -119,12 +119,13 @@ class WindowStationaritaet(AbstractWindow):
                 else:
                     stat = False
                     self.datatable.item(0,4).setBackground(QColor(255, 128, 128))
-            
-                self.datatable.item(0, 0).setText("{0:12.2f} °C".format(np.mean(self.MantelT)))
-                self.datatable.item(0, 1).setText("{0:12.2f} °C".format(diff))
-                self.datatable.item(0, 2).setText("{0:12.2f} °C/h".format(grad)) 
-                self.datatable.item(0, 3).setText("{0:8.2f} %".format(puffer))
-                self.datatable.item(0, 4).setText("{0:}".format(stat)) 
+                    
+                self.datatable.item(0, 0).setText("{0:12.2f} °C".format(self.MantelT[-1]))
+                self.datatable.item(0, 1).setText("{0:12.2f} °C".format(np.mean(self.MantelT)))
+                self.datatable.item(0, 2).setText("{0:12.2f} °C".format(diff))
+                self.datatable.item(0, 3).setText("{0:12.2f} °C/h".format(grad)) 
+                self.datatable.item(0, 4).setText("{0:8.2f} %".format(puffer))
+                self.datatable.item(0, 5).setText("{0:}".format(stat)) 
                 
                 self.MantelT_anzahlEmpfangenerDaten = 0
                 
@@ -151,12 +152,13 @@ class WindowStationaritaet(AbstractWindow):
                 else:
                     stat = False
                     self.datatable.item(1,4).setBackground(QColor(255, 128, 128))
-            
-                self.datatable.item(1, 0).setText("{0:12.0f} rpm".format(np.mean(self.Drehzahl)))
-                self.datatable.item(1, 1).setText("{0:12.0f} rpm".format(diff))
-                self.datatable.item(1, 2).setText("{0:12.0f} rpm/h".format(grad)) 
-                self.datatable.item(1, 3).setText("{0:8.2f} %".format(puffer))
-                self.datatable.item(1, 4).setText("{0:}".format(stat)) 
+
+                self.datatable.item(1, 0).setText("{0:12.0f} °C".format(self.Drehzahl[-1]))
+                self.datatable.item(1, 1).setText("{0:12.0f} rpm".format(np.mean(self.Drehzahl)))
+                self.datatable.item(1, 2).setText("{0:12.0f} rpm".format(diff))
+                self.datatable.item(1, 3).setText("{0:12.0f} rpm/h".format(grad)) 
+                self.datatable.item(1, 4).setText("{0:8.2f} %".format(puffer))
+                self.datatable.item(1, 5).setText("{0:}".format(stat)) 
                 
                 self.Drehzahl_anzahlEmpfangenerDaten = 0
                 
@@ -183,12 +185,13 @@ class WindowStationaritaet(AbstractWindow):
                 else:
                     stat = False
                     self.datatable.item(2,4).setBackground(QColor(255, 128, 128))
-            
-                self.datatable.item(2, 0).setText("{0:12.0f} Pa".format(np.mean(self.Druck)))
-                self.datatable.item(2, 1).setText("{0:12.0f} Pa".format(diff))
-                self.datatable.item(2, 2).setText("{0:12.0f} Pa/h".format(grad)) 
-                self.datatable.item(2, 3).setText("{0:8.2f} %".format(puffer))
-                self.datatable.item(2, 4).setText("{0:}".format(stat)) 
+
+                self.datatable.item(2, 0).setText("{0:12.0f} °C".format(self.Druck[-1]))
+                self.datatable.item(2, 1).setText("{0:12.0f} Pa".format(np.mean(self.Druck)))
+                self.datatable.item(2, 2).setText("{0:12.0f} Pa".format(diff))
+                self.datatable.item(2, 3).setText("{0:12.0f} Pa/h".format(grad)) 
+                self.datatable.item(2, 4).setText("{0:8.2f} %".format(puffer))
+                self.datatable.item(2, 5).setText("{0:}".format(stat)) 
                 
                 self.Druck_anzahlEmpfangenerDaten = 0
                 
@@ -217,12 +220,13 @@ class WindowStationaritaet(AbstractWindow):
                 else:
                     stat = False
                     self.datatable.item(3,4).setBackground(QColor(255, 128, 128))
-            
-                self.datatable.item(3, 0).setText("{0:12.4f} kg/s".format(np.mean(self.Massestrom)))
-                self.datatable.item(3, 1).setText("{0:12.4f} kg/s".format(diff))
-                self.datatable.item(3, 2).setText("{0:12.2f} kg/s / h".format(grad)) 
-                self.datatable.item(3, 3).setText("{0: 8.2f} %".format(puffer))
-                self.datatable.item(3, 4).setText("{0:}".format(stat)) 
+
+                self.datatable.item(3, 0).setText("{0:12.4f} °C".format(self.Massestrom[-1]))
+                self.datatable.item(3, 1).setText("{0:12.4f} kg/s".format(np.mean(self.Massestrom)))
+                self.datatable.item(3, 2).setText("{0:12.4f} kg/s".format(diff))
+                self.datatable.item(3, 3).setText("{0:12.2f} kg/s / h".format(grad)) 
+                self.datatable.item(3, 4).setText("{0: 8.2f} %".format(puffer))
+                self.datatable.item(3, 5).setText("{0:}".format(stat)) 
                 
                 self.Massestrom_anzahlEmpfangenerDaten = 0
                 
@@ -249,12 +253,13 @@ class WindowStationaritaet(AbstractWindow):
                 else:
                     stat = False
                     self.datatable.item(4,4).setBackground(QColor(255, 128, 128))
-            
-                self.datatable.item(4, 0).setText("{0:12.2f} °C".format(np.mean(self.ZuluftT)))
-                self.datatable.item(4, 1).setText("{0:12.2f} °C".format(diff))
-                self.datatable.item(4, 2).setText("{0:12.2f} °C/h".format(grad)) 
-                self.datatable.item(4, 3).setText("{0:8.2f} %".format(puffer))
-                self.datatable.item(4, 4).setText("{0:}".format(stat)) 
+
+                self.datatable.item(4, 0).setText("{0:12.2f} °C".format(self.ZuluftT[-1]))
+                self.datatable.item(4, 1).setText("{0:12.2f} °C".format(np.mean(self.ZuluftT)))
+                self.datatable.item(4, 2).setText("{0:12.2f} °C".format(diff))
+                self.datatable.item(4, 3).setText("{0:12.2f} °C/h".format(grad)) 
+                self.datatable.item(4, 4).setText("{0:8.2f} %".format(puffer))
+                self.datatable.item(4, 5).setText("{0:}".format(stat)) 
                 
                 self.ZuluftT_anzahlEmpfangenerDaten = 0
                 
