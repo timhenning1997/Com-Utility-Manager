@@ -490,6 +490,11 @@ class WindowTempCalFritoese(AbstractWindow):
                         if self.gatheredDataCounter >= self.requiredDataNumber:
                             self.setCellStatus(self.currentWorkingRow, 2, text=str(self.requiredDataNumber) + "/" + str(self.requiredDataNumber), status="DONE")
                             if self.currentWorkingRow < self.table.rowCount()-1:
+                                if self.separateFilesCB.isChecked():
+                                    with open(Path(self.filePath, self.fileName.replace(".txt", "") + self._separateFileStr + ".txt"), 'r+') as file:
+                                        content = file.read()
+                                        file.seek(0, 0)
+                                        file.write("\t".join(headerList) + "\n" + content)
                                 self.currentWorkingRow += 1
                                 self.setState("setNextTemperature")
                             else:

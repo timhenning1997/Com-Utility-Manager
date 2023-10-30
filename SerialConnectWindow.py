@@ -107,10 +107,10 @@ class SerialConnectWindow(QWidget):
         self.localEchoCB = QCheckBox("Local echo")
 
         transmittedTextVLayout = QVBoxLayout()
-        transmittedTextVLayout.addWidget(self.appendNothingRB)
-        transmittedTextVLayout.addWidget(self.appendCRRB)
-        transmittedTextVLayout.addWidget(self.appendLFRB)
-        transmittedTextVLayout.addWidget(self.appendCRLFRB)
+        #transmittedTextVLayout.addWidget(self.appendNothingRB)
+        #transmittedTextVLayout.addWidget(self.appendCRRB)
+        #transmittedTextVLayout.addWidget(self.appendLFRB)
+        #transmittedTextVLayout.addWidget(self.appendCRLFRB)
         transmittedTextVLayout.addWidget(self.localEchoCB)
 
         transmittedTextGroupbox = QGroupBox("Transmitted text")
