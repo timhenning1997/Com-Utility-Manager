@@ -1,4 +1,6 @@
 
+import numpy as np
+
 def isValidDiffChannels(diffChannels: list, data, numberOfChannels: int = 0):
     if type(diffChannels) != list:
         print("Type of column DifferenzKanal is not a list!")
@@ -174,29 +176,29 @@ def applyCalibrationFunctions(calData, data):
             calibratedData["UUID"].append(calData[i][0])
             calibratedData["DATA"].append(res)
             
-        # elif calData[i][3] == "TPROZ":
-        #     padx  = int(data[i], 16)
-        #     T25 = calData[i][2][0]
-        #     Ra  = calData[i][2][1]
-        #     R25 = calData[i][2][2]
-        #     B   = calData[i][2][3]
+        elif calData[i][3] == "TPROZ":
+            padx  = int(data[i], 16)
+            T25 = calData[i][2][0]
+            Ra  = calData[i][2][1]
+            R25 = calData[i][2][2]
+            B   = calData[i][2][3]
             
-        #     res = (1/T25 + np.log(Ra*(1023/padx-1)/R25)/B)**(-1) - 273.15
+            res = (1/T25 + np.log(Ra*(1023/padx-1)/R25)/B)**(-1) - 273.15
             
-        #     calibratedData["UUID"].append(calData[i][0])
-        #     calibratedData["DATA"].append(res)
+            calibratedData["UUID"].append(calData[i][0])
+            calibratedData["DATA"].append(res)
             
-        # elif calData[i][3] == "TPROZ_OV":
-        #     padx  = int(data[i], 16)
-        #     T25 = calData[i][2][0]
-        #     R25 = calData[i][2][1]
-        #     B   = calData[i][2][2]
+        elif calData[i][3] == "TPROZ_OV":
+            padx  = int(data[i], 16)
+            T25 = calData[i][2][0]
+            R25 = calData[i][2][2]
+            B   = calData[i][2][3]
             
-        #     Rth = 68000 / (31.3 * padx/1023 - 1) - 2200
-        #     res = (1/T25 + np.log(Rth/R25)/B)**(-1) - 273.15
+            Rth = 68000 / (31.3 * padx/1023 - 1) - 2200
+            res = (1/T25 + np.log(Rth/R25)/B)**(-1) - 273.15
             
-        #     calibratedData["UUID"].append(calData[i][0])
-        #     calibratedData["DATA"].append(res)
+            calibratedData["UUID"].append(calData[i][0])
+            calibratedData["DATA"].append(res)
         
         elif calData[i][3] == "NTC":
             pass    # TODO: Weitere fehlende KalFunkTypen hinzufügen
