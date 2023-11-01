@@ -153,7 +153,7 @@ class WindowStationaritaet(AbstractWindow):
                     stat = False
                     self.datatable.item(1,4).setBackground(QColor(255, 128, 128))
 
-                self.datatable.item(1, 0).setText("{0:12.0f} °C".format(self.Drehzahl[-1]))
+                self.datatable.item(1, 0).setText("{0:12.0f} rpm".format(self.Drehzahl[-1]))
                 self.datatable.item(1, 1).setText("{0:12.0f} rpm".format(np.mean(self.Drehzahl)))
                 self.datatable.item(1, 2).setText("{0:12.0f} rpm".format(diff))
                 self.datatable.item(1, 3).setText("{0:12.0f} rpm/h".format(grad)) 
@@ -186,7 +186,7 @@ class WindowStationaritaet(AbstractWindow):
                     stat = False
                     self.datatable.item(2,4).setBackground(QColor(255, 128, 128))
 
-                self.datatable.item(2, 0).setText("{0:12.0f} °C".format(self.Druck[-1]))
+                self.datatable.item(2, 0).setText("{0:12.0f} Pa".format(self.Druck[-1]))
                 self.datatable.item(2, 1).setText("{0:12.0f} Pa".format(np.mean(self.Druck)))
                 self.datatable.item(2, 2).setText("{0:12.0f} Pa".format(diff))
                 self.datatable.item(2, 3).setText("{0:12.0f} Pa/h".format(grad)) 
@@ -221,7 +221,7 @@ class WindowStationaritaet(AbstractWindow):
                     stat = False
                     self.datatable.item(3,4).setBackground(QColor(255, 128, 128))
 
-                self.datatable.item(3, 0).setText("{0:12.4f} °C".format(self.Massestrom[-1]))
+                self.datatable.item(3, 0).setText("{0:12.4f} kg/s".format(self.Massestrom[-1]))
                 self.datatable.item(3, 1).setText("{0:12.4f} kg/s".format(np.mean(self.Massestrom)))
                 self.datatable.item(3, 2).setText("{0:12.4f} kg/s".format(diff))
                 self.datatable.item(3, 3).setText("{0:12.2f} kg/s / h".format(grad)) 
