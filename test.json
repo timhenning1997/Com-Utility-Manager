@@ -1,44 +1,112 @@
 {
-    "_windowType": "NodeEditor",
+    "_windowType": "Hub",
     "_windowSize": [
-        400,
+        800,
         400
     ],
     "_windowPosition": [
-        2413,
-        211
+        988,
+        354
     ],
-    "_filterMenu": {
-        "_activePorts": [
-            "COM-ALL"
-        ],
-        "_allPorts": [
-            "COM-ALL",
-            "ADD-COM"
-        ],
-        "_activeKennung": [
-            "KENNUNG-ALL"
-        ],
-        "_allKennung": [
-            "KENNUNG-ALL",
-            "ADD-Kennung",
-            "2001",
-            "0a04",
-            "0203"
-        ],
-        "_activeCalibration": [
-            "RAW-Values",
-            "CALIBRATED-Values"
-        ],
-        "_allCalibration": [
-            "RAW-Values",
-            "CALIBRATED-Values"
-        ]
-    },
-    "_windowSaveInfo": {
-        "sceneCenterPosX": 380.8593749999999,
-        "sceneCenterPosY": 315.68749999999994,
-        "sceneZoom": 17,
-        "sceneFaktor": 1.25
-    }
+    "_windowMaximized": false,
+    "_tableColumnsHidden": [
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        false,
+        true,
+        false
+    ],
+    "ports": [
+        {
+            "serialParameter": {
+                "port": "COM6",
+                "baudrate": 9600,
+                "bytesize": 8,
+                "parity": "N",
+                "stopbits": 1,
+                "timeout": 3.0,
+                "xonxoff": false,
+                "rtscts": false,
+                "write_timeout": null,
+                "dsrdtr": false,
+                "inter_byte_timeout": null,
+                "exclusive": null,
+                "readTextIndex": "read_line",
+                "readBytes": 1,
+                "readUntil": "",
+                "DTR": false,
+                "maxShownSignalRate": 5,
+                "local_echo": false,
+                "appendCR": false,
+                "appendLF": false,
+                "autoReconnect": false
+            },
+            "savePath": "D:\\Local GitHub\\Com-Utility-Manager",
+            "saveName": "DATE_TIME",
+            "calibrationPath": ""
+        }
+    ],
+    "measuringPointListFiles": [],
+    "windows": [
+        {
+            "_windowType": "TempCalFritteuse",
+            "_windowSize": [
+                417,
+                595
+            ],
+            "_windowPosition": [
+                371,
+                181
+            ],
+            "_filterMenu": {
+                "_activePorts": [
+                    "COM-ALL"
+                ],
+                "_allPorts": [
+                    "COM-ALL",
+                    "ADD-COM"
+                ],
+                "_activeKennung": [
+                    "KENNUNG-ALL"
+                ],
+                "_allKennung": [
+                    "KENNUNG-ALL",
+                    "ADD-Kennung"
+                ],
+                "_activeCalibration": [
+                    "RAW-Values",
+                    "CALIBRATED-Values"
+                ],
+                "_allCalibration": [
+                    "RAW-Values",
+                    "CALIBRATED-Values"
+                ]
+            },
+            "_windowSaveInfo": {
+                "fritteusenComPort": "COM6",
+                "filePath": "D:\\Local GitHub\\Com-Utility-Manager",
+                "fileName": "DATE_TIME_calibration",
+                "separateFiles": false,
+                "recordedPorts": "",
+                "fromSB": 30,
+                "toSB": 90,
+                "inSB": 6,
+                "hysteresisCB": true,
+                "holdTimeSB": 60,
+                "tempDivSB": 0.1,
+                "holdTempDivSB": 0.1,
+                "measurementsSB": 100,
+                "saveType": "value"
+            },
+            "_windowFlags": [
+                false,
+                false
+            ]
+        }
+    ],
+    "globalVars": {}
 }

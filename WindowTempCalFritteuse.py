@@ -16,36 +16,24 @@ from pyqtgraph import PlotWidget, mkPen
 from AbstractWindow import AbstractWindow
 from UsefulFunctions import resource_path
 from SerialParameters import SerialParameters
+from DeviceCommunication.CalibratorFritteuse import CalibratorFritteuse
+from DeviceCommunication.Keithley2010 import Keithley2010
 
 
 class GraphLine:
-    def __init__(self,startTime: float = 0):
-        self.startTime = startTime
-        self.x = []
-        self.y = []
+    def __init__(self):
         self.dataLine = None
 
-        self.maxLength = 4000
-
-    def appendDataPoint(self, y: float, x: float = None):
-        if self.dataLine is None:
-            return
-        if x is None:
-            x = time.time() - self.startTime
-        if len(self.x) > self.maxLength > 0:
-            self.x = self.x[-self.maxLength:]
-            self.y = self.y[-self.maxLength:]
-            self.x.append(x)
-            self.y.append(y)
-        else:
-            self.x.append(x)
-            self.y.append(y)
-        self.dataLine.setData(self.x, self.y)
+    def setDataPoints(self, x: list, y: list):
+        self.dataLine.setData(x, y)
 
 
 class WindowTempCalFritoese(AbstractWindow):
     def __init__(self, hubWindow):
         super().__init__(hubWindow, "TempCalFritteuse")
+
+        self.cal = CalibratorFritteuse(self, "")
+        self.keithley = Keithley2010(self, "")
 
         self.lastState = "idle"
         self.currentState = "idle"
@@ -74,19 +62,13 @@ class WindowTempCalFritoese(AbstractWindow):
 
         self.graphLines = {}
         self.dataCounter = 0
-        self.graphStartTime = time.time()
-
-        self.waitforAnswerTimer = QTimer(self)
-        self.waitforAnswerTimer.timeout.connect(self.noAnswerReceived)
-        self.waitforAnswerTimer.setInterval(1000)
-        self.waitforAnswerTimer.setSingleShot(True)
 
         self.stateMachineDelayTimer = QTimer(self)
         self.stateMachineDelayTimer.timeout.connect(self.runStateMachine)
         self.stateMachineDelayTimer.setSingleShot(True)
 
         self.askForCurrentTempTimer = QTimer(self)
-        self.askForCurrentTempTimer.timeout.connect(self.askForTemp)
+        self.askForCurrentTempTimer.timeout.connect(self.cal.askForTemp)
         self.askForCurrentTempTimer.start(2500)
 
         self.addressDict = {"00": ["vSP", "Setpoint, temperature controller", "0.01°C"],
@@ -279,12 +261,53 @@ class WindowTempCalFritoese(AbstractWindow):
         groupbox = QGroupBox("Measuring procedure")
         groupbox.setLayout(groupBoxLayout)
 
+        # _____________Additional Devices______________
+        self.keithleyUseCB = QCheckBox("Keithley")
+        self.keithleyUseCB.setFixedWidth(100)
+        self.keithleyUseCB.clicked.connect(self.keithleyUseButtonPressed)
+        self.keithleyComPortLabel = QLabel("Keithley COM")
+        self.keithleyComPortLabel.setFixedWidth(100)
+        self.keithleyComPortLabel.setVisible(False)
+        self.keithleyComPortLineEdit = QLineEdit("")
+        self.keithleyComPortLineEdit.setPlaceholderText("COMXY")
+        self.keithleyComPortLineEdit.setFixedWidth(60)
+        self.keithleyComPortLineEdit.textChanged.connect(self.portFilterChanged)
+        self.keithleyComPortLineEdit.setVisible(False)
+        keithleyComPortLayout = QHBoxLayout()
+        keithleyComPortLayout.addWidget(self.keithleyComPortLabel)
+        keithleyComPortLayout.addWidget(self.keithleyComPortLineEdit)
+        keithleyComPortLayout.addStretch()
+
+        self.keithleyTable = QTableWidget(0, 4)
+        self.keithleyTable.setHorizontalHeaderLabels(["Name", "Channel", "Function", "Range"])
+        self.addKeithleyRow()
+
+        self.addRowButton = QPushButton("+ Row")
+        self.addRowButton.clicked.connect(self.addKeithleyRow)
+        self.deleteRowButton = QPushButton("- Row")
+        self.deleteRowButton.clicked.connect(self.deleteLastKeithleyRow)
+        keithleyAddDelLayout = QHBoxLayout()
+        keithleyAddDelLayout.addStretch()
+        keithleyAddDelLayout.addWidget(self.addRowButton)
+        keithleyAddDelLayout.addWidget(self.deleteRowButton)
+
+        additionalDevicesGroupBoxLayout = QVBoxLayout()
+        additionalDevicesGroupBoxLayout.addWidget(self.keithleyUseCB)
+        additionalDevicesGroupBoxLayout.addLayout(keithleyComPortLayout)
+        additionalDevicesGroupBoxLayout.addWidget(self.keithleyTable)
+        additionalDevicesGroupBoxLayout.addLayout(keithleyAddDelLayout)
+
+        additionalDevicesGroupbox = QGroupBox("Additional devices")
+        additionalDevicesGroupbox.setLayout(additionalDevicesGroupBoxLayout)
+
         scrollLayout = QVBoxLayout()
         scrollLayout.addLayout(fritteusenComPortLayout)
         scrollLayout.addLayout(filePathLayout)
         scrollLayout.addLayout(fileNameLayout)
         scrollLayout.addLayout(separateFilesLayout)
         scrollLayout.addLayout(portFilterLayout)
+        scrollLayout.addSpacing(20)
+        scrollLayout.addWidget(additionalDevicesGroupbox)
         scrollLayout.addSpacing(20)
         scrollLayout.addWidget(groupbox)
         scrollLayout.addStretch()
@@ -362,11 +385,11 @@ class WindowTempCalFritoese(AbstractWindow):
         self.graphWidget.addLegend()
 
         pen = mkPen(color=QColor(255, 0, 0))
-        self.graphLines["Temp"] = GraphLine(self.graphStartTime)
+        self.graphLines["Temp"] = GraphLine()
         self.graphLines["Temp"].dataLine = self.graphWidget.plot([], [], pen=pen, name="Temp")
 
         pen = mkPen(color=QColor(0, 255, 0))
-        self.graphLines["SetPoint"] = GraphLine(self.graphStartTime)
+        self.graphLines["SetPoint"] = GraphLine()
         self.graphLines["SetPoint"].dataLine = self.graphWidget.plot([], [], pen=pen, name="Set Point")
 
         # _____________________Tab Widget____________________
@@ -387,135 +410,151 @@ class WindowTempCalFritoese(AbstractWindow):
         if self.currentState == "idle":
             pass
         elif self.currentState == "setNextTemperature":
-            self.setPointTemp = self.getCellValue(self.currentWorkingRow, 0)
-            self.setPointHex = self.toHex(self.getCellValue(self.currentWorkingRow, 0)*100)
-            if not answerReceived:
-                self.sendCommand("71", self.setPointHex, sender="stateMachine", retryCount=2)       # SollTemperatur
-            else:
-                if answer[2:4] == "71" and answer[4:8] == self.setPointHex:
+            if self.cal.newSetPointAvailable:
+                self.cal.newSetPointAvailable = False
+
+                self.setPointTemp = self.getCellValue(self.currentWorkingRow, 0)
+                if self.cal.lastSetPointTemp == self.setPointTemp:
                     self.setCellStatus(self.currentWorkingRow, 0, status="WORKING")
-                    self.setState("startTemperatureControl")
-                else:
-                    print("FEHLER: setNextTemperature | ", answerReceived, "answer:", answer)
-                self.runStateMachineAfterDelay(1000)
-        elif self.currentState == "startTemperatureControl":
-            if not answerReceived:
-                self.sendCommand("14", self.toHex(1), sender="stateMachine", retryCount=2)
-            else:
-                if answer[2:4] == "14" and answer[4:8] == self.toHex(1):
-                    self.setState("checkIfTempReached")
-                self.runStateMachineAfterDelay(1000)
-        elif self.currentState == "checkIfTempReached":
-            if not answerReceived:
-                self.sendCommand("01", "****", sender="stateMachine", retryCount=2)
-            else:
-                if answer[2:4] == "01":
-                    self.setCellStatus(self.currentWorkingRow, 0, text=str(self.toDec(answer[4:8])/100) + "/" + str(self.setPointTemp) + " °C", status="WORKING")
-                    if abs(self.toDec(answer[4:8])/100 - self.setPointTemp) < self.setPointDiffReached:                                  # SollTemperatur und Abweichung zur Solltemperatur
-                        self.tempInBoundsStartTimer = time.time()
-                        self.holdTime = self.getCellValue(self.currentWorkingRow, 1)
-                        self.setCellStatus(self.currentWorkingRow, 0, text=str(self.setPointTemp) + "/" + str(self.setPointTemp) + " °C", status="DONE")
-                        self.setCellStatus(self.currentWorkingRow, 1, status="WORKING")
-                        self.setState("checkIfTempInBounds")
-                else:
-                    print("FEHLER: checkIfTempReached | ", answerReceived, "answer:", answer)
-                self.runStateMachineAfterDelay(1000)
-        elif self.currentState == "checkIfTempInBounds":
-            if not answerReceived:
-                self.sendCommand("01", "****", sender="stateMachine", retryCount=2)
-            else:
-                if answer[2:4] == "01":
-                    self.setCellStatus(self.currentWorkingRow, 0, text=str(self.toDec(answer[4:8]) / 100) + "/" + str(self.setPointTemp) + " °C", status="DONE")
-                    self.setCellStatus(self.currentWorkingRow, 1, text=str(int(time.time()-self.tempInBoundsStartTimer)) + "/" + str(self.holdTime) + " s", status="WORKING")
-                    if abs(self.toDec(answer[4:8])/100 - self.setPointTemp) < self.setPointDiffHold:
-                        if time.time() - self.tempInBoundsStartTimer > self.holdTime:                                  # SollTemperatur und Abweichung zur Solltemperatur und Haltezeit
-                            for key in self.incomingDataBuffer.keys():
-                                self.incomingDataBuffer[key] = []
-                            self.requiredDataNumber = self.getCellValue(self.currentWorkingRow, 2)
-                            self.gatheredDataCounter = 0
-                            self.setCellStatus(self.currentWorkingRow, 1, text=str(self.holdTime) + "/" + str(self.holdTime) + " s", status="DONE")
-                            self.setCellStatus(self.currentWorkingRow, 2, status="WORKING")
-                            self._separateFileStr = "_" + str(self.currentWorkingRow) if self.separateFilesCB.isChecked() else ""
-                            self.setState("measuring")
+                    if self.keithleyUseCB.isChecked():
+                        self.setState("initKeithley")
                     else:
+                        self.setState("startTemperatureControl")
+                    self.cal.newTempControlAvailable = False
+            else:
+                self.cal.setSetPointTemp(self.setPointTemp)
+        elif self.currentState == "initKeithley":
+            if self.keithley.isInitDone:
+                self.keithley.isInitDone = False
+                self.setState("startTemperatureControl")
+            else:
+                self.keithley.initKeithley()
+        elif self.currentState == "startTemperatureControl":
+            if self.cal.newTempControlAvailable:
+                self.cal.newTempControlAvailable = False
+
+                if self.cal.isTempControlActive == True:
+                    self.setState("checkIfTempReached")
+                    self.cal.newTempAvailable = False
+            else:
+                self.cal.setTempControl(True)
+        elif self.currentState == "checkIfTempReached":
+            if self.cal.newTempAvailable:
+                self.cal.newTempAvailable = False
+
+                self.setCellStatus(self.currentWorkingRow, 0, text=str(self.cal.lastTempValue) + "/" + str(self.setPointTemp) + " °C", status="WORKING")
+                if abs(self.cal.lastTempValue - self.setPointTemp) < self.setPointDiffReached:
+                    self.tempInBoundsStartTimer = time.time()
+                    self.holdTime = self.getCellValue(self.currentWorkingRow, 1)
+                    self.setCellStatus(self.currentWorkingRow, 0, text=str(self.setPointTemp) + "/" + str(self.setPointTemp) + " °C", status="DONE")
+                    self.setCellStatus(self.currentWorkingRow, 1, status="WORKING")
+                    self.setState("checkIfTempInBounds")
+            else:
+                self.cal.askForTemp()
+        elif self.currentState == "checkIfTempInBounds":
+            if self.cal.newTempAvailable:
+                self.cal.newTempAvailable = False
+
+                self.setCellStatus(self.currentWorkingRow, 0, text=str(self.cal.lastTempValue) + "/" + str(self.setPointTemp) + " °C", status="DONE")
+                self.setCellStatus(self.currentWorkingRow, 1, text=str(int(time.time()-self.tempInBoundsStartTimer)) + "/" + str(self.holdTime) + " s", status="WORKING")
+                if abs(self.cal.lastTempValue - self.setPointTemp) < self.setPointDiffHold:
+                    if time.time() - self.tempInBoundsStartTimer > self.holdTime:
+                        self.requiredDataNumber = self.getCellValue(self.currentWorkingRow, 2)
+                        self.gatheredDataCounter = 0
+                        self.setCellStatus(self.currentWorkingRow, 1, text=str(self.holdTime) + "/" + str(self.holdTime) + " s", status="DONE")
+                        self.setCellStatus(self.currentWorkingRow, 2, status="WORKING")
+                        self._separateFileStr = "_" + str(self.currentWorkingRow) if self.separateFilesCB.isChecked() else ""
+                        self.setState("measuring")
                         self.tempInBoundsStartTimer = time.time()
-                else:
-                    print("FEHLER: checkIfTempInBounds | ", answerReceived, "answer:", answer)
-                self.runStateMachineAfterDelay(1000)
+            else:
+                self.cal.askForTemp()
         elif self.currentState == "measuring":
-            if not answerReceived:
-                self.sendCommand("01", "****", sender="stateMachine", retryCount=2)
-            else:
-                if answer[2:4] == "01":
-                    self.setCellStatus(self.currentWorkingRow, 0, text=str(self.toDec(answer[4:8]) / 100) + "/" + str(self.setPointTemp) + " °C", status="DONE")
-                    bufferIsEmpty = False
-                    for port in self.portFilter:
-                        if port in self.incomingDataBuffer.keys():
-                            if len(self.incomingDataBuffer[port]) == 0:
-                                bufferIsEmpty = True
-                        else:
+            if self.cal.newTempAvailable and (not self.keithleyUseCB.isChecked() or self.keithley.newKeithleyAvailable):
+                self.cal.newTempAvailable = False
+                self.keithley.newKeithleyAvailable = False
+
+                self.setCellStatus(self.currentWorkingRow, 0, text=str(self.cal.lastTempValue) + "/" + str(self.setPointTemp) + " °C", status="DONE")
+                bufferIsEmpty = False
+                for port in self.portFilter:
+                    if port in self.incomingDataBuffer.keys():
+                        if len(self.incomingDataBuffer[port]) == 0:
                             bufferIsEmpty = True
-                    if bufferIsEmpty == False:
-                        dataList = []
-                        headerList = ["Time", "Unix Time", "Set temp.", "Actual temp."]
-                        if self.portFilter == []:
-                            for key in self.incomingDataBuffer.keys():
-                                for counter, data in enumerate(self.incomingDataBuffer[key]):
-                                    if self.saveTypeComboBox.currentText() == "raw":
-                                        dataList.append(data)
-                                    else:
-                                        dataList.append(str(int(data, 16)))
-                                    headerList.append(str(key) + "_" + str(counter))
-                                self.incomingDataBuffer[key] = []
-                        else:
-                            for port in self.portFilter:
-                                for counter, data in enumerate(self.incomingDataBuffer[port]):
-                                    if self.saveTypeComboBox.currentText() == "raw":
-                                        dataList.append(data)
-                                    else:
-                                        dataList.append(str(int(data, 16)))
-                                    headerList.append(str(port) + "_" + str(counter))
-                                self.incomingDataBuffer[port] = []
-                        # self.saveDataBuffer.append([time.time(), self.toDec(answer[4:8]) / 100, dataList])
-                        with open(Path(self.filePath, self.fileName.replace(".txt", "") + self._separateFileStr + ".txt"), 'a') as file:
-                            line = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + "\t"
-                            line += str(time.time()) + "\t"
-                            line += str(self.setPointTemp) + "\t"
-                            line += str(self.toDec(answer[4:8])/100) + "\t"
-                            line += "\t".join(dataList) + "\n"
-                            file.write(line)
+                    else:
+                        bufferIsEmpty = True
+                if bufferIsEmpty == False:
+                    dataList = []
+                    headerList = ["Time", "Unix Time", "Set temp.", "Actual temp."]
+                    if self.keithleyUseCB.isChecked():
+                        for name in self.getKeithleyColumn(0):
+                            headerList.append(name)
+                    if self.portFilter == []:
+                        for key in self.incomingDataBuffer.keys():
+                            for counter, data in enumerate(self.incomingDataBuffer[key]):
+                                if self.saveTypeComboBox.currentText() == "raw":
+                                    dataList.append(data)
+                                else:
+                                    dataList.append(str(int(data, 16)))
+                                headerList.append(str(key) + "_" + str(counter))
+                            self.incomingDataBuffer[key] = []
+                    else:
+                        for port in self.portFilter:
+                            for counter, data in enumerate(self.incomingDataBuffer[port]):
+                                if self.saveTypeComboBox.currentText() == "raw":
+                                    dataList.append(data)
+                                else:
+                                    dataList.append(str(int(data, 16)))
+                                headerList.append(str(port) + "_" + str(counter))
+                            self.incomingDataBuffer[port] = []
+                    with open(Path(self.filePath, self.fileName.replace(".txt", "") + self._separateFileStr + ".txt"), 'a') as file:
+                        line = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + "\t"
+                        line += str(time.time()) + "\t"
+                        line += str(self.setPointTemp) + "\t"
+                        line += str(self.cal.lastTempValue) + "\t"
+                        if self.keithleyUseCB.isChecked():
+                            for val in self.keithley.lastKeithleyValues:
+                                line += str(val) + "\t"
+                        line += "\t".join(dataList) + "\n"
+                        file.write(line)
+                    self.gatheredDataCounter += 1
+                    self.setCellStatus(self.currentWorkingRow, 2, text=str(self.gatheredDataCounter) + "/" + str(self.requiredDataNumber), status="WORKING")
 
-                        self.gatheredDataCounter += 1
-                        self.setCellStatus(self.currentWorkingRow, 2, text=str(self.gatheredDataCounter) + "/" + str(self.requiredDataNumber), status="WORKING")
-                        if self.gatheredDataCounter >= self.requiredDataNumber:
-                            self.setCellStatus(self.currentWorkingRow, 2, text=str(self.requiredDataNumber) + "/" + str(self.requiredDataNumber), status="DONE")
-                            if self.currentWorkingRow < self.table.rowCount()-1:
-                                if self.separateFilesCB.isChecked():
-                                    with open(Path(self.filePath, self.fileName.replace(".txt", "") + self._separateFileStr + ".txt"), 'r+') as file:
-                                        content = file.read()
-                                        file.seek(0, 0)
-                                        file.write("\t".join(headerList) + "\n" + content)
-                                self.currentWorkingRow += 1
-                                self.setState("setNextTemperature")
-                            else:
-                                with open(Path(self.filePath, self.fileName.replace(".txt", "") + self._separateFileStr + ".txt"), 'r+') as file:
-                                    content = file.read()
-                                    file.seek(0, 0)
-                                    file.write("\t".join(headerList) + "\n" + content)
-
-                                print("measuring done!")
-                                self.currentWorkingRow = 0
-                                self.setState("stopTemperatureControl")
-                else:
-                    print("FEHLER: measuring | ", answerReceived, "answer:", answer)
-                self.runStateMachineAfterDelay(1000)
-        elif self.currentState == "stopTemperatureControl":
-            if not answerReceived:
-                self.sendCommand("14", self.toHex(0), sender="stateMachine", retryCount=5)
+                if self.gatheredDataCounter >= self.requiredDataNumber:
+                    self.setCellStatus(self.currentWorkingRow, 2, text=str(self.requiredDataNumber) + "/" + str(self.requiredDataNumber), status="DONE")
+                    if self.currentWorkingRow < self.table.rowCount()-1:
+                        if self.separateFilesCB.isChecked():
+                            with open(Path(self.filePath, self.fileName.replace(".txt", "") + self._separateFileStr + ".txt"), 'r+') as file:
+                                content = file.read()
+                                file.seek(0, 0)
+                                file.write("\t".join(headerList) + "\n" + content)
+                        self.currentWorkingRow += 1
+                        self.setState("setNextTemperature")
+                        self.cal.newSetPointAvailable = False
+                    else:
+                        with open(Path(self.filePath, self.fileName.replace(".txt", "") + self._separateFileStr + ".txt"), 'r+') as file:
+                            content = file.read()
+                            file.seek(0, 0)
+                            file.write("\t".join(headerList) + "\n" + content)
+                        self.currentWorkingRow = 0
+                        self.setState("stopTemperatureControl")
+                        self.cal.newTempControlAvailable = False
             else:
-                if answer[2:4] == "14" and answer[4:8] == self.toHex(0):
+                self.cal.askForTemp()
+                if self.keithleyUseCB.isChecked():
+                    self.keithley.askForKeithley(self.getKeithleyColumn(1), self.getKeithleyColumn(2), self.getKeithleyColumn(3))
+        elif self.currentState == "stopTemperatureControl":
+            if self.cal.newTempControlAvailable:
+                self.cal.newTempControlAvailable = False
+
+                if self.cal.isTempControlActive == False:
                     self.setState("idle")
-                self.runStateMachineAfterDelay(1000)
+                    self.cal.newTempAvailable = False
+                    self.cal.newTempControlAvailable = False
+                    self.cal.newSetPointAvailable = False
+                    return
+            else:
+                self.cal.setTempControl(True)
+
+        self.runStateMachineAfterDelay(300)
 
     def startStateMachine(self):
         if self.currentState == "idle":
@@ -640,6 +679,40 @@ class WindowTempCalFritoese(AbstractWindow):
             self.table.setRowCount(self.table.rowCount() - 1)
         self.setTableEditMode(True)
 
+    def addKeithleyRow(self):
+        self.keithleyTable.setRowCount(self.keithleyTable.rowCount() + 1)
+        self.keithleyTable.setCellWidget(self.keithleyTable.rowCount() - 1, 0, QLineEdit("Name" + str(self.keithleyTable.rowCount())))
+        channelSpinbox = QSpinBox()
+        channelSpinbox.setRange(0, 100000)
+        self.keithleyTable.setCellWidget(self.keithleyTable.rowCount() - 1, 1, channelSpinbox)
+        funcComboBox = QComboBox()
+        funcComboBox.addItem("VOLT:DC")
+        funcComboBox.addItem("VOLT:AC")
+        funcComboBox.addItem("CURR:DC")
+        funcComboBox.addItem("CURR:AC")
+        funcComboBox.addItem("RES")
+        funcComboBox.addItem("FRES")
+        funcComboBox.addItem("TEMP")
+        self.keithleyTable.setCellWidget(self.keithleyTable.rowCount() - 1, 2, funcComboBox)
+        rangeSpinbox = QSpinBox()
+        rangeSpinbox.setRange(0, 100000)
+        self.keithleyTable.setCellWidget(self.keithleyTable.rowCount() - 1, 3, rangeSpinbox)
+
+    def deleteLastKeithleyRow(self):
+        if self.keithleyTable.rowCount() > 1:
+            self.keithleyTable.setRowCount(self.keithleyTable.rowCount() - 1)
+
+    def getKeithleyColumn(self, index: int):
+        data = []
+        for i in range(0, self.keithleyTable.rowCount()):
+            if index == 0:
+                data.append(self.keithleyTable.cellWidget(i, index).text())
+            elif index == 2:
+                data.append(self.keithleyTable.cellWidget(i, index).currentText())
+            else:
+                data.append(self.keithleyTable.cellWidget(i, index).value())
+        return data
+
     def setTableEditMode(self, b: bool = False):
         if b == True:
             for row in range(0, self.table.rowCount()):
@@ -675,15 +748,20 @@ class WindowTempCalFritoese(AbstractWindow):
     def getCellValue(self, row: int, column: int):
         return self.table.cellWidget(row, column).layout().itemAt(1).widget().value()
 
-    def askForTemp(self):
-        if len(self.commMessageBacklog) == 0:
-            self.sendCommand("01", "****", sender="askForTemp")
-
     def portFilterChanged(self):
         text = self.portFilterLineEdit.text().replace("[", "").replace("]", "").replace(";", ",").replace("/", ",")
         self.portFilter = []
         for port in text.split(","):
-            self.portFilter.append(port.strip().upper())
+            if port != "":
+                self.portFilter.append(port.strip().upper())
+
+        text = self.keithleyComPortLineEdit.text().replace("[", "").replace("]", "").replace(";", ",").replace("/", ",")
+        port = text.split(",")[0]
+        self.keithley._port = port
+
+        text = self.fritteusenComPortLineEdit.text().replace("[", "").replace("]", "").replace(";", ",").replace("/", ",")
+        port = text.split(",")[0]
+        self.cal._port = port
 
     def openFilePathButtonPressed(self, port):
         path = QFileDialog.getExistingDirectory(None, "Select Folder", "", QFileDialog.DontUseNativeDialog | QFileDialog.ShowDirsOnly)
@@ -694,99 +772,44 @@ class WindowTempCalFritoese(AbstractWindow):
             self.showFilePathLabel.setText(str(path))
             self.showFilePathLabel.adjustSize()
 
+    def keithleyUseButtonPressed(self, b: bool):
+        self.keithleyComPortLabel.setVisible(b)
+        self.keithleyComPortLineEdit.setVisible(b)
+        self.keithleyTable.setVisible(b)
+        self.addRowButton.setVisible(b)
+        self.deleteRowButton.setVisible(b)
+
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
-        if serialParameters.readTextIndex == "read_line" and dataInfo["dataType"] == "RAW-Values" and type(data) == bytes:
-            data = data.decode()
-            if re.match(r"\{S[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]", data):
-                if self.fritteusenComPortLineEdit.text() == "":
-                    self.fritteusenComPortLineEdit.setText(serialParameters.port)
-                self.receiveCalibratorAnswer(data.strip())
-        if serialParameters.readTextIndex == "read_WU_device" and dataInfo["dataType"] == "RAW-Values":
-            self.incomingDataBuffer[serialParameters.port.upper()] = data
+        self.cal.receiveData(serialParameters, data, dataInfo)
+        self.graphLines["Temp"].setDataPoints(self.cal.temperatureValues["times"], self.cal.temperatureValues["values"])
+        self.graphLines["SetPoint"].setDataPoints(self.cal.setPointTemps["times"], self.cal.setPointTemps["values"])
 
-    def receiveCalibratorAnswer(self, message: str, serialParameters: SerialParameters = None, dataInfo = None):
-        self.waitforAnswerTimer.stop()
-        self.isActiveCommunication = False
-        addess = message[2:4]
-        value = self.toDec(message[4:8])
+        self.keithley.receiveData(serialParameters, data, dataInfo)
 
-        # ____________Write to textEdit__________________
-        self.textEdit.setPlainText(self.textEdit.toPlainText() + message[0:2] + " " + message[2:4] + " " + message[4:8])
-        if addess in self.addressDict.keys():
-            self.textEdit.setPlainText(self.textEdit.toPlainText() + "    | " + self.addressDict[addess][0].ljust(10) + " [" + self.addressDict[addess][1] + "]: " + str(value))
-            if self.addressDict[addess][2] != "":
-                self.textEdit.setPlainText(self.textEdit.toPlainText() + " * " + self.addressDict[addess][2])
-        self.textEdit.append("")
-        self.textEdit.moveCursor(QTextCursor.End)
+        if re.match(r"\{S[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]", data.decode()):
+            if self.fritteusenComPortLineEdit.text() == "":
+                self.fritteusenComPortLineEdit.setText(serialParameters.port)
+            plainText = self.textEdit.toPlainText()
+            if len(plainText) > 1000:
+                self.textEdit.setPlainText(plainText[-600:])
+            self.textEdit.setPlainText(self.textEdit.toPlainText() + data.decode().strip())
+            self.textEdit.append("")
+            self.textEdit.moveCursor(QTextCursor.End)
 
-        # ____________Append to graph__________________
-        if len(self.currentCommMassage) > 0 and addess == "01" and self.currentCommMassage[3] == "askForTemp":
-            self.graphLines["SetPoint"].appendDataPoint(self.setPointTemp)
-            self.graphLines["Temp"].appendDataPoint(value/100)
-        elif addess == "71" and self.currentCommMassage[3] == "askForTemp":
-            self.graphLines["SetPoint"].appendDataPoint(self.setPointTemp)
 
-        # ____________Run state machine__________________
-        if len(self.currentCommMassage) > 0 and self.currentCommMassage[3] == "stateMachine":
-            self.runStateMachine(True, message)
-        if len(self.commMessageBacklog) > 0:
-            c = self.commMessageBacklog.pop(0)
-            self.sendCommand(c[0], c[1], c[2], c[3], c[4])
-
-    def noAnswerReceived(self):
-        self.textEdit.setPlainText(self.textEdit.toPlainText() + ".....")
-        self.textEdit.append("")
-        self.textEdit.moveCursor(QTextCursor.End)
-
-        self.isActiveCommunication = False
-        if self.currentCommMassage[4] > 0:
-            self.currentCommMassage[4] = self.currentCommMassage[4] - 1
-            self.sendCommand(self.currentCommMassage[0], self.currentCommMassage[1], self.currentCommMassage[2], self.currentCommMassage[3], self.currentCommMassage[4])
-            return
-        if self.currentCommMassage[3] == "stateMachine":
-            self.runStateMachine(False)
-        if len(self.commMessageBacklog) > 0:
-            c = self.commMessageBacklog.pop(0)
-            self.sendCommand(c[0], c[1], c[2], c[3], c[4])
 
     def sendDataFromLineEdit(self):
-        self.sendCommand(self.lineEdit.text(), "", sender="lineEdit", retryCount=5)
-
-    def sendCommand(self, address: str, value=None, timeout: int = 1000, sender: str = "", retryCount: int = 0):
-        if self.isActiveCommunication == True:
-            if len(self.commMessageBacklog) < self.maxCommBacklogSize or sender == "stateMachine":
-                self.commMessageBacklog.append([address, value, timeout, sender, retryCount])
-            return
-
-        if value == None:
-            value = "****"
-        elif type(value) == int:
-            value = self.toHex(value)
-
-        self.isActiveCommunication = True
-        self.waitforAnswerTimer.start(timeout)
-        #self.textEdit.setPlainText(self.textEdit.toPlainText() + datetime.now().strftime("%m/%d/%Y, %H:%M:%S") + " | ")
-        plainText = self.textEdit.toPlainText()
-        if len(plainText) > 6000:
-            self.textEdit.setPlainText(plainText[-5000:])
-        self.textEdit.setPlainText(self.textEdit.toPlainText() + "{M " + address + " " + str(value) + "   -->   ")
-        self.textEdit.moveCursor(QTextCursor.End)
-        self.currentCommMassage = [address, value, timeout, sender, retryCount]
-        self.sendData("{M" + address + str(value) + "\r\n")
-
-    def sendData(self, data):
-        if self.fritteusenComPortLineEdit.text() == "":
-            self.sendSerialData(data.encode('utf-8'))
-        else:
-            self.sendSerialData(data.encode('utf-8'), [self.fritteusenComPortLineEdit.text()])
-
-    def toHex(self, decValue: int):
-        return format(decValue, 'x').upper().zfill(4)
-
-    def toDec(self, hexValue: str):
-        return int(hexValue, 16)
+        self.cal.sendMessage("{M" + self.lineEdit.text() + "\r\n")
 
     def save(self):
+        keithleyTableData = []
+        for y in range(0, self.keithleyTable.rowCount()):
+            rowData = [self.keithleyTable.cellWidget(y, 0).text(),
+                       self.keithleyTable.cellWidget(y, 1).value(),
+                       self.keithleyTable.cellWidget(y, 2).currentText(),
+                       self.keithleyTable.cellWidget(y, 3).value()]
+            keithleyTableData.append(rowData)
+
         saveDict = {
             "fritteusenComPort": self.fritteusenComPortLineEdit.text(),
             "filePath": self.showFilePathLabel.text(),
@@ -801,7 +824,10 @@ class WindowTempCalFritoese(AbstractWindow):
             "tempDivSB": self.allowedTempDeviationSpinBox.value(),
             "holdTempDivSB": self.allowedHoldTempDeviationSpinBox.value(),
             "measurementsSB": self.measurementsSpinBox.value(),
-            "saveType": self.saveTypeComboBox.currentText()
+            "saveType": self.saveTypeComboBox.currentText(),
+            "keithleyUseCB": self.keithleyUseCB.isChecked(),
+            "keithleyComPort": self.keithleyComPortLineEdit.text(),
+            "keithleyTableData": keithleyTableData
         }
         return saveDict
 
@@ -820,4 +846,16 @@ class WindowTempCalFritoese(AbstractWindow):
         self.allowedHoldTempDeviationSpinBox.setValue(data["holdTempDivSB"])
         self.measurementsSpinBox.setValue(data["measurementsSB"])
         self.saveTypeComboBox.setCurrentText(data["saveType"])
+        self.keithleyUseCB.setChecked(data["keithleyUseCB"])
+        self.keithleyUseButtonPressed(self.keithleyUseCB.isChecked())
+        self.keithleyComPortLineEdit.setText(data["keithleyComPort"])
+        self.portFilterChanged()
+
+        self.keithleyTable.setRowCount(0)
+        for row in data["keithleyTableData"]:
+            self.addKeithleyRow()
+            self.keithleyTable.cellWidget(self.keithleyTable.rowCount()-1, 0).setText(row[0])
+            self.keithleyTable.cellWidget(self.keithleyTable.rowCount()-1, 1).setValue(row[1])
+            self.keithleyTable.cellWidget(self.keithleyTable.rowCount()-1, 2).setCurrentText(row[2])
+            self.keithleyTable.cellWidget(self.keithleyTable.rowCount()-1, 3).setValue(row[3])
 
