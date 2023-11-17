@@ -168,11 +168,13 @@ class PythonHighlighter (QSyntaxHighlighter):
 
         self.rules = [(QRegExp(pat), index, fmt) for (pat, index, fmt) in rules]
 
+
 class SerialSignals(QObject):
     sendDataSignal = pyqtSignal(object, object)
     sendOutputSignal = pyqtSignal(object)
     sendErrorSignal = pyqtSignal(object)
     stoppedRunningSignal = pyqtSignal()
+
 
 class Worker(QRunnable):
     def __init__(self):
@@ -187,22 +189,23 @@ class Worker(QRunnable):
         self.program = ""
 
         self.globalDevice = None
-        self.globalPorts = None
+        self.globalPort = None
         self.globalTimeout = None
         self.globalRetry = 0
+        self.globalDelay = 0.1
 
         self.lastData = None
     @pyqtSlot()
     def run(self):
         while not self.is_killed:
             if self.running == True:
-                #try:
-                self.initVars()
-                exec(self.program)
-                #except Exception as inst:
-                #    self.signals.sendErrorSignal.emit(inst)
-                #    self.running = False
-                #    self.signals.stoppedRunningSignal.emit()
+                try:
+                    self.initVars()
+                    exec(self.program)
+                except Exception as inst:
+                    self.signals.sendErrorSignal.emit(inst)
+                    self.running = False
+                    self.signals.stoppedRunningSignal.emit()
 
                 if self.looping == True:
                     if self.stopping == True:
@@ -218,18 +221,18 @@ class Worker(QRunnable):
 
     def initVars(self):
         self.globalDevice = None
-        self.globalPorts = None
+        self.globalPort = None
         self.globalTimeout = None
         self.globalRetry = 0
 
-    def query(self, message: str = None, device: str = None, command: str = None, value=None, unit=None, ports=None, timeout: float = None, retry: int = None):
+    def query(self, message=None, device: str = None, command: str = None, value=None, unit=None, port=None, timeout: float = None, delay=None, retry: int = None):
         self.lastData = None
-        startTime = time.time()
 
         # apply global variables if necessary
         device = self.globalDevice if device is None else device
-        ports = self.globalPorts if ports is None else ports
+        port = self.globalPort if port is None else port
         timeout = self.globalTimeout if timeout is None else timeout
+        delay = self.globalDelay if delay is None else delay
         retry = self.globalRetry if retry is None else retry
 
         if device == "Fritteuse":
@@ -239,14 +242,28 @@ class Worker(QRunnable):
                 message = "{M71" + format(int(value * 100), 'x').upper().zfill(4) + "\r\n" if type(value) in [int, float] else message
             elif command.lower() in ["tempcontrol", "temperaturecontrol", "settempcontrol", "settemperaturecontrol", "settempcon", "control"]:
                 message = "{M14000" + str(int(value)) + "\r\n" if type(value) in [bool] else message
+        elif device == "Keithley2010":
+            if command.lower() in ["meas", "measure", "messen", "ask", "askfor", "query", "request"]:
+                if type(value)==list and len(value)==3:
+                    message = [":SENS:FUNC \"" + str(value[1]) + "\"", ":SENS:FRES:RANG " + str(value[2]), "ROUTE:CLOSE (@" + str(value[0]) + ")", ":READ?"]
 
         if message is not None:
-            if ports is not None:
-                if type(ports) == str:
-                    ports = [ports]
-            self.sendData(message, ports)
+            if port is not None:
+                if type(port) == str:
+                    port = [port]
+            if type(message) == str:
+                self.sendData(message, port)
+            elif type(message) == list:
+                for index in range(0, len(message)):
+                    self.sendData(message[index], port)
+                    if index < len(message)-1:
+                        sleep(delay)
+            else:
+                return None
         else:
             return None
+
+        startTime = time.time()
 
         # Waiting for answer
         while True:
@@ -254,7 +271,7 @@ class Worker(QRunnable):
             if timeout is not None:
                 if time.time() - startTime >= timeout:
                     if retry > 0:
-                        return self.query(message, device, command, value, unit, ports, timeout, retry-1)
+                        return self.query(message, device, command, value, unit, port, timeout, delay, retry-1)
                     else:
                         return None
             if self.lastData is not None:
@@ -263,18 +280,49 @@ class Worker(QRunnable):
                 if device is None:
                     return self.lastData
 
-                # Keithley2010 specified
+                # Fritteuse specified
                 elif device == "Fritteuse":
                     if re.match(r"\{S[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]", self.lastData.decode()):
-                        return self.lastData
+                        return int(self.lastData.decode().strip()[4:8], 16)
+
+                # Keithley2010 specified
+                elif device == "Keithley2010":
+                    if re.match(r"[+,-][0-9]*[.][0-9]*E[+,-][0-9]*.*", self.lastData.decode()):
+                        return float(re.findall("[+,-][0-9]*[.][0-9]*E[+,-][0-9]*", self.lastData.decode().strip())[0])
 
                 self.lastData = None
             sleep(0.05)
 
+    def send(self, message: str = None, device: str = None, command: str = None, value=None, unit=None, port=None, delay=None):
+        device = self.globalDevice if device is None else device
+        port = self.globalPort if port is None else port
+        delay = self.globalDelay if delay is None else delay
+
+        if device == "Keithley2010":
+            if command.lower() in ["init", "begin"]:
+                message = ["*RST\r\n", "*CLS\r\n", "INIT:CONT OFF\r\n", "ABORT\r\n"]
+
+        if message is not None:
+            if port is not None:
+                if type(port) == str:
+                    port = [port]
+            if type(message) == str:
+                self.sendData(message, port)
+            elif type(message) == list:
+                for index in range(0, len(message)):
+                    self.sendData(message[index], port)
+                    if index < len(message) - 1:
+                        sleep(delay)
+            return True
+        else:
+            return False
+
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
         self.lastData = data
 
-    def sendData(self, data: str, ports: list = None):
+    def sendData(self, data: str, ports=None):
+        if type(ports) == str:
+            ports = [ports]
         self.signals.sendDataSignal.emit(data.encode('utf-8'), ports)
 
     def sendOutput(self, text):
