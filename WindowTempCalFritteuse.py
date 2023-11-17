@@ -509,11 +509,15 @@ class WindowTempCalFritoese(AbstractWindow):
                         line = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + "\t"
                         line += str(time.time()) + "\t"
                         line += str(self.setPointTemp) + "\t"
-                        line += str(self.cal.lastTempValue) + "\t"
+                        line += str(self.cal.lastTempValue)
                         if self.keithleyUseCB.isChecked():
+                            s = []
                             for val in self.keithley.lastKeithleyValues:
-                                line += str(val) + "\t"
-                        line += "\t".join(dataList) + "\n"
+                                s.append(str(val))
+                            line += "\t" + "\t".join(s)
+                        if len(dataList) > 0:
+                            line += "\t" + "\t".join(dataList)
+                        line += "\n"
                         file.write(line)
                     self.gatheredDataCounter += 1
                     self.setCellStatus(self.currentWorkingRow, 2, text=str(self.gatheredDataCounter) + "/" + str(self.requiredDataNumber), status="WORKING")

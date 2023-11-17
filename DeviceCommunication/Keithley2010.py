@@ -63,7 +63,7 @@ class Keithley2010:
 
             self._askForKeithleyChannel = channel
             self._askForKeithleyFunc = func
-            self._askForKeithleyRange = range
+            self._askForKeithleyRange = measurementRange
             self._askForMessageCounter = 0
 
             self._askForMessages = []
@@ -97,8 +97,12 @@ class Keithley2010:
     def askForKeithleyTimerFunc(self):
         if self._askForMessageCounter >= len(self._askForMessages):
             self._askForTimer.stop()
-            self.lastKeithleyValues = self.tempLastKeithleyValues
-            self.newKeithleyAvailable = True
+            if len(self._askForKeithleyChannel) != len(self.tempLastKeithleyValues):
+                self.askForKeithley(self._askForKeithleyChannel, self._askForKeithleyFunc, self._askForKeithleyRange)
+                return
+            else:
+                self.lastKeithleyValues = self.tempLastKeithleyValues
+                self.newKeithleyAvailable = True
         else:
             self._parent.sendSerialData((self._askForMessages[self._askForMessageCounter] + "\r\n").encode('utf-8'),
                                         [self._port])
