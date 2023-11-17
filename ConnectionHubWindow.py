@@ -30,6 +30,7 @@ from WindowTeleTableView import WindowTeleTableView
 from WindowSynthetischeDaten import WindowSynthetischeDaten
 from WindowTempCalFritteuse import WindowTempCalFritoese
 from WindowStationaritaet import WindowStationaritaet
+from WindowProgrammer import WindowProgrammer
 from WindowTest import WindowTest
 
 
@@ -207,6 +208,7 @@ class ConnectionHubWindow(QMainWindow):
         actCreateSynthetischeDatenWindow = QAction('Synthetische &Daten', self, triggered=self.createSynthetischeDatenWindow)
         actCreateTempCalFritoeseWindow = QAction('Temp. Cal. &Fritteuse', self,triggered=self.createTempCalFritoeseWindow)
         actCreateStationaritaetWindow = QAction('Stat&ionaritaet', self,triggered=self.createStationaritaetWindow)
+        actCreateProgrammerWindow = QAction('Pr&ogrammer', self, triggered=self.createProgrammerWindow)
         actCreateTestWindow = QAction('T&est', self, triggered=self.createTestWindow)
         toolMenu.addAction(actCreateTerminal)
         toolMenu.addAction(actCreateTablePlotter)
@@ -218,6 +220,7 @@ class ConnectionHubWindow(QMainWindow):
         toolMenu.addAction(actCreateSynthetischeDatenWindow)
         toolMenu.addAction(actCreateTempCalFritoeseWindow)
         toolMenu.addAction(actCreateStationaritaetWindow)
+        toolMenu.addAction(actCreateProgrammerWindow)
         toolMenu.addAction(actCreateTestWindow)
 
         self.menuBar().addMenu(fileMenu)
@@ -253,10 +256,8 @@ class ConnectionHubWindow(QMainWindow):
         self.resumeSerialRecordSignal.connect(serialThread.resumeRecordData)
         self.writeToFileSignal.connect(serialThread.writeDataToFile)
 
-        if QThreadPool.maxThreadCount(QThreadPool.globalInstance()) < QThreadPool.activeThreadCount(
-                QThreadPool.globalInstance()) + 2:
-            QThreadPool.setMaxThreadCount(QThreadPool.globalInstance(),
-                                          QThreadPool.activeThreadCount(QThreadPool.globalInstance()) + 2)
+        if QThreadPool.maxThreadCount(QThreadPool.globalInstance()) < QThreadPool.activeThreadCount(QThreadPool.globalInstance()) + 2:
+            QThreadPool.setMaxThreadCount(QThreadPool.globalInstance(), QThreadPool.activeThreadCount(QThreadPool.globalInstance()) + 2)
         # QThreadPool.globalInstance().start(serialThread)
         if not QThreadPool.globalInstance().tryStart(serialThread):
             dlg = QMessageBox(self)
@@ -367,6 +368,7 @@ class ConnectionHubWindow(QMainWindow):
         self.fileSave(str(Path(os.getcwd() + "/last_save.json")))
         for window in self.windows:
             # Bisschen strange: eigentlich wollte ich window.close() benutzen, aber wenn mehr als ein Fenster offen ist, schließt das letzte Fenster nicht mehr --> überprüfen
+            window.onClosing()
             window.deleteLater()
         self.killSerialConnection("ALL")
 
@@ -704,6 +706,12 @@ class ConnectionHubWindow(QMainWindow):
         self.connectWindowToSignals(window)
         return window
 
+    def createProgrammerWindow(self):
+        window = WindowProgrammer(self)
+        self.windows.append(window)
+        self.connectWindowToSignals(window)
+        return window
+
     def createTestWindow(self):
         window = WindowTest(self)
         self.windows.append(window)
@@ -915,6 +923,8 @@ class ConnectionHubWindow(QMainWindow):
                 self.createTempCalFritoeseWindow().deserialize(window_data)
             if window_data["_windowType"] == "Stationaritaet":
                 self.createStationaritaetWindow().deserialize(window_data)
+            if window_data["_windowType"] == "Programmer":
+                self.createProgrammerWindow().deserialize(window_data)
             if window_data["_windowType"] == "Test":
                 self.createTestWindow().deserialize(window_data)
 
