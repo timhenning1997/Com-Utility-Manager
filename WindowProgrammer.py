@@ -8,6 +8,7 @@ from PyQt5.QtGui import QPixmap, QFont, QTextDocument, QSyntaxHighlighter, QColo
 from AbstractWindow import AbstractWindow
 from SerialParameters import SerialParameters
 from time import sleep
+from datetime import datetime
 
 
 def tempFormat(color, style=''):
@@ -195,6 +196,7 @@ class Worker(QRunnable):
         self.globalDelay = 0.1
 
         self.lastData = None
+        self.lastPort = None
     @pyqtSlot()
     def run(self):
         while not self.is_killed:
@@ -247,10 +249,13 @@ class Worker(QRunnable):
                 if type(value)==list and len(value)==3:
                     message = [":SENS:FUNC \"" + str(value[1]) + "\"\r\n", ":SENS:FRES:RANG " + str(value[2]) + "\r\n", "ROUTE:CLOSE (@" + str(value[0]) + ")\r\n", ":READ?\r\n"]
 
+        if port is not None:
+            if type(port) == str:
+                port = [port]
+        else:
+            port = ["COM-ALL"]
+
         if message is not None:
-            if port is not None:
-                if type(port) == str:
-                    port = [port]
             if type(message) == str:
                 self.sendData(message, port)
             elif type(message) == list:
@@ -260,8 +265,6 @@ class Worker(QRunnable):
                         sleep(delay)
             else:
                 return None
-        else:
-            return None
 
         startTime = time.time()
 
@@ -274,7 +277,8 @@ class Worker(QRunnable):
                         return self.query(message, device, command, value, unit, port, timeout, delay, retry-1)
                     else:
                         return None
-            if self.lastData is not None:
+
+            if self.lastData is not None and (port == "COM-ALL" or self.lastPort in port):
 
                 # No device specified
                 if device is None:
@@ -302,10 +306,13 @@ class Worker(QRunnable):
             if command.lower() in ["init", "begin"]:
                 message = ["*RST\r\n", "*CLS\r\n", "INIT:CONT OFF\r\n", "ABORT\r\n"]
 
+        if port is not None:
+            if type(port) == str:
+                port = [port]
+        else:
+            port = ["COM-ALL"]
+
         if message is not None:
-            if port is not None:
-                if type(port) == str:
-                    port = [port]
             if type(message) == str:
                 self.sendData(message, port)
             elif type(message) == list:
@@ -318,6 +325,7 @@ class Worker(QRunnable):
             return False
 
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
+        self.lastPort = serialParameters.port
         self.lastData = data
 
     def sendData(self, data: str, ports=None):
@@ -327,6 +335,9 @@ class Worker(QRunnable):
 
     def sendOutput(self, text):
         self.signals.sendOutputSignal.emit(text)
+
+    def clearOutput(self):
+        self.signals.sendOutputSignal.emit("CLEAR_OUTPUT_SIGNAL")
 
     def kill(self):
         self.is_killed = True
@@ -430,8 +441,11 @@ class WindowProgrammer(AbstractWindow):
         self.receiveCalibratedSerialDataSignal.emit(serialParameters, data, dataInfo)
 
     def receiveOutput(self, text):
-        self.outputEditorTextEdit.setVisible(True)
-        self.outputEditorTextEdit.append(str(text))
+        if text == "CLEAR_OUTPUT_SIGNAL":
+            self.outputEditorTextEdit.clear()
+        else:
+            self.outputEditorTextEdit.setVisible(True)
+            self.outputEditorTextEdit.append(str(text))
 
     def sendData(self, data, ports: None):
         self.sendSerialData(data, ports)
