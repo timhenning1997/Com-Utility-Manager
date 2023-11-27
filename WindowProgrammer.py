@@ -245,7 +245,7 @@ class Worker(QRunnable):
         elif device == "Keithley2010":
             if command.lower() in ["meas", "measure", "messen", "ask", "askfor", "query", "request"]:
                 if type(value)==list and len(value)==3:
-                    message = [":SENS:FUNC \"" + str(value[1]) + "\"", ":SENS:FRES:RANG " + str(value[2]), "ROUTE:CLOSE (@" + str(value[0]) + ")", ":READ?"]
+                    message = [":SENS:FUNC \"" + str(value[1]) + "\"\r\n", ":SENS:FRES:RANG " + str(value[2]) + "\r\n", "ROUTE:CLOSE (@" + str(value[0]) + ")\r\n", ":READ?\r\n"]
 
         if message is not None:
             if port is not None:
