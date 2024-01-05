@@ -289,7 +289,7 @@ class WindowBetriebsmesstechnik(AbstractWindow):
 
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.700), "G20-1_Periode_0", "RPM",  "rpm",  "RPM"))
         # self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.250), "G20-1_SPI1_1",  "TSA2",   "°C",   "TE")) # Vorerst irrelevant
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.250), "Tele-A_PAD3",  "T Tele-A",   "°C",   "TE")) 
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.250), "Tele-A_PM1_6",  "T Tele-A",   "°C",   "TE")) 
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.325), "G20-1_SPI1_0",  "TSA1",   "°C",   "TE"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.190), y(0.400), "G16-1_SPI_6",   "SWA",    "mm/s", "SWS"))
 
@@ -309,7 +309,7 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.683), y(0.325), "G16-1_SPI_4",   "GTARB2", "°C",   "TE"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.683), y(0.400), "G16-1_SPI_3",   "GTMRaB", "°C",   "TE"))
 
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.783), y(0.250), "Tele-B_PAD3",  "T Tele-B",   "°C",   "TE")) 
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.783), y(0.250), "Tele-B_PM1_6",  "T Tele-B",   "°C",   "TE")) 
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.783), y(0.325), "G20-1_SPI1_2",  "TSB1",   "°C",   "TE"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.783), y(0.400), "G16-1_SPI_7",   "SWB",    "mm/s", "SWS"))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.800), y(0.710), "G16-1_SPI_5",   "TOelZu", "°C",   "LTE"))
@@ -369,6 +369,10 @@ class WindowBetriebsmesstechnik(AbstractWindow):
             
             if dp is not None:
                 dp -= self.offsetDict[self.massFlowData[key]["uuid_dp"]]
+            
+            # TODO: Testen
+            if p1 is not None:
+                p1 -= self.offsetDict[self.massFlowData[key]["uuid_p1"]]
             
             D   = self.massFlowData[key]["D"]
             d   = self.massFlowData[key]["d"]

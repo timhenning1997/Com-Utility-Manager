@@ -87,10 +87,10 @@ class WindowStationaritaet(AbstractWindow):
 
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
         
-        TM29    = self.findCalibratedDataByUUID(data, dataInfo, "Tele-B_PAD7_0") # TM29
+        TA15    = self.findCalibratedDataByUUID(data, dataInfo, "Tele-A_PP2_2") # TA15
         TM34    = self.findCalibratedDataByUUID(data, dataInfo, "Tele-B_PAD7_5") # TM34
         TM35    = self.findCalibratedDataByUUID(data, dataInfo, "Tele-B_PAD7_6") # TM35
-        TM40    = self.findCalibratedDataByUUID(data, dataInfo, "Tele-B_PAD6_4") # TM40
+        TB15    = self.findCalibratedDataByUUID(data, dataInfo, "Tele-B_PT3_2") # TB15
         RPM     = self.findCalibratedDataByUUID(data, dataInfo, "G16-1_Periode_0") # RPM
         DSA     = self.findCalibratedDataByUUID(data, dataInfo, "G16-1_PC3_1") # DSA
         DSBL9   = self.findCalibratedDataByUUID(data, dataInfo, "G20-1_A9") # DSBL9
@@ -100,10 +100,10 @@ class WindowStationaritaet(AbstractWindow):
         
         zeit   = time.time()
         
-        if (TM29 is not None) and (TM34 is not None) and (TM35 is not None) and (TM40 is not None):
+        if (TA15 is not None) and (TM34 is not None) and (TM35 is not None) and (TB15 is not None):
             
             self.MantelT_anzahlEmpfangenerDaten    += 1
-            self.MantelT.append((TM29 + TM34 + TM35 + TM40)/4)
+            self.MantelT.append((TA15 + TM34 + TM35 + TB15)/4)
             self.MantelT_time.append(zeit)
             
             if self.MantelT_anzahlEmpfangenerDaten % 10 == 0 and self.MantelT_anzahlEmpfangenerDaten > 5:
@@ -200,6 +200,8 @@ class WindowStationaritaet(AbstractWindow):
                 self.Druck_time = self.Druck_time[1:]
             
         if (DSBL9 is not None) and (DdSBL9 is not None) and (TLSBL9 is not None):
+
+            # TODO: Offset-Data aus Betriebsmesstechnik übernehmen und von den Drücken abziehen
             
             self.Massestrom_anzahlEmpfangenerDaten += 1
             blende = Blendenmessung(self.D, self.d, DSBL9, DdSBL9, TLSBL9+273.15)
