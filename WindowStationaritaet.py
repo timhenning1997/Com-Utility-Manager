@@ -210,8 +210,6 @@ class WindowStationaritaet(AbstractWindow):
                 self.Druck_time = self.Druck_time[1:]
             
         if (DSBL9 is not None) and (DdSBL9 is not None) and (TLSBL9 is not None):
-
-            # TODO: Offset-Data aus Betriebsmesstechnik übernehmen und von den Drücken abziehen
             
             if "G20-1_A10" in self.getGlobalVars().keys():
                 DdSBL9 -= self.getGlobalVarsEntry("G20-1_A10")
