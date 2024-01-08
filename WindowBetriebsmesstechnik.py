@@ -370,10 +370,6 @@ class WindowBetriebsmesstechnik(AbstractWindow):
             if dp is not None:
                 dp -= self.offsetDict[self.massFlowData[key]["uuid_dp"]]
             
-            # TODO: Testen
-            if p1 is not None:
-                p1 -= self.offsetDict[self.massFlowData[key]["uuid_p1"]]
-            
             D   = self.massFlowData[key]["D"]
             d   = self.massFlowData[key]["d"]
             dD  = self.massFlowData[key]["dD"]
