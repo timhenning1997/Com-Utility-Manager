@@ -87,10 +87,15 @@ class WindowStationaritaet(AbstractWindow):
 
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
         
-        TA15    = self.findCalibratedDataByUUID(data, dataInfo, "Tele-A_PP2_2") # TA15
-        TM34    = self.findCalibratedDataByUUID(data, dataInfo, "Tele-B_PAD7_5") # TM34
-        TM35    = self.findCalibratedDataByUUID(data, dataInfo, "Tele-B_PAD7_6") # TM35
-        TB15    = self.findCalibratedDataByUUID(data, dataInfo, "Tele-B_PT3_2") # TB15
+        if  self.findCalibratedDataByUUID(data, dataInfo, "Tele-A_PP2_2") is not None:
+            self.TA15    = self.findCalibratedDataByUUID(data, dataInfo, "Tele-A_PP2_2") # self.TA15
+        if  self.findCalibratedDataByUUID(data, dataInfo, "Tele-B_PAD7_5") is not None:
+            self.TM34    = self.findCalibratedDataByUUID(data, dataInfo, "Tele-B_PAD7_5") # self.TM34
+        if  self.findCalibratedDataByUUID(data, dataInfo, "Tele-B_PAD7_6") is not None:
+            self.TM35    = self.findCalibratedDataByUUID(data, dataInfo, "Tele-B_PAD7_6") # self.TM35
+        if  self.findCalibratedDataByUUID(data, dataInfo, "Tele-B_PT3_2") is not None:
+            self.TB15    = self.findCalibratedDataByUUID(data, dataInfo, "Tele-B_PT3_2") # self.TB15
+            
         RPM     = self.findCalibratedDataByUUID(data, dataInfo, "G16-1_Periode_0") # RPM
         DSA     = self.findCalibratedDataByUUID(data, dataInfo, "G16-1_PC3_1") # DSA
         DSBL9   = self.findCalibratedDataByUUID(data, dataInfo, "G20-1_A9") # DSBL9
@@ -100,10 +105,10 @@ class WindowStationaritaet(AbstractWindow):
         
         zeit   = time.time()
         
-        if (TA15 is not None) and (TM34 is not None) and (TM35 is not None) and (TB15 is not None):
+        if (self.TA15 is not None) and (self.TM34 is not None) and (self.TM35 is not None) and (self.TB15 is not None):
             
             self.MantelT_anzahlEmpfangenerDaten    += 1
-            self.MantelT.append((TA15 + TM34 + TM35 + TB15)/4)
+            self.MantelT.append((self.TA15 + self.TM34 + self.TM35 + self.TB15)/4)
             self.MantelT_time.append(zeit)
             
             if self.MantelT_anzahlEmpfangenerDaten % 10 == 0 and self.MantelT_anzahlEmpfangenerDaten > 5:
