@@ -83,6 +83,11 @@ class WindowStationaritaet(AbstractWindow):
         
         self.D = 0
         self.d = 0
+
+        self.TA15 = None
+        self.TM34 = None
+        self.TM35 = None
+        self.TB15 = None
         
 
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
@@ -208,6 +213,9 @@ class WindowStationaritaet(AbstractWindow):
 
             # TODO: Offset-Data aus Betriebsmesstechnik übernehmen und von den Drücken abziehen
             
+            if "G20-1_A10" in self.getGlobalVars().keys():
+                DdSBL9 -= self.getGlobalVarsEntry("G20-1_A10")
+
             self.Massestrom_anzahlEmpfangenerDaten += 1
             blende = Blendenmessung(self.D, self.d, DSBL9, DdSBL9, TLSBL9+273.15)
             blende.Massestrom()

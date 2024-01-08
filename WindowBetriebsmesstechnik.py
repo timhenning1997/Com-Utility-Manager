@@ -80,7 +80,7 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         super().__init__(hubWindow, "Betriebsmesstechnik")
 
         self.offsetFlag = False
-        self.offsetDict = {"G20-1_A2": 0, "G20-1_A6": 0, "G20-1_B4": 0, "G20-1_A10": 0, "G20-1_PAD_3": 0}
+        self.useOffset = True
 
         # Dem Hauptfenster ein Layout zuweisen
         massestromGridLayout = QGridLayout()
@@ -275,9 +275,9 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         offsetButton.move(x(0.965), y(0.050))
         offsetButton.clicked.connect(self.setOffsetFlag)
         
-        resetOffsetButton = QPushButton("Reset Offset", msWidget)
-        resetOffsetButton.move(x(0.870), y(0.050))
-        resetOffsetButton.clicked.connect(self.resetOffset)
+        resetOffsetButton = QPushButton("Toggle Offset", msWidget)
+        resetOffsetButton.move(x(0.850), y(0.050))
+        resetOffsetButton.clicked.connect(self.toggleOffset)
 
         self.graphicalMeasurements = []
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.000), y(0.120), "G20-1_SPI1_5",  "TLRT",   "°C",   "LTE"))
@@ -322,10 +322,6 @@ class WindowBetriebsmesstechnik(AbstractWindow):
 
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
         resetOffsetFlag = False
-        if self.offsetFlag:
-            with open("offsetKorrektur.txt", "a") as offsetFile:
-                offsetFile.write("____________________________\n")
-                offsetFile.write(str(datetime.now().strftime("%d-%m-%Y_%H-%M-%S")) + "\n")
         
         for graphicalMeasurement in self.graphicalMeasurements:
             vData = self.findCalibratedDataByUUID(data, dataInfo, graphicalMeasurement.uuid)
@@ -334,10 +330,11 @@ class WindowBetriebsmesstechnik(AbstractWindow):
                 if graphicalMeasurement.uuid in ["G20-1_A2", "G20-1_A6", "G20-1_B4", "G20-1_A10"]:
                     if self.offsetFlag == True:
                         resetOffsetFlag = True
-                        with open("offsetKorrektur.txt", "a") as offsetFile:
-                            offsetFile.write(graphicalMeasurement.uuid + " : " + str(vData) + "\n")
-                        self.offsetDict[graphicalMeasurement.uuid] = vData
-                    graphicalMeasurement.setValueText(str("{0:6.1f}").format(vData-self.offsetDict[graphicalMeasurement.uuid]))
+                        self.setGlobalVarsEntry(graphicalMeasurement.uuid, vData) 
+                    if self.useOffset:
+                        graphicalMeasurement.setValueText(str("{0:6.1f}").format(vData-self.getGlobalVarsEntry(graphicalMeasurement.uuid))) 
+                    else:
+                        graphicalMeasurement.setValueText(str("{0:6.1f}").format(vData))
                 else:
                     graphicalMeasurement.setValueText(str("{0:6.1f}").format(vData))
                 
@@ -346,10 +343,11 @@ class WindowBetriebsmesstechnik(AbstractWindow):
             if vData is not None:
                 if label[1] == "G20-1_PAD_3":
                     if self.offsetFlag == True:
-                        self.offsetDict["G20-1_PAD_3"] = vData
-                        with open("offsetKorrektur.txt", "a") as offsetFile:
-                            offsetFile.write("G20-1_PAD_3" + " : " + str(vData) + "\n")
-                    label[0].setText(str("{0:10.2f}").format(vData-self.offsetDict["G20-1_PAD_3"]))
+                        self.setGlobalVarsEntry("G20-1_PAD_3", vData) 
+                    if self.useOffset:
+                        label[0].setText(str("{0:10.2f}").format(vData-self.getGlobalVarsEntry("G20-1_PAD_3"))) 
+                    else:
+                        label[0].setText(str("{0:10.2f}").format(vData))
                 else:
                     label[0].setText(str("{0:10.2f}").format(vData)) 
         
@@ -367,8 +365,8 @@ class WindowBetriebsmesstechnik(AbstractWindow):
             elif  key  == "BL9":
                 massFlowLabel = self.label_BL9
             
-            if dp is not None:
-                dp -= self.offsetDict[self.massFlowData[key]["uuid_dp"]]
+            if self.useOffset and dp is not None:
+                dp -= self.getGlobalVarsEntry(self.massFlowData[key]["uuid_dp"])
             
             D   = self.massFlowData[key]["D"]
             d   = self.massFlowData[key]["d"]
@@ -405,8 +403,12 @@ class WindowBetriebsmesstechnik(AbstractWindow):
         self.offsetFlag = True
         
         
-    def resetOffset(self):
-        self.offsetDict = {"G20-1_A2": 0, "G20-1_A6": 0, "G20-1_B4": 0, "G20-1_A10": 0, "G20-1_PAD_3": 0}
+    def toggleOffset(self):
+
+        if self.useOffset:
+            self.useOffset = False
+        else:
+            self.useOffset =True
 
 
     def sendData(self):
