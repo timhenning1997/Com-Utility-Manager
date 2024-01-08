@@ -332,7 +332,11 @@ class WindowBetriebsmesstechnik(AbstractWindow):
                         resetOffsetFlag = True
                         self.setGlobalVarsEntry(graphicalMeasurement.uuid, vData) 
                     if self.useOffset:
-                        graphicalMeasurement.setValueText(str("{0:6.1f}").format(vData-self.getGlobalVarsEntry(graphicalMeasurement.uuid))) 
+                        if graphicalMeasurement.uuid in self.getGlobalVars().keys():
+                            graphicalMeasurement.setValueText(str("{0:6.1f}").format(vData-self.getGlobalVarsEntry(graphicalMeasurement.uuid))) 
+                        else:
+                            graphicalMeasurement.setValueText(str("{0:6.1f}").format(vData))
+                            # print("{0:} not found in global variables list!".format(graphicalMeasurement.uuid))
                     else:
                         graphicalMeasurement.setValueText(str("{0:6.1f}").format(vData))
                 else:
@@ -345,7 +349,11 @@ class WindowBetriebsmesstechnik(AbstractWindow):
                     if self.offsetFlag == True:
                         self.setGlobalVarsEntry("G20-1_PAD_3", vData) 
                     if self.useOffset:
-                        label[0].setText(str("{0:10.2f}").format(vData-self.getGlobalVarsEntry("G20-1_PAD_3"))) 
+                        if "G20-1_PAD_3" in self.getGlobalVars().keys():
+                            label[0].setText(str("{0:10.2f}").format(vData-self.getGlobalVarsEntry("G20-1_PAD_3")))
+                        else:
+                            label[0].setText(str("{0:10.2f}").format(vData))
+                            # print("G20-1_PAD_3 not found in global variables list!")
                     else:
                         label[0].setText(str("{0:10.2f}").format(vData))
                 else:
@@ -366,7 +374,10 @@ class WindowBetriebsmesstechnik(AbstractWindow):
                 massFlowLabel = self.label_BL9
             
             if self.useOffset and dp is not None:
-                dp -= self.getGlobalVarsEntry(self.massFlowData[key]["uuid_dp"])
+                if "G20-1_A10" in self.getGlobalVars().keys():
+                    dp -= self.getGlobalVarsEntry(self.massFlowData[key]["uuid_dp"])
+                # else:
+                #     print("G20-1_A10 not found in global variables list!")
             
             D   = self.massFlowData[key]["D"]
             d   = self.massFlowData[key]["d"]
