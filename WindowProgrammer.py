@@ -1,9 +1,11 @@
+import os
 import re
+import sys
 import time
 
 from PyQt5.QtCore import QPoint, Qt, QRunnable, pyqtSlot, QThreadPool, QProcess, QRegExp, pyqtSignal, QObject
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QPushButton, QWidget, QLineEdit, QMenu, QGroupBox, QHBoxLayout, \
-    QGridLayout, QTextEdit, QSplitter
+    QGridLayout, QTextEdit, QSplitter, QAction, QFileDialog, QApplication
 from PyQt5.QtGui import QPixmap, QFont, QTextDocument, QSyntaxHighlighter, QColor, QTextCharFormat, QCloseEvent
 from AbstractWindow import AbstractWindow
 from SerialParameters import SerialParameters
@@ -360,6 +362,11 @@ class WindowProgrammer(AbstractWindow):
 
     def __init__(self, hubWindow):
         super().__init__(hubWindow, "Programmer")
+
+        actSaveTextAs = QAction('Save &editor text', self, triggered=self.onTextSaveAs)
+        actLoadText = QAction('&Load editor text', self, triggered=self.onTextLoad)
+        self.fileMenu.addAction(actSaveTextAs)
+        self.fileMenu.addAction(actLoadText)
         
         mainLayout = QVBoxLayout()
 
@@ -416,6 +423,23 @@ class WindowProgrammer(AbstractWindow):
         mainWidget = QWidget()
         mainWidget.setLayout(mainLayout)
         self.setCentralWidget(mainWidget)
+
+    def onTextSaveAs(self):
+        fname, filter = QFileDialog.getSaveFileName(self, 'Save current editor text to file', None, "*.txt", "", QFileDialog.DontUseNativeDialog)
+        if fname == '': return False
+        if fname.split(".")[-1] != "txt": fname += ".txt"
+        QApplication.setOverrideCursor(Qt.WaitCursor)
+        with open(fname, "w") as file:
+            file.write(self.editorTextEdit.toPlainText())
+        QApplication.restoreOverrideCursor()
+        return True
+
+    def onTextLoad(self):
+        fname, filter = QFileDialog.getOpenFileName(self, 'Open text from file', "", "*.txt", "", QFileDialog.DontUseNativeDialog)
+        if fname != '' and os.path.isfile(fname):
+            with open(fname, "r") as file:
+                text = file.read()
+                self.editorTextEdit.setPlainText(text)
 
     def startedRunning(self):
         self.runButton.setEnabled(False)

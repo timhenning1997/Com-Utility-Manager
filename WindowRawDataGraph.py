@@ -1,6 +1,6 @@
 from random import randint
 
-from UsefulFunctions import strToIntElseNone
+from UsefulFunctions import strToIntElseNone, strToFloatElseNone
 
 import binascii
 import json
@@ -23,6 +23,7 @@ class GraphLine:
         self.x = []
         self.y = []
         self.dataLine = None
+        self.dataCounter = 0
 
         self.maxLength = 200
 
@@ -31,6 +32,9 @@ class GraphLine:
             return
         if x is None:
             x = time.time() - self.startTime
+        elif x == -1:
+            self.dataCounter += 1
+            x = self.dataCounter
         if len(self.x) > self.maxLength > 0:
             self.x = self.x[-self.maxLength:]
             self.y = self.y[-self.maxLength:]
@@ -127,7 +131,11 @@ class WindowRawDataGraph(AbstractWindow):
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
         if dataInfo["dataType"] != "RAW-Values":
             return
-        kennung = binascii.hexlify(serialParameters.Kennbin).decode("utf-8").upper()
+        if serialParameters.readTextIndex == "read_WU_device":
+            kennung = binascii.hexlify(serialParameters.Kennbin).decode("utf-8").upper()
+        else:
+            data = data.decode("utf-8").strip().replace(" ", "").replace(":", ";").split(";")
+            kennung = ""
 
         for key in self.graphLines.keys():
             name = key.split("-")
@@ -135,7 +143,12 @@ class WindowRawDataGraph(AbstractWindow):
                 number = strToIntElseNone(name[0])
                 if number is not None:
                     if number >= 0 and number < len(data):
-                        self.graphLines[key].appendDataPoint(int(data[number], 16))
+                        if serialParameters.readTextIndex == "read_WU_device":
+                            self.graphLines[key].appendDataPoint(int(data[number], 16))
+                        else:
+                            value = strToFloatElseNone(data[number])
+                            if value is not None:
+                                self.graphLines[key].appendDataPoint(value)
                     else:
                         print("not in range")
             else:
@@ -143,7 +156,14 @@ class WindowRawDataGraph(AbstractWindow):
                     number = strToIntElseNone(name[1])
                     if number is not None:
                         if number >= 0 and number < len(data):
-                            self.graphLines[key].appendDataPoint(int(data[number], 16))
+                            if serialParameters.readTextIndex == "read_WU_device":
+                                self.graphLines[key].appendDataPoint(int(data[number], 16))
+                            else:
+                                value = strToFloatElseNone(data[number])
+                                if value is not None:
+                                    self.graphLines[key].appendDataPoint(value)
+                        else:
+                            print("not in range")
 
 
 

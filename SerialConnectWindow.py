@@ -47,6 +47,7 @@ class SerialConnectWindow(QWidget):
         self.baudrateCombobox.addItem("250000")
         self.baudrateCombobox.addItem("460800")
         self.baudrateCombobox.addItem("500000")
+        self.baudrateCombobox.addItem("921600")
         self.baudrateCombobox.addItem("1000000")
         self.baudrateCombobox.addItem("2000000")
         self.baudrateCombobox.setCurrentText("19200")

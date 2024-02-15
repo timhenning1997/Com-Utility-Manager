@@ -45,12 +45,12 @@ class AbstractWindow(QMainWindow):
         self._hubWindow = hubWindow
         self._uuid = str(uuid.uuid4())
 
-        fileMenu = QMenu("&File", self)
+        self.fileMenu = QMenu("&File", self)
         actSaveAs = QAction('&Save window layout', self, triggered=self.onFileSaveAs)
         actOpen = QAction('&Open window layout', self, triggered=self.onFileOpen)
-        fileMenu.addAction(actSaveAs)
-        fileMenu.addAction(actOpen)
-        self.menuBar().addMenu(fileMenu)
+        self.fileMenu.addAction(actSaveAs)
+        self.fileMenu.addAction(actOpen)
+        self.menuBar().addMenu(self.fileMenu)
 
         self.menuFilter = FilterMenu(self._hubWindow.connectedPorts, self)
         self.menuBar().addMenu(self.menuFilter)

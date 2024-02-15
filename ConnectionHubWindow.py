@@ -407,6 +407,7 @@ class ConnectionHubWindow(QMainWindow):
         connectedButton = QPushButton("Disconnected")
         connectedButton.setStyleSheet("background-color : red")
         connectedButton.setProperty("serialParameter", obj)
+        connectedButton.clicked.connect(lambda: self.connectButtonPressed(connectedButton, obj))
         self.table.setCellWidget(self.table.rowCount() - 1, 4, connectedButton)
 
         recordButton = QPushButton("Start Recording")
@@ -456,6 +457,13 @@ class ConnectionHubWindow(QMainWindow):
             if self.table.item(countY, 1).text() == comName:
                 return countY
         return None
+
+    def connectButtonPressed(self, button: QPushButton, obj: SerialParameters):
+        if button.text() == "Connected":
+            self.killSerialConnection(obj.port)
+        else:
+            self.connectToSerial(None, obj)
+
 
     def recordButtonPressed(self, obj):
         row = self.tableFindComRow(obj.port)

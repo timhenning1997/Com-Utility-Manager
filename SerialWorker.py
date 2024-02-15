@@ -44,7 +44,7 @@ class SerialThread(QRunnable):
         self.serialArduino.dsrdtr = self.serialParameters.dsrdtr
         self.serialArduino.inter_byte_timeout = self.serialParameters.inter_byte_timeout
         self.serialArduino.exclusive = self.serialParameters.exclusive
-        self.serialArduino.setDTR(self.serialParameters.DTR)
+        #self.serialArduino.setDTR(self.serialParameters.DTR)
 
         self.signals = SerialSignals()
         self.is_killed = False
@@ -91,7 +91,20 @@ class SerialThread(QRunnable):
                                 #        self.signals.lostConnection.emit(self.serialParameters)
                                 #        return None
                                 #    continue
-                                self.signals.receivedData.emit(self.serialParameters, readLine)
+                                if self.record:
+                                    self.recordData([readLine.decode('utf-8').strip()])
+                                if "lRT" not in self.lastRefreshTimeDict:
+                                    self.lastRefreshTimeDict["lRT"] = 0
+                                if time() > self.lastRefreshTimeDict["lRT"] + (
+                                        1 / self.serialParameters.maxShownSignalRate):
+                                    currentTime = time()
+                                    if currentTime - self.lastSignalTime > 0:
+                                        self.serialParameters.currentSignalRate = 1 / (currentTime - self.lastSignalTime)
+                                    self.lastRefreshTimeDict["lRT"] = time()
+                                    self.signals.receivedData.emit(self.serialParameters, readLine)
+
+                                self.lastSignalTime = time()
+
                         elif self.serialParameters.readTextIndex == "read_bytes":
                             readLine = self.serialArduino.read(self.serialParameters.readBytes)
                             if not readLine == b'':
@@ -101,7 +114,20 @@ class SerialThread(QRunnable):
                                 #    print(e)
                                 #    self.signals.lostConnection.emit(self.serialParameters)
                                 #    return None
-                                self.signals.receivedData.emit(self.serialParameters, readLine)
+                                if self.record:
+                                    self.recordData([readLine.decode('utf-8').strip()])
+                                if "lRT" not in self.lastRefreshTimeDict:
+                                    self.lastRefreshTimeDict["lRT"] = 0
+                                if time() > self.lastRefreshTimeDict["lRT"] + (
+                                        1 / self.serialParameters.maxShownSignalRate):
+                                    currentTime = time()
+                                    if currentTime - self.lastSignalTime > 0:
+                                        self.serialParameters.currentSignalRate = 1 / (
+                                                    currentTime - self.lastSignalTime)
+                                    self.lastRefreshTimeDict["lRT"] = time()
+                                    self.signals.receivedData.emit(self.serialParameters, readLine)
+
+                                self.lastSignalTime = time()
                         elif self.serialParameters.readTextIndex == "read_until":
                             readLine = self.serialArduino.read_until(
                                 self.serialParameters.readUntil.encode('utf-8'))  # self.serialParameters.readUntil)
@@ -112,7 +138,20 @@ class SerialThread(QRunnable):
                                     print(e)
                                     self.signals.lostConnection.emit(self.serialParameters)
                                     return None
-                                self.signals.receivedData.emit(self.serialParameters, readLine)
+                                if self.record:
+                                    self.recordData([readLine.decode('utf-8').strip()])
+                                if "lRT" not in self.lastRefreshTimeDict:
+                                    self.lastRefreshTimeDict["lRT"] = 0
+                                if time() > self.lastRefreshTimeDict["lRT"] + (
+                                        1 / self.serialParameters.maxShownSignalRate):
+                                    currentTime = time()
+                                    if currentTime - self.lastSignalTime > 0:
+                                        self.serialParameters.currentSignalRate = 1 / (
+                                                currentTime - self.lastSignalTime)
+                                    self.lastRefreshTimeDict["lRT"] = time()
+                                    self.signals.receivedData.emit(self.serialParameters, readLine)
+
+                                self.lastSignalTime = time()
                         elif self.serialParameters.readTextIndex == "logging_raw":
                             with open('loggingRaw.txt', 'a') as file:
                                 readChar = self.serialArduino.read(1)
