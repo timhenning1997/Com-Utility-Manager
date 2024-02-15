@@ -1,0 +1,39 @@
+self.globalTimeout = 1 			    # Timeout in [s] bevor eine Anfrage(Nachricht) als gescheitert betrachtet wird
+self.globalRetry = 1				# Anzahl an Versuchen eine Anfrage(Nachricht) zu senden, bevor "None" als Rückgabewert geliefert wird
+self.globalDelay = 0.1			    # Wartezeit zwischen dem Senden mehrer aufeinander folgender Nachrichten (z.B. Beim initialisieren des Keithleys)
+
+comPortKeithley2010 = "COM2"		# Aktueller COM Port des Keithley2010 Multimeters
+fileName = "testFile.txt"			# Dateiname der Ergebnisdatei + ".txt" Endung
+
+measurementCount = 3                # Anzahl der Wiederholungen an Messungen
+measurementDelay = 0.0                # Wartezeit zwischen den Einzelmessungen, wenn mehrmals gemessen werden soll
+measureChannelDelay = 0.05           # Wartezeit in [s] zwischen den einzelnen Messungen der Kanäle
+
+# Alle drei folgenden Listen müssen die selbe Anzahl an Einträgen haben
+channelNames = ["CH_1", "CH_2"]     # Kanalnamen (Nur relevant für Ergebnisdatei)
+channels = [1, 2]                   # Kanäle des Keithley2010 die gemessen werden sollen
+functions = ["VOLT:DC", "VOLT:DC"]  # "VOLT:DC" "VOLT:AC" "CURR:DC" "CURR:AC" "RES" "FRES" "TEMP"
+ranges = [1000, 1000]               # Wertebereiche des Keithley2010
+
+with open(fileName, 'a') as file:
+			file.write("\t".join(channelNames) + "\n")
+
+self.send(port=comPortKeithley2010, device="Keithley2010", command="init")
+sleep(0.5)
+
+for count in range(0, measurementCount):
+    values = []
+    if count != 0:
+            sleep(measurementDelay)
+
+    self.clearOutput()
+    for i in range(0, len(channels)):
+        currValue = self.query(port=comPortKeithley2010, device="Keithley2010", command="measure", value=[channels[i], functions[i], ranges[i]])
+        values.append(str(currValue))
+        self.sendOutput("Keithley2010: Channel: " + channelNames[i] + " Value: " + str(currValue))
+        sleep(measureChannelDelay)
+
+    with open(fileName, 'a') as file:
+        line = "\t".join(values)
+        line += "\n"
+        file.write(line)

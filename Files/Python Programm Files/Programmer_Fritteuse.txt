@@ -1,0 +1,52 @@
+self.globalTimeout = 2 			# Timeout in [s] bevor eine Anfrage(Nachricht) als gescheitert betrachtet wird
+self.globalRetry = 2				# Anzahl an Versuchen eine Anfrage(Nachricht) zu senden, bevor "None" als Rückgabewert geliefert wird
+self.globalDelay = 0.1			# Wartezeit zwischen dem Senden mehrer aufeinander folgender Nachrichten (z.B. Beim initialisieren des Keithleys)
+
+comPortFritteuse = "COM3"		# Aktueller COM Port des Temperaturkallibratorbades (Fritteuse)
+fileName = "testFile.txt"			# Dateiname der Ergebnisdatei + ".txt" Endung
+
+holdTime = 5					# in [s]: Haltezeit (Einschwingzeit) eines Temperaturpunkes
+approachTempDiff = 99990.1		# in [K]: Erlaubte Tempertaurabweichung während des Anfahrens eines Temperaturpunktes
+holdTempDiff = 99990.1				# in [K]: Erlaubte Tempertaurabweichung während der Temperatur Haltezeit
+measurements = 10			# Anzahl an Messungen pro Temperaturpunkt
+
+temps = [21, 22, 23]
+
+
+
+text = self.query(port=comPortFritteuse, device="Fritteuse", command="setTempControl", value=True)
+
+for counter, temp in enumerate(temps):
+	text = self.query(port=comPortFritteuse, device="Fritteuse", command="setpoint", value=temp)/100
+
+	currTemp = -999
+	while abs(currTemp-temp) > approachTempDiff:
+		currTemp = self.query(port=comPortFritteuse, device="Fritteuse", command="temp")/100
+		self.clearOutput()
+		self.sendOutput("FRITTEUSE: Temp_Soll: "  + str(temp) + " °C    Temperature_Point: " + str(counter+1) + "/" + str(len(temps)))
+		self.sendOutput("FRITTEUSE: Temp_Ist: " + str(currTemp) + "°C")
+		sleep(1)
+
+	holdTimer = time.time() + holdTime
+	while holdTimer > time.time():
+		currTemp = self.query(port=comPortFritteuse, device="Fritteuse", command="temp")/100
+		self.clearOutput()
+		self.sendOutput("FRITTEUSE: Temp_Soll: "  + str(temp) + " °C    Temperature_Point: " + str(counter+1) + "/" + str(len(temps)))
+		self.sendOutput("FRITTEUSE: Temp_Ist: " + str(currTemp) + "°C")
+		self.sendOutput("HOLDTIMER: RemainingTime: " + str(int(holdTimer-time.time())) + "s")
+		if abs(currTemp-temp) > holdTempDiff:
+			holdTimer = time.time() + holdTime
+		sleep(1)
+
+	for i in range(0, measurements):
+		currTemp = self.query(port=comPortFritteuse, device="Fritteuse", command="temp")/100
+		self.clearOutput()
+		self.sendOutput("FRITTEUSE: Temp_Soll: "  + str(temp) + " °C    Temperature_Point: " + str(counter+1) + "/" + str(len(temps)))
+		self.sendOutput("FRITTEUSE: Temp_Ist: "  + str(currTemp) + "°C         Measurements: " + str(i+1) + "/" + str(measurements))
+		with open(fileName, 'a') as file:
+			line = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + "\t"
+			line += str(time.time()) + "\t"
+			line += str(temp) + "\t"
+			line += str(currTemp)
+			line += "\n"
+			file.write(line)

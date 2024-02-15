@@ -1,0 +1,53 @@
+{
+    "_windowType": "Programmer",
+    "_windowSize": [
+        1200,
+        774
+    ],
+    "_windowPosition": [
+        368,
+        120
+    ],
+    "_filterMenu": {
+        "_activePorts": [
+            "COM-ALL"
+        ],
+        "_allPorts": [
+            "COM-ALL",
+            "ADD-COM",
+            "COM3",
+            "COM7",
+            "COM2"
+        ],
+        "_activeKennung": [
+            "KENNUNG-ALL"
+        ],
+        "_allKennung": [
+            "KENNUNG-ALL",
+            "ADD-Kennung",
+            "0701",
+            "1801",
+            "0702",
+            "0202",
+            "1f02",
+            "0602",
+            "0802",
+            "0d02"
+        ],
+        "_activeCalibration": [
+            "RAW-Values",
+            "CALIBRATED-Values"
+        ],
+        "_allCalibration": [
+            "RAW-Values",
+            "CALIBRATED-Values"
+        ]
+    },
+    "_windowSaveInfo": {
+        "plainText": "self.globalTimeout = 2 \t\t\t# Timeout in [s] bevor eine Anfrage(Nachricht) als gescheitert betrachtet wird\nself.globalRetry = 2\t\t\t\t# Anzahl an Versuchen eine Anfrage(Nachricht) zu senden, bevor \"None\" als R\u00fcckgabewert geliefert wird\nself.globalDelay = 0.1\t\t\t# Wartezeit zwischen dem Senden mehrer aufeinander folgender Nachrichten (z.B. Beim initialisieren des Keithleys)\n\ncomPortFritteuse = \"COM3\"\t\t# Aktueller COM Port des Temperaturkallibratorbades (Fritteuse)\nfileName = \"testFile.txt\"\t\t\t# Dateiname der Ergebnisdatei + \".txt\" Endung\n\nholdTime = 5\t\t\t\t\t# in [s]: Haltezeit (Einschwingzeit) eines Temperaturpunkes\napproachTempDiff = 99990.1\t\t# in [K]: Erlaubte Tempertaurabweichung w\u00e4hrend des Anfahrens eines Temperaturpunktes\nholdTempDiff = 99990.1\t\t\t\t# in [K]: Erlaubte Tempertaurabweichung w\u00e4hrend der Temperatur Haltezeit\nmeasurements = 10\t\t\t# Anzahl an Messungen pro Temperaturpunkt\n\ntemps = [21, 22, 23]\n\n\n\ntext = self.query(port=comPortFritteuse, device=\"Fritteuse\", command=\"setTempControl\", value=True)\n\nfor counter, temp in enumerate(temps):\n\ttext = self.query(port=comPortFritteuse, device=\"Fritteuse\", command=\"setpoint\", value=temp)/100\n\n\tcurrTemp = -999\n\twhile abs(currTemp-temp) > approachTempDiff:\n\t\tcurrTemp = self.query(port=comPortFritteuse, device=\"Fritteuse\", command=\"temp\")/100\n\t\tself.clearOutput()\n\t\tself.sendOutput(\"FRITTEUSE: Temp_Soll: \"  + str(temp) + \" \u00b0C    Temperature_Point: \" + str(counter+1) + \"/\" + str(len(temps)))\n\t\tself.sendOutput(\"FRITTEUSE: Temp_Ist: \" + str(currTemp) + \"\u00b0C\")\n\t\tsleep(1)\n\n\tholdTimer = time.time() + holdTime\n\twhile holdTimer > time.time(): \n\t\tcurrTemp = self.query(port=comPortFritteuse, device=\"Fritteuse\", command=\"temp\")/100\n\t\tself.clearOutput()\n\t\tself.sendOutput(\"FRITTEUSE: Temp_Soll: \"  + str(temp) + \" \u00b0C    Temperature_Point: \" + str(counter+1) + \"/\" + str(len(temps)))\n\t\tself.sendOutput(\"FRITTEUSE: Temp_Ist: \" + str(currTemp) + \"\u00b0C\")\n\t\tself.sendOutput(\"HOLDTIMER: RemainingTime: \" + str(int(holdTimer-time.time())) + \"s\")\n\t\tif abs(currTemp-temp) > holdTempDiff:\n\t\t\tholdTimer = time.time() + holdTime\n\t\tsleep(1)\n\n\tfor i in range(0, measurements):\n\t\tcurrTemp = self.query(port=comPortFritteuse, device=\"Fritteuse\", command=\"temp\")/100\n\t\tself.clearOutput()\n\t\tself.sendOutput(\"FRITTEUSE: Temp_Soll: \"  + str(temp) + \" \u00b0C    Temperature_Point: \" + str(counter+1) + \"/\" + str(len(temps)))\n\t\tself.sendOutput(\"FRITTEUSE: Temp_Ist: \"  + str(currTemp) + \"\u00b0C         Measurements: \" + str(i+1) + \"/\" + str(measurements))\n\t\twith open(fileName, 'a') as file:\n\t\t\tline = str(datetime.now().strftime(\"%Y-%m-%d %H:%M:%S\")) + \"\\t\"\n\t\t\tline += str(time.time()) + \"\\t\"\n\t\t\tline += str(temp) + \"\\t\"\n\t\t\tline += str(currTemp)\n\t\t\tline += \"\\n\"\n\t\t\tfile.write(line)"
+    },
+    "_windowFlags": [
+        false,
+        false
+    ]
+}
