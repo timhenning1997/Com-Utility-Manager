@@ -27,7 +27,7 @@ class SerialParameters:
         self.Kennbin = Kennbin
         self.Kennung = Kennung
         self.autoReconnect = autoReconnect
-        self.recordBufferSize = recordBufferSize
+        self.recordBufferSize = recordBufferSize        # useful for faster write speeds to disc
 
         self.local_echo = local_echo
         self.appendCR = appendCR

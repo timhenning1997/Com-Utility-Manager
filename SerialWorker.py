@@ -60,6 +60,7 @@ class SerialThread(QRunnable):
         self.lastSignalTime = time()
         self.lastRefreshTimeDict = {}
 
+        # useful for faster write speeds to disc
         self.recordBuffer = []
         self.recordBufferSize = serialParameters.recordBufferSize
 

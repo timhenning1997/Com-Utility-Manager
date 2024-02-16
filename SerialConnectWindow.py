@@ -186,6 +186,7 @@ class SerialConnectWindow(QWidget):
         self.maxSignalRateSpinBox.setRange(1, 9999)
         self.maxSignalRateSpinBox.setValue(5)
 
+        # useful for faster write speeds to disc
         recordBufferSizeLabel = QLabel("Record buffer size")
         self.recordBufferSizeSpinBox = QSpinBox()
         self.recordBufferSizeSpinBox.setRange(0, 100000)
