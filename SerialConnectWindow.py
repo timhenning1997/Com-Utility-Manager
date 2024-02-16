@@ -182,16 +182,21 @@ class SerialConnectWindow(QWidget):
 
         # __________ Options Group Box __________
         maxSignalRateLabel = QLabel("Max signal rate [Hz]")
-
         self.maxSignalRateSpinBox = QSpinBox()
         self.maxSignalRateSpinBox.setRange(1, 9999)
         self.maxSignalRateSpinBox.setValue(5)
+
+        recordBufferSizeLabel = QLabel("Record buffer size")
+        self.recordBufferSizeSpinBox = QSpinBox()
+        self.recordBufferSizeSpinBox.setRange(0, 100000)
+        self.recordBufferSizeSpinBox.setValue(0)
 
         autoReconnectLabel = QLabel("Auto reconnect")
         self.autoReconnectCheckBox = QCheckBox("")
 
         optionsLayout = QFormLayout()
         optionsLayout.addRow(maxSignalRateLabel, self.maxSignalRateSpinBox)
+        optionsLayout.addRow(recordBufferSizeLabel, self.recordBufferSizeSpinBox)
         optionsLayout.addRow(autoReconnectLabel, self.autoReconnectCheckBox)
         # optionsLayout.addWidget(-------------, 0, 0, 1, 1)
 
@@ -284,6 +289,7 @@ class SerialConnectWindow(QWidget):
             serialParam.readTextIndex = "read_until"
             serialParam.readUntil = self.readUntilLineEdit.text()[0]
         serialParam.maxShownSignalRate = self.maxSignalRateSpinBox.value()
+        serialParam.recordBufferSize = self.recordBufferSizeSpinBox.value()
         serialParam.autoReconnect = self.autoReconnectCheckBox.isChecked()
 
         return serialParam

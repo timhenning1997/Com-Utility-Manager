@@ -60,6 +60,9 @@ class SerialThread(QRunnable):
         self.lastSignalTime = time()
         self.lastRefreshTimeDict = {}
 
+        self.recordBuffer = []
+        self.recordBufferSize = serialParameters.recordBufferSize
+
         if platform.system() == "Linux":
             self.serialArduino.port = "/dev/" + self.serialParameters.port
 
@@ -318,8 +321,17 @@ class SerialThread(QRunnable):
         self.record = lastRecord
 
     def recordData(self, data):
-        with open(self.recordFilePath, 'a') as file:
-            file.write(' '.join(data) + "\n")
+        if self.recordBufferSize == 0:
+            with open(self.recordFilePath, 'a') as file:
+                file.write(' '.join(data) + "\n")
+        elif len(self.recordBuffer) >= self.recordBufferSize:
+            self.recordBuffer.append(' '.join(data) + "\n")
+            with open(self.recordFilePath, 'a') as file:
+                file.write(''.join(self.recordBuffer))
+                self.recordBuffer = []
+        else:
+            self.recordBuffer.append(' '.join(data) + "\n")
+
 
     def writeSerial(self, port, data):
         for p in port.split("|"):
