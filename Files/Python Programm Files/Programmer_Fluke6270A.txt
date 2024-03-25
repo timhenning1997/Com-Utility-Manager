@@ -1,0 +1,202 @@
+comPortKeithley2010	= "ttyUSB1"					# Aktueller COM Port des Keithley2010 Multimeters
+comPortFluke6270 	= "ttyUSB0"					# Aktueller COM Port des Fluke6270 Druckkalibrators
+comPortsWieland 	= ["ttyUSB2"]					# Aktuelle COM Ports der Wielandschen Geraete
+
+outputFileName = "outputFile.csv"					# Dateiname der Ergebnisdatei + ".csv" Endung
+separateOutputFiles = False						# True or False : Erstellt einzelne Ergebnis Dateien für jedes Geraet. Namenskonvention: "outputFileName_Geraetename.txt"
+
+measurementsPerPressureSetpoint 	= 5		# Anzahl an Messpunkten pro angefahrenem Druckpunkt
+measurementDelay						= 1		# Wartezeit zwischen den Einzelmessungen in Sekunden
+
+#parametersKeithley2010
+measureChannelDelay = 0.1           				# Wartezeit in [s] zwischen den einzelnen Messungen der Kanaele
+# Alle vier folgenden Listen muessen die selbe Anzahl an Eintraegen haben
+channelNames 	= ["CH_1", "CH_2"]				# Kanalnamen (Nur relevant fuer Ergebnisdatei)
+channels 			= [1, 2]							# Kanaele des Keithley2010 die gemessen werden sollen
+functions 			= ["VOLT:DC", "VOLT:DC"]		# "VOLT:DC" "VOLT:AC" "CURR:DC" "CURR:AC" "RES" "FRES" "TEMP"
+ranges 			= [1000, 1000]					# Wertebereiche des Keithley2010
+
+#parametersFluke6270
+pressureUnit 			= "Pa"							# bar, kPa, mPa, PSI
+pressureMode 		= "ABS"						# ABS=Absolute, GAUG=Gauge pressure
+pressureSetpoints 	= [110000, 200000]			# Solldruecke festlegen
+holdTime				= 5							# Wartezeit zwischen Druckregelung und Messung in Sekunden
+
+
+
+
+
+
+
+
+
+
+
+
+
+self.globalTimeout 	= 2 			   	# Timeout in [s] bevor eine Anfrage(Nachricht) als gescheitert betrachtet wird
+self.globalRetry 		= 2				# Anzahl an Versuchen eine Anfrage(Nachricht) zu senden, bevor "None" als Rueckgabewert geliefert wird
+self.globalDelay 		= 0.1			   	# Wartezeit zwischen dem Senden mehrer aufeinander folgender Nachrichten (z.B. Beim initialisieren des Keithleys)
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Geräte initialisieren
+if comPortKeithley2010 not in [None, ""]:
+	self.send(port=comPortKeithley2010, device="Keithley2010", command="init")
+	sleep(0.5)
+
+self.send(port=comPortFluke6270, device="Fluke6270", command="set_unit", unit=pressureUnit)
+sleep(0.5)
+self.send(port=comPortFluke6270, device="Fluke6270", command="set_instrument_pressure_mode", value=pressureMode)
+sleep(0.5)
+
+
+
+
+# Programmablauf
+for count in range(0, len(pressureSetpoints)):
+	currPressureSetpoint = pressureSetpoints[count]
+	
+	# Auf Druck regeln
+	self.send(port=comPortFluke6270, device="Fluke6270", command="setpoint", value=currPressureSetpoint)
+	sleep(0.5)
+	self.send(port=comPortFluke6270, device="Fluke6270", command="regeln")
+	sleep(0.5)
+	
+	# Warten bis Regelung beendet ist
+	isReady = False
+	while not isReady:
+		isReady = self.query(port=comPortFluke6270, device="Fluke6270", command="is_ready")
+		sleep(0.2)
+	
+	# Haltezeit abwarten
+	sleep(holdTime)
+	self.send(port=comPortFluke6270, device="Fluke6270", command="measuremode")
+	
+	# Messen
+	for measurementCount in range(0, measurementsPerPressureSetpoint):
+		# Zeitmessung
+		currComputerTime = time.time()
+		currTime = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+		
+		# Druckmessung
+		currPressure = self.query(port=comPortFluke6270, device="Fluke6270", command="get_pressure")
+		currPressureUncertainty = self.query(port=comPortFluke6270, device="Fluke6270", command="get_uncertainty")
+	
+		# Keithley Messung
+		if comPortKeithley2010 not in [None, ""]:
+			keithleyValues = []
+			for i in range(0, len(channels)):
+				currKeithleyValue = self.query(port=comPortKeithley2010, device="Keithley2010", command="measure", value=[channels[i], functions[i], ranges[i]])
+				keithleyValues.append(str(currKeithleyValue))
+				sleep(measureChannelDelay)
+	
+		# Wielandgeraete abfragen
+		if comPortsWieland not in [None, "", []]:
+			wielandValues = []
+			for tempPort in comPortsWieland:
+				tempValues = self.query(port=tempPort)
+				wielandValues.append({"port": tempPort, "values": tempValues})
+		
+		# Wartezeit zwischen den Einzelmessungen
+		sleep(measurementDelay)
+		
+
+
+		# Ergebnisdatei schreiben in getrennte Ausgabedateien
+		if separateOutputFiles == True:
+			# Anlegen der Header in den output files
+			if count == 0 and measurementCount == 0:		 	
+				with open(outputFileName.replace(".csv", "") + "_Fluke6270" + ".csv", 'a', newline="") as file:
+					csv_writer = csv.writer(file)
+					csv_writer.writerow(["Computerzeit [s]", "Zeit", "Sollwert", "Druck", "Unsicherheit", "Einheit"])
+				if comPortKeithley2010 not in [None, ""]:
+					with open(outputFileName.replace(".csv", "") + "_Keithley2010" + ".csv", 'a', newline="") as file:
+						row = ["Computerzeit [s]", "Zeit"]
+						for i in range(0, len(channels)):
+							row.append(channelNames[i] + " (" + functions[i] + ") [" + str(ranges[i]) + "]")
+						csv_writer = csv.writer(file)
+						csv_writer.writerow(row)
+				if comPortsWieland not in [None, "",  []]:
+					with open(outputFileName.replace(".csv", "") + "_Wieland" + ".csv", 'a', newline="") as file:
+						row = ["Computerzeit [s]", "Zeit"]
+						for i in range(0, len(wielandValues)):
+							for counter, data in enumerate(wielandValues[i]["values"]):
+								row.append(wielandValues[i]["port"] + "_CH" + str(counter))
+						csv_writer = csv.writer(file)
+						csv_writer.writerow(row)
+				
+			# Fluke6270 Ausgabedatei schreiben
+			with open(outputFileName.replace(".csv", "") + "_Fluke6270" + ".csv", 'a', newline="") as file:
+					csv_writer = csv.writer(file)
+					csv_writer.writerow([currComputerTime, currTime, currPressureSetpoint, currPressure, currPressureUncertainty, pressureUnit + " (" + pressureMode + ")"])
+			
+			# Keithley2010 Ausgabedatei schreiben
+			if comPortKeithley2010 not in [None, ""]:
+					with open(outputFileName.replace(".csv", "") + "_Keithley2010" + ".csv", 'a', newline="") as file:
+						row = [currComputerTime, currTime]
+						for i in range(0, len(keithleyValues)):
+							row.append(keithleyValues[i])
+						csv_writer = csv.writer(file)
+						csv_writer.writerow(row)
+
+			# Wieland Ausgabedatei schreiben
+			if comPortsWieland not in [None, "", []]:
+					with open(outputFileName.replace(".csv", "") + "_Wieland" + ".csv", 'a', newline="") as file:
+						row = [currComputerTime, currTime]
+						for i in range(0, len(wielandValues)):
+							for counter, data in enumerate(wielandValues[i]["values"]):
+								row.append(data)
+						csv_writer = csv.writer(file)
+						csv_writer.writerow(row)
+
+
+		
+		# Ergebnisdatei schreiben in gemeinsame Ausgabedateien
+		elif separateOutputFiles == False:
+			# Anlegen der Header in dem output file
+			if count == 0 and measurementCount == 0:		
+				with open(outputFileName.replace(".csv", "") + ".csv", 'a', newline="") as file:
+					row = ["Computerzeit [s]", "Zeit", "Sollwert", "Druck", "Unsicherheit", "Einheit"]
+					
+					if comPortKeithley2010 not in [None, ""]:
+						for i in range(0, len(channels)):
+							row.append(channelNames[i] + " (" + functions[i] + ") [" + str(ranges[i]) + "]")
+					
+					if comPortsWieland not in [None, "", []]:
+						for i in range(0, len(wielandValues)):
+							for counter, data in enumerate(wielandValues[i]["values"]):
+								row.append(wielandValues[i]["port"] + "_CH" + str(counter))
+
+					csv_writer = csv.writer(file)
+					csv_writer.writerow(row)
+
+				
+			# Ausgabedatei schreiben
+			with open(outputFileName.replace(".csv", "") + ".csv", 'a', newline="") as file:
+					row = [currComputerTime, currTime, currPressureSetpoint, currPressure, currPressureUncertainty, pressureUnit + " (" + pressureMode + ")"]
+
+					if comPortKeithley2010 not in [None, ""]:
+						for i in range(0, len(keithleyValues)):
+							row.append(keithleyValues[i])
+
+					if comPortsWieland not in [None, "", []]:
+						for i in range(0, len(wielandValues)):
+							for counter, data in enumerate(wielandValues[i]["values"]):
+								row.append(data)
+
+
+					csv_writer = csv.writer(file)
+					csv_writer.writerow(row)
+			
+self.send(port=comPortFluke6270, device="Fluke6270", command="venting")

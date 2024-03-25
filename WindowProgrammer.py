@@ -2,6 +2,7 @@ import os
 import re
 import sys
 import time
+import csv
 
 from PyQt5.QtCore import QPoint, Qt, QRunnable, pyqtSlot, QThreadPool, QProcess, QRegExp, pyqtSignal, QObject
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QPushButton, QWidget, QLineEdit, QMenu, QGroupBox, QHBoxLayout, \
@@ -224,7 +225,7 @@ class Worker(QRunnable):
                 sleep(0.1)
 
     def initVars(self):
-        self.globalDevice = None
+        self.globalDevice = ""
         self.globalPort = None
         self.globalTimeout = None
         self.globalRetry = 0
@@ -239,17 +240,27 @@ class Worker(QRunnable):
         delay = self.globalDelay if delay is None else delay
         retry = self.globalRetry if retry is None else retry
 
-        if device == "Fritteuse":
+        if device.lower() == "fritteuse":
             if command.lower() in ["t", "temp", "temperature"]:
                 message = "{M01****\r\n"
             elif command.lower() in ["setpointtemp", "setpointtemperature", "set", "setpoint", "soll", "sollwert", "setzesollwert"]:
                 message = "{M71" + format(int(value * 100), 'x').upper().zfill(4) + "\r\n" if type(value) in [int, float] else message
             elif command.lower() in ["tempcontrol", "temperaturecontrol", "settempcontrol", "settemperaturecontrol", "settempcon", "control"]:
                 message = "{M14000" + str(int(value)) + "\r\n" if type(value) in [bool] else message
-        elif device == "Keithley2010":
+        elif device.lower() in ["keithley2010", "keithley"]:
             if command.lower() in ["meas", "measure", "messen", "ask", "askfor", "query", "request"]:
                 if type(value)==list and len(value)==3:
                     message = [":SENS:FUNC \"" + str(value[1]) + "\"\r\n", ":SENS:FRES:RANG " + str(value[2]) + "\r\n", "ROUTE:CLOSE (@" + str(value[0]) + ")\r\n", ":READ?\r\n"]
+        elif device.lower() in ["fluke6270a", "fluke", "fluke6270", "druckkalibrator"]:
+            if command.lower() in ["get_unit", "getunit", "unit", "einheit"]:
+                message = "UNIT:PRES?\r\n"
+            elif command.lower() in ["readycheck", "ready_check", "is_ready", "isready", "bereit", "ready"]:
+                message = "STAT:OPER:COND?\r\n"
+            if command.lower() in ["get_pressure", "pressure", "istwert", "druck"]:
+                message = "MEAS:PRES?\r\n"
+            if command.lower() in ["get_uncertainty", "uncertainty", "unsicherheit", "sigma", "sigp", "sigmap"]:
+                message = "MEAS:PRES:UNC?\r\n"
+
 
         if port is not None:
             if type(port) == str:
@@ -281,22 +292,32 @@ class Worker(QRunnable):
                         return None
 
             if self.lastData is not None and (port == "COM-ALL" or self.lastPort in port):
-
                 # No device specified
-                if device is None:
+                if device in [None, ""]:
                     return self.lastData
 
                 # Fritteuse specified
-                elif device == "Fritteuse":
+                elif device.lower() == "fritteuse":
                     if re.match(r"\{S[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]", self.lastData.decode()):
                         return int(self.lastData.decode().strip()[4:8], 16)
 
                 # Keithley2010 specified
-                elif device == "Keithley2010":
+                elif device.lower() in ["keithley2010", "keithley"]:
                     if re.match(r"[+,-][0-9]*[.][0-9]*E[+,-][0-9]*.*", self.lastData.decode()):
                         return float(re.findall("[+,-][0-9]*[.][0-9]*E[+,-][0-9]*", self.lastData.decode().strip())[0])
 
+                # Fluke6270A specified
+                elif device.lower() in ["fluke6270a", "fluke", "fluke6270", "druckkalibrator"]:
+                    if message == "STAT:OPER:COND?\r\n":
+                        if str(self.lastData.decode().strip()) == "16":
+                            return True
+                        else:
+                            return False
+                    else:
+                        return self.lastData.decode().strip()
+
                 self.lastData = None
+                self.lastPort = None
             sleep(0.05)
 
     def send(self, message: str = None, device: str = None, command: str = None, value=None, unit=None, port=None, delay=None):
@@ -304,9 +325,28 @@ class Worker(QRunnable):
         port = self.globalPort if port is None else port
         delay = self.globalDelay if delay is None else delay
 
-        if device == "Keithley2010":
+        if device.lower() in ["keithley2010", "keithley"]:
             if command.lower() in ["init", "begin"]:
                 message = ["*RST\r\n", "*CLS\r\n", "INIT:CONT OFF\r\n", "ABORT\r\n"]
+        elif device.lower() in ["fluke6270a", "fluke", "fluke6270", "druckkalibrator"]:
+            if command.lower() in ["set_unit", "setunit", "unit", "einheit"]:
+                if type(value) == str:
+                    message = "UNIT:PRES " + str(value).upper() + "\r\n"
+                if type(unit) == str:
+                    message = "UNIT:PRES " + str(unit).upper() + "\r\n"
+            elif command.lower() in ["set_pressurelevel", "setpoint", "sollwert", "soll"]:
+                if type(value) in [int, float]:
+                    message = "SOUR:PRES:LEV:IMM:AMPL " + str(value) + "\r\n"
+            elif command.lower() in ["controllingmode", "control", "start_controll", "regeln", "start_regeln"]:
+                message = ["SENS:PRES:MOD AUTO\r\n", "OUTP:PRES:MODE CONT\r\n"]
+            elif command.lower() in ["measuremode", "measure", "meas", "messen"]:
+                message = "OUTP:PRES:MODE MEAS\r\n"
+            elif command.lower() in ["ventmode", "vent", "entlüften", "entlueften", "venting"]:
+                message = "OUTP:PRES:MODE VENT\r\n"
+            elif command.lower() in ["setinstrpresmode", "pressure_mode", "pressuremode", "setinstrumentpressuremode", "set_instrument_pressure_mode"]:
+                message = "SENS:PRES:MODE " + str(value).upper() + "\r\n"
+
+
 
         if port is not None:
             if type(port) == str:
@@ -397,6 +437,9 @@ class WindowProgrammer(AbstractWindow):
         graphSplitter.addWidget(self.outputEditorTextEdit)
 
         mainLayout.addWidget(graphSplitter)
+
+        self.outputLayout = QVBoxLayout()
+        mainLayout.addLayout(self.outputLayout)
 
         self.errorLabel = QLabel("t")
         self.errorLabel.setStyleSheet("color: red")

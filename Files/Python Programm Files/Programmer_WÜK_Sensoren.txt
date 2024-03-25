@@ -1,0 +1,28 @@
+self.globalTimeout = 1 			    # Timeout in [s] bevor eine Anfrage(Nachricht) als gescheitert betrachtet wird
+self.globalRetry = 1				# Anzahl an Versuchen eine Anfrage(Nachricht) zu senden, bevor "None" als RÃ¼ckgabewert geliefert wird
+self.globalDelay = 0.1			    # Wartezeit zwischen dem Senden mehrer aufeinander folgender Nachrichten (z.B. Beim initialisieren des Keithleys)
+
+comPortKeithley2010 = "COM1"		# Aktueller COM Port des Keithley2010 Multimeters
+
+
+self.send(port=comPortKeithley2010, device="Keithley2010", command="init")
+sleep(0.1)
+
+currValue1 = self.query(port=comPortKeithley2010, device="Keithley2010", command="measure", value=[1, "VOLT:DC", 10000])
+self.sendOutput("Value CH1     V=" + str(currValue1))
+sleep(0.1)
+currValue2 = self.query(port=comPortKeithley2010, device="Keithley2010", command="measure", value=[2, "VOLT:DC", 10000])
+self.sendOutput("Value CH2     V=" + str(currValue2))
+sleep(0.1)
+currValue7 = self.query(port=comPortKeithley2010, device="Keithley2010", command="measure", value=[7, "VOLT:DC", 10000])
+self.sendOutput("Value CH7     V=" + str(currValue7))
+sleep(0.1)
+currValue8 = self.query(port=comPortKeithley2010, device="Keithley2010", command="measure", value=[8, "VOLT:DC", 10000])
+self.sendOutput("Value CH8     V=" + str(currValue8))
+sleep(0.1)
+
+self.sendOutput("Pth= (Uu*Ui)/Ri = " + str((currValue1*currValue7)/33*1000) + " mW" )
+self.sendOutput("Rt= (Uu/Ui)*Ri = " + str((currValue1/currValue7)*33) + " Ohm              (" + str((((currValue1/currValue7)*33)-1000)/385*100+20) + " °C)" )
+self.sendOutput("Pth= (Uu*Ui)/Ri = " + str((currValue2*currValue8)/33*1000) + " mW" )
+self.sendOutput("Rt= (Uu/Ui)*Ri = " + str((currValue2/currValue8)*33) + " Ohm              (" + str((((currValue2/currValue8)*33)-1000)/385*100+20) + " °C)" )
+self.sendOutput("___________________________________________" )
