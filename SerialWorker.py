@@ -193,14 +193,15 @@ class SerialThread(QRunnable):
                                             self.lastRefreshTimeDict[Kennbin] = 0
 
                                         if time() > self.lastRefreshTimeDict[Kennbin] + (1 / self.serialParameters.maxShownSignalRate):
-                                            currentTime = time()
-                                            if currentTime - self.lastSignalTime > 0:
-                                                self.serialParameters.currentSignalRate = 1 / (currentTime - self.lastSignalTime)
+                                            if self.serialParameters.showFaultyData or crc_check:
+                                                currentTime = time()
+                                                if currentTime - self.lastSignalTime > 0:
+                                                    self.serialParameters.currentSignalRate = 1 / (currentTime - self.lastSignalTime)
 
-                                            self.lastRefreshTimeDict[Kennbin] = time()
-                                            self.serialParameters.Kennbin = Kennbin
-                                            self.serialParameters.Kennung = Kennung
-                                            self.signals.receivedData.emit(self.serialParameters, singleLine)
+                                                self.lastRefreshTimeDict[Kennbin] = time()
+                                                self.serialParameters.Kennbin = Kennbin
+                                                self.serialParameters.Kennung = Kennung
+                                                self.signals.receivedData.emit(self.serialParameters, singleLine)
 
                                         self.lastSignalTime = time()
                     else:

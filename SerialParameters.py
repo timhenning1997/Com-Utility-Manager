@@ -6,7 +6,8 @@ class SerialParameters:
                  stopbits=serial.STOPBITS_ONE, timeout=None, xonxoff=False, rtscts=False,
                  write_timeout=None, dsrdtr=False, inter_byte_timeout=None, exclusive=None,
                  local_echo=False, appendCR=False, appendLF=False, readTextIndex="read_line", readBytes=1,
-                 readUntil='', DTR=False, maxShownSignalRate=10, Kennbin = "", Kennung = "", autoReconnect = False, recordBufferSize = 0):
+                 readUntil='', DTR=False, maxShownSignalRate=10, Kennbin = "", Kennung = "", autoReconnect = False,
+                 showFaultyData = False,recordBufferSize = 0):
         self.port = port
         self.baudrate = baudrate
         self.bytesize = bytesize
@@ -27,6 +28,7 @@ class SerialParameters:
         self.Kennbin = Kennbin
         self.Kennung = Kennung
         self.autoReconnect = autoReconnect
+        self.showFaultyData = showFaultyData
         self.recordBufferSize = recordBufferSize        # useful for faster write speeds to disc
 
         self.local_echo = local_echo
@@ -59,6 +61,7 @@ class SerialParameters:
             "appendCR": self.appendCR,
             "appendLF": self.appendLF,
             "autoReconnect": self.autoReconnect,
+            "showFaultyData": self.showFaultyData,
             "recordBufferSize": self.recordBufferSize
         }
 
@@ -84,4 +87,5 @@ class SerialParameters:
         self.appendCR = data["appendCR"]
         self.appendLF = data["appendLF"]
         self.autoReconnect = data["autoReconnect"]
+        self.showFaultyData = data["showFaultyData"]
         self.recordBufferSize = data["recordBufferSize"]

@@ -33,6 +33,7 @@ from WindowStationaritaet import WindowStationaritaet
 from WindowProgrammer import WindowProgrammer
 from WindowTest import WindowTest
 
+#TODO Checkbox in Liste einfügen, dass fehlerhafte Datensätze nicht mehr angezeigt werden
 
 class ConnectionHubWindow(QMainWindow):
     sendSerialWriteSignal = pyqtSignal(str, object)

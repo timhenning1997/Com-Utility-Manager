@@ -195,10 +195,15 @@ class SerialConnectWindow(QWidget):
         autoReconnectLabel = QLabel("Auto reconnect")
         self.autoReconnectCheckBox = QCheckBox("")
 
+        showFaultyDataLabel = QLabel("Show faulty Data")
+        self.showFaultyDataCheckBox = QCheckBox("")
+        self.showFaultyDataCheckBox.setChecked(True)
+
         optionsLayout = QFormLayout()
         optionsLayout.addRow(maxSignalRateLabel, self.maxSignalRateSpinBox)
         optionsLayout.addRow(recordBufferSizeLabel, self.recordBufferSizeSpinBox)
         optionsLayout.addRow(autoReconnectLabel, self.autoReconnectCheckBox)
+        optionsLayout.addRow(showFaultyDataLabel, self.showFaultyDataCheckBox)
         # optionsLayout.addWidget(-------------, 0, 0, 1, 1)
 
         optionsGroupbox = QGroupBox("Options")
@@ -292,5 +297,6 @@ class SerialConnectWindow(QWidget):
         serialParam.maxShownSignalRate = self.maxSignalRateSpinBox.value()
         serialParam.recordBufferSize = self.recordBufferSizeSpinBox.value()
         serialParam.autoReconnect = self.autoReconnectCheckBox.isChecked()
+        serialParam.showFaultyData = self.showFaultyDataCheckBox.isChecked()
 
         return serialParam
