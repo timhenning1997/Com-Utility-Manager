@@ -1,0 +1,22 @@
+fileName = "testFile.txt"							# Dateiname der Ergebnisdatei + ".txt" Endung
+
+while self.lastData is None:						# Auf neue Daten warten und Output löschen
+	sleep(0.01)
+
+
+													# Überprüfen ob Daten die kalibrierten Daten sind
+if (self.lastDataInfo is not None) and (self.lastDataInfo["dataType"] == "CALIBRATED-Values"):
+	self.clearOutput()
+	self.sendOutput(self.lastData["DATA"])
+
+	with open(fileName, 'a') as file:
+			line = str(datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + "\t"
+			line += str(time.time()) + "\t"
+			for dummyData in self.lastData["DATA"]:
+				line += str(dummyData) + "\t"
+			line += "\n"
+			file.write(line)
+
+self.lastData = None
+self.lastDataInfo = None
+	
