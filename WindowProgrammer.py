@@ -199,6 +199,8 @@ class Worker(QRunnable):
         self.globalDelay = 0.1
 
         self.lastData = None
+        self.lastSerialParameters = None
+        self.lastDataInfo = None
         self.lastPort = None
     @pyqtSlot()
     def run(self):
@@ -368,7 +370,13 @@ class Worker(QRunnable):
 
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
         self.lastPort = serialParameters.port
+        self.lastSerialParameters = serialParameters
+        self.lastDataInfo = dataInfo
         self.lastData = data
+        self.getData(self, serialParameters, data, dataInfo)
+
+    def getData(self, object_body, serialParameters: SerialParameters, data, dataInfo):
+        pass
 
     def sendData(self, data: str, ports=None):
         if type(ports) == str:
