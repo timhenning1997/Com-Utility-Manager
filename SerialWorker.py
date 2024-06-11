@@ -156,6 +156,29 @@ class SerialThread(QRunnable):
                                     self.signals.receivedData.emit(self.serialParameters, readLine)
 
                                 self.lastSignalTime = time()
+                        elif self.serialParameters.readTextIndex == "read_until_ASCII":
+                            readLine = self.serialArduino.read_until(self.serialParameters.readUntilAscii.to_bytes(1, "big"))
+                            if not readLine == b'':
+                                try:
+                                    readLine.decode('ascii', 'ignore')
+                                except UnicodeDecodeError as e:
+                                    print(e)
+                                    self.signals.lostConnection.emit(self.serialParameters)
+                                    return None
+                                if self.record:
+                                    self.recordData([readLine.decode('ascii', 'ignore').strip()])
+                                if "lRT" not in self.lastRefreshTimeDict:
+                                    self.lastRefreshTimeDict["lRT"] = 0
+                                if time() > self.lastRefreshTimeDict["lRT"] + (
+                                        1 / self.serialParameters.maxShownSignalRate):
+                                    currentTime = time()
+                                    if currentTime - self.lastSignalTime > 0:
+                                        self.serialParameters.currentSignalRate = 1 / (
+                                                currentTime - self.lastSignalTime)
+                                    self.lastRefreshTimeDict["lRT"] = time()
+                                    self.signals.receivedData.emit(self.serialParameters, readLine)
+
+                                self.lastSignalTime = time()
                         elif self.serialParameters.readTextIndex == "logging_raw":
                             with open('loggingRaw.txt', 'a') as file:
                                 readChar = self.serialArduino.read(1)

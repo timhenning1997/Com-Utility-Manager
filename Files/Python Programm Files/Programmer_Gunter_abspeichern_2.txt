@@ -14,5 +14,8 @@ def getData(self, serialParameters: SerialParameters, data, dataInfo):
 				line += "\n"
 				file.write(line)
 
+def getData2(self, serialParameters: SerialParameters, data, dataInfo):
+	pass
+
 self.getData = getData
 	

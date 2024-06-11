@@ -3,7 +3,7 @@ import time
 from PyQt5.QtCore import QPoint
 from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QPushButton, QWidget, QLineEdit, QMenu, QGroupBox, QHBoxLayout, \
-    QTableWidget, QHeaderView, QTableWidgetItem, QSpinBox, QMessageBox, QSplitter, QAction
+    QTableWidget, QHeaderView, QTableWidgetItem, QSpinBox, QMessageBox, QSplitter, QAction, QDoubleSpinBox
 from PyQt5.QtCore import Qt
 from AbstractWindow import AbstractWindow
 from SerialParameters import SerialParameters
@@ -15,15 +15,20 @@ class GraphLine:
     def __init__(self, UUID: str, startTime: float = 0):
         self.UUID = UUID
         self.startTime = startTime
+        self.lastDataTime = 0
         self.x = []
         self.y = []
         self.dataLine = None
 
         self.maxLength = 200
+        self.maxSamplingRate = 5
 
     def appendDataPoint(self, y: float, x: float = None):
         if self.dataLine is None:
             return
+        if time.time() < self.lastDataTime + 1/self.maxSamplingRate:
+            return
+        self.lastDataTime = time.time()
         if x is None:
             x = time.time() - self.startTime
         if len(self.x) > self.maxLength > 0:
@@ -50,6 +55,9 @@ class WindowSimpleGraph(AbstractWindow):
         self.dataCounter = 0
         self.graphStartTime = time.time()
 
+        self._maxDataPoints = 200
+        self._maxSamplingRate = 5
+
         self.colorCounter = 0
         self.colorTable = ["#c095e3", "#fff384", "#53af8b", "#e3adb5", "#95b8e3", "#a99887", "#f69284", "#95dfe3", "#3f2b44", "#f0b892"]
 
@@ -65,9 +73,21 @@ class WindowSimpleGraph(AbstractWindow):
         self.maxValueSpinBox.setValue(200)
         self.maxValueSpinBox.editingFinished.connect(self.maxValueChanged)
 
+        maxSamplingRateLabel = QLabel("Max Sampling Rate [Hz]:")
+
+        self.maxSamplingSpinBox = QDoubleSpinBox()
+        self.maxSamplingSpinBox.setRange(0.0001, 10000)
+        self.maxSamplingSpinBox.setDecimals(4)
+        self.maxSamplingSpinBox.setValue(5)
+        self.maxSamplingSpinBox.editingFinished.connect(self.maxSamplingChanged)
+
         maxDataPointsLayout = QHBoxLayout()
         maxDataPointsLayout.addWidget(maxDataPointsLabel)
         maxDataPointsLayout.addWidget(self.maxValueSpinBox)
+
+        maxSamplingRateLayout = QHBoxLayout()
+        maxSamplingRateLayout.addWidget(maxSamplingRateLabel)
+        maxSamplingRateLayout.addWidget(self.maxSamplingSpinBox)
 
         self.table = QTableWidget(0, 7)
         self.table.setHorizontalHeaderLabels(["", "UUID", "Name", "Unit", "Last Value", "Fit slope", "Del"])
@@ -99,6 +119,7 @@ class WindowSimpleGraph(AbstractWindow):
 
         verticalLayout = QVBoxLayout()
         verticalLayout.addLayout(maxDataPointsLayout)
+        verticalLayout.addLayout(maxSamplingRateLayout)
         verticalLayout.addWidget(self.table)
         verticalLayout.addLayout(addNameLayout)
         tableWidget = QWidget()
@@ -262,6 +283,12 @@ class WindowSimpleGraph(AbstractWindow):
     def maxValueChanged(self):
         for key in self.graphLines.keys():
             self.graphLines[key].maxLength = self.maxValueSpinBox.value()
+        self._maxDataPoints = self.maxValueSpinBox.value()
+
+    def maxSamplingChanged(self):
+        for key in self.graphLines.keys():
+            self.graphLines[key].maxSamplingRate = self.maxSamplingSpinBox.value()
+        self._maxSamplingRate = self.maxSamplingSpinBox.value()
 
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
         self.dataCounter += 1
@@ -287,7 +314,10 @@ class WindowSimpleGraph(AbstractWindow):
         for countX in range(0, self.table.columnCount()):
             tableColumnShown.append(self.table.isColumnHidden(countX))
 
-        return {"tempSave": tempSave, "_tableColumnsHidden": tableColumnShown}
+        return {"tempSave": tempSave,
+                "_tableColumnsHidden": tableColumnShown,
+                "maxDataPoints": self._maxDataPoints,
+                "maxSamplingRate": self._maxSamplingRate}
 
     def load(self, data):
         for saveName in data["tempSave"]:
@@ -303,3 +333,6 @@ class WindowSimpleGraph(AbstractWindow):
 
         for countX in range(0, self.table.columnCount()):
             self.table.hideColumn(countX) if data['_tableColumnsHidden'][countX] else self.table.showColumn(countX)
+
+        self.maxValueSpinBox.setValue(data['maxDataPoints'])
+        self.maxSamplingSpinBox.setValue(data['maxSamplingRate'])

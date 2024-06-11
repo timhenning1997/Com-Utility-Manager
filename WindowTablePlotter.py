@@ -233,6 +233,9 @@ class WindowTablePlotter(AbstractWindow):
         r = int(color1.red() + (color2.red() - color1.red()) * value)
         g = int(color1.green() + (color2.green() - color1.green()) * value)
         b = int(color1.blue() + (color2.blue() - color1.blue()) * value)
+        r = max(0, min(255, r))
+        g = max(0, min(255, g))
+        b = max(0, min(255, b))
         return QColor(r, g, b)
 
     def addColumn(self):
@@ -296,7 +299,8 @@ class WindowTablePlotter(AbstractWindow):
                     self.table.item(rowCount, colCount).setBackground(self.interpolateColor(self.color1, self.color2, (temp_receivedValueData[numberIndex]-self.minValue) / (self.maxValue-self.minValue)))
                 elif self.shownType == "MaxMin" and len(temp_receivedMaxMinData) > 0:
                     self.table.item(rowCount, colCount).setText(str(temp_receivedMaxMinData[numberIndex]))
-                    self.table.item(rowCount, colCount).setBackground(QColor(Qt.transparent))
+                    #self.table.item(rowCount, colCount).setBackground(QColor(Qt.transparent))
+                    self.table.item(rowCount, colCount).setBackground(self.interpolateColor(self.color1, self.color2, (temp_receivedMaxMinData[numberIndex] - self.minValue) / (self.maxValue - self.minValue)))
 
     def save(self):
             return {"rowCount": self.table.rowCount(),

@@ -142,6 +142,7 @@ class SerialConnectWindow(QWidget):
         self.readLinesRB = QRadioButton("Read line")
         self.readBytesRB = QRadioButton("Read bytes")
         self.readUntilRB = QRadioButton("Read until")
+        self.readUntilAsciiRB = QRadioButton("Read until ASCII")
         self.readWUDRB = QRadioButton('Read WU_Device')
         self.readLoggingRawRB = QRadioButton('Log Raw')
         self.readWUDRB.setChecked(True)
@@ -150,14 +151,19 @@ class SerialConnectWindow(QWidget):
         self.readLoggingRawRB.toggled.connect(self.changeReadTextAvailable)
         self.readBytesRB.toggled.connect(self.changeReadTextAvailable)
         self.readUntilRB.toggled.connect(self.changeReadTextAvailable)
+        self.readUntilAsciiRB.toggled.connect(self.changeReadTextAvailable)
 
         self.readBytesSpinBox = QSpinBox()
         self.readBytesSpinBox.setRange(1, 1000)
         self.readUntilLineEdit = QLineEdit("?")
         self.readUntilLineEdit.setMaxLength(1)
         self.readUntilLineEdit.setFixedWidth(20)
+        self.readUntilAsciiSpinBox = QSpinBox()
+        self.readUntilAsciiSpinBox.setRange(0, 255)
         self.readBytesSpinBox.setEnabled(False)
         self.readUntilLineEdit.setEnabled(False)
+        self.readUntilAsciiSpinBox.setEnabled(False)
+
 
         appendButtonGroup = QButtonGroup()
         appendButtonGroup.addButton(self.readLinesRB)
@@ -165,6 +171,7 @@ class SerialConnectWindow(QWidget):
         appendButtonGroup.addButton(self.readLoggingRawRB)
         appendButtonGroup.addButton(self.readBytesRB)
         appendButtonGroup.addButton(self.readUntilRB)
+        appendButtonGroup.addButton(self.readUntilAsciiRB)
 
         receivedTextLayout = QGridLayout()
         receivedTextLayout.addWidget(timeoutLabel, 0, 0, 1, 1)
@@ -176,6 +183,8 @@ class SerialConnectWindow(QWidget):
         receivedTextLayout.addWidget(self.readBytesSpinBox, 4, 1, 1, 1)
         receivedTextLayout.addWidget(self.readUntilRB, 5, 0, 1, 1)
         receivedTextLayout.addWidget(self.readUntilLineEdit, 5, 1, 1, 1)
+        receivedTextLayout.addWidget(self.readUntilAsciiRB, 6, 0, 1, 1)
+        receivedTextLayout.addWidget(self.readUntilAsciiSpinBox, 6, 1, 1, 1)
 
         receivedTextGroupbox = QGroupBox("Received text")
         receivedTextGroupbox.setLayout(receivedTextLayout)
@@ -243,15 +252,23 @@ class SerialConnectWindow(QWidget):
         if self.sender().text() == "Read line":
             self.readBytesSpinBox.setEnabled(False)
             self.readUntilLineEdit.setEnabled(False)
+            self.readUntilAsciiSpinBox.setEnabled(False)
         elif self.sender().text() == 'Read WU_Device':
             self.readBytesSpinBox.setEnabled(False)
             self.readUntilLineEdit.setEnabled(False)
+            self.readUntilAsciiSpinBox.setEnabled(False)
         elif self.sender().text() == "Read bytes":
             self.readBytesSpinBox.setEnabled(True)
             self.readUntilLineEdit.setEnabled(False)
+            self.readUntilAsciiSpinBox.setEnabled(False)
         elif self.sender().text() == "Read until":
             self.readBytesSpinBox.setEnabled(False)
             self.readUntilLineEdit.setEnabled(True)
+            self.readUntilAsciiSpinBox.setEnabled(False)
+        elif self.sender().text() == "Read until ASCII":
+            self.readBytesSpinBox.setEnabled(False)
+            self.readUntilLineEdit.setEnabled(False)
+            self.readUntilAsciiSpinBox.setEnabled(True)
 
     def getSerialParameter(self):
         serialParam = SerialParameters()
@@ -294,6 +311,9 @@ class SerialConnectWindow(QWidget):
         if self.readUntilRB.isChecked():
             serialParam.readTextIndex = "read_until"
             serialParam.readUntil = self.readUntilLineEdit.text()[0]
+        if self.readUntilAsciiRB.isChecked():
+            serialParam.readTextIndex = "read_until_ASCII"
+            serialParam.readUntilAscii = self.readUntilAsciiSpinBox.value()
         serialParam.maxShownSignalRate = self.maxSignalRateSpinBox.value()
         serialParam.recordBufferSize = self.recordBufferSizeSpinBox.value()
         serialParam.autoReconnect = self.autoReconnectCheckBox.isChecked()

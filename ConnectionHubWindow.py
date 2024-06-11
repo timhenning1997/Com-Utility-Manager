@@ -507,6 +507,7 @@ class ConnectionHubWindow(QMainWindow):
 
     def checkForValidCalibrationFile(self, port, filePaths):
         loadCalibrationFailed = False
+        loadCalibrationCanceled = False
         buttonProperty = []
         row = self.tableFindComRow(port)
         button = self.table.cellWidget(row, 8)
@@ -514,6 +515,8 @@ class ConnectionHubWindow(QMainWindow):
         if port in self.calibrationFiles:
             del self.calibrationFiles[port]
 
+        if filePaths == []:
+            loadCalibrationCanceled = True
         for filePath in filePaths:
             if filePath != '' and os.path.isfile(filePath):
                 if self.loadCalibrationFile(filePath, port) is not False:
@@ -522,7 +525,9 @@ class ConnectionHubWindow(QMainWindow):
                     loadCalibrationFailed = True
             else:
                 loadCalibrationFailed = True
-        if loadCalibrationFailed:
+        if loadCalibrationCanceled:
+            button.setIcon(QIcon(resource_path("res/Icon/folder.ico")))
+        elif loadCalibrationFailed:
             button.setIcon(QIcon(resource_path("res/Icon/folder_with_red_exclamationmark.ico")))
         else:
             button.setIcon(QIcon(resource_path("res/Icon/folder_with_green_checkmark.ico")))

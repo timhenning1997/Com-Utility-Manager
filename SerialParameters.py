@@ -6,7 +6,7 @@ class SerialParameters:
                  stopbits=serial.STOPBITS_ONE, timeout=None, xonxoff=False, rtscts=False,
                  write_timeout=None, dsrdtr=False, inter_byte_timeout=None, exclusive=None,
                  local_echo=False, appendCR=False, appendLF=False, readTextIndex="read_line", readBytes=1,
-                 readUntil='', DTR=False, maxShownSignalRate=10, Kennbin = "", Kennung = "", autoReconnect = False,
+                 readUntil='', readUntilAscii=0, DTR=False, maxShownSignalRate=10, Kennbin = "", Kennung = "", autoReconnect = False,
                  showFaultyData = False,recordBufferSize = 0):
         self.port = port
         self.baudrate = baudrate
@@ -23,6 +23,7 @@ class SerialParameters:
         self.readTextIndex = readTextIndex
         self.readBytes = readBytes
         self.readUntil = readUntil
+        self.readUntilAscii = readUntilAscii
         self.DTR = DTR
         self.maxShownSignalRate = maxShownSignalRate  # Hz
         self.Kennbin = Kennbin
@@ -55,6 +56,7 @@ class SerialParameters:
             "readTextIndex": self.readTextIndex,
             "readBytes": self.readBytes,
             "readUntil": self.readUntil,
+            "readUntilAscii": self.readUntilAscii,
             "DTR": self.DTR,
             "maxShownSignalRate": self.maxShownSignalRate,
             "local_echo": self.local_echo,
@@ -81,6 +83,7 @@ class SerialParameters:
         self.readTextIndex = data["readTextIndex"]
         self.readBytes = data["readBytes"]
         self.readUntil = data["readUntil"]
+        self.readUntilAscii = data["readUntilAscii"]
         self.DTR = data["DTR"]
         self.maxShownSignalRate = data["maxShownSignalRate"]
         self.local_echo = data["local_echo"]
