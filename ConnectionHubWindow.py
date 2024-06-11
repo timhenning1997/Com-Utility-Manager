@@ -29,6 +29,7 @@ from WindowBetriebsmesstechnik import WindowBetriebsmesstechnik
 from WindowTeleTableView import WindowTeleTableView
 from WindowSynthetischeDaten import WindowSynthetischeDaten
 from WindowTempCalFritteuse import WindowTempCalFritoese
+from WindowTempCalCTD9300 import WindowTempCalCTD9300
 from WindowStationaritaet import WindowStationaritaet
 from WindowProgrammer import WindowProgrammer
 from WindowTest import WindowTest
@@ -206,6 +207,7 @@ class ConnectionHubWindow(QMainWindow):
         actCreateTeleTableViewWindow = QAction('Tele Table &View', self, triggered=self.createTeleTableViewWindow)
         actCreateSynthetischeDatenWindow = QAction('Synthetische &Daten', self, triggered=self.createSynthetischeDatenWindow)
         actCreateTempCalFritoeseWindow = QAction('Temp. Cal. &Fritteuse', self,triggered=self.createTempCalFritoeseWindow)
+        actCreateTempCalCTD9300Window = QAction('Temp. Cal. &CTD9300', self, triggered=self.createTempCalCTD9300Window)
         actCreateStationaritaetWindow = QAction('Stat&ionaritaet', self,triggered=self.createStationaritaetWindow)
         actCreateProgrammerWindow = QAction('Pr&ogrammer', self, triggered=self.createProgrammerWindow)
         actCreateTestWindow = QAction('T&est', self, triggered=self.createTestWindow)
@@ -218,6 +220,7 @@ class ConnectionHubWindow(QMainWindow):
         toolMenu.addAction(actCreateTeleTableViewWindow)
         toolMenu.addAction(actCreateSynthetischeDatenWindow)
         toolMenu.addAction(actCreateTempCalFritoeseWindow)
+        toolMenu.addAction(actCreateTempCalCTD9300Window)
         toolMenu.addAction(actCreateStationaritaetWindow)
         toolMenu.addAction(actCreateProgrammerWindow)
         toolMenu.addAction(actCreateTestWindow)
@@ -711,6 +714,12 @@ class ConnectionHubWindow(QMainWindow):
         self.windows.append(window)
         self.connectWindowToSignals(window)
         return window
+
+    def createTempCalCTD9300Window(self):
+        window = WindowTempCalCTD9300(self)
+        self.windows.append(window)
+        self.connectWindowToSignals(window)
+        return window
     
     def createStationaritaetWindow(self):
         window = WindowStationaritaet(self)
@@ -933,6 +942,8 @@ class ConnectionHubWindow(QMainWindow):
                 self.createSynthetischeDatenWindow().deserialize(window_data)
             if window_data["_windowType"] == "TempCalFritteuse":
                 self.createTempCalFritoeseWindow().deserialize(window_data)
+            if window_data["_windowType"] == "TempCalCTD9300":
+                self.createTempCalCTD9300Window().deserialize(window_data)
             if window_data["_windowType"] == "Stationaritaet":
                 self.createStationaritaetWindow().deserialize(window_data)
             if window_data["_windowType"] == "Programmer":

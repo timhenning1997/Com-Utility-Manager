@@ -1,7 +1,7 @@
 import random
 
 from PyQt5.QtCore import QPoint, Qt, QRunnable, pyqtSlot, QThreadPool, QProcess
-from PyQt5.QtWidgets import QLabel, QVBoxLayout, QPushButton, QWidget, QLineEdit, QMenu, QGroupBox, QHBoxLayout, QGridLayout
+from PyQt5.QtWidgets import QLabel, QVBoxLayout, QPushButton, QDoubleSpinBox, QWidget, QLineEdit, QMenu, QGroupBox, QHBoxLayout, QGridLayout
 from PyQt5.QtGui import QPixmap, QFont
 from AbstractWindow import AbstractWindow
 from SerialParameters import SerialParameters
@@ -18,6 +18,9 @@ class WindowTest(AbstractWindow):
         self.setCentralWidget(mainWidget)
 
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
+        pass
+
+    def onClosing(self):
         pass
 
     def sendData(self):

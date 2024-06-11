@@ -160,6 +160,7 @@ class SerialConnectWindow(QWidget):
         self.readUntilLineEdit.setFixedWidth(20)
         self.readUntilAsciiSpinBox = QSpinBox()
         self.readUntilAsciiSpinBox.setRange(0, 255)
+        self.readUntilAsciiSpinBox.setValue(3)
         self.readBytesSpinBox.setEnabled(False)
         self.readUntilLineEdit.setEnabled(False)
         self.readUntilAsciiSpinBox.setEnabled(False)
