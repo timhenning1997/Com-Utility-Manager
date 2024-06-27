@@ -785,21 +785,27 @@ class WindowTempCalFritoese(AbstractWindow):
         self.deleteRowButton.setVisible(b)
 
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
-        self.cal.receiveData(serialParameters, data, dataInfo)
-        self.graphLines["Temp"].setDataPoints(self.cal.temperatureValues["times"], self.cal.temperatureValues["values"])
-        self.graphLines["SetPoint"].setDataPoints(self.cal.setPointTemps["times"], self.cal.setPointTemps["values"])
+        if serialParameters.readTextIndex == "read_line" and dataInfo["dataType"] == "RAW-Values" and type(data) == bytes:
+            self.cal.receiveData(serialParameters, data, dataInfo)
+            self.graphLines["Temp"].setDataPoints(self.cal.temperatureValues["times"], self.cal.temperatureValues["values"])
+            self.graphLines["SetPoint"].setDataPoints(self.cal.setPointTemps["times"], self.cal.setPointTemps["values"])
 
-        self.keithley.receiveData(serialParameters, data, dataInfo)
+        if serialParameters.readTextIndex == "read_line" and dataInfo["dataType"] == "RAW-Values":
+            self.keithley.receiveData(serialParameters, data, dataInfo)
 
-        if re.match(r"\{S[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]", data.decode()):
-            if self.fritteusenComPortLineEdit.text() == "":
-                self.fritteusenComPortLineEdit.setText(serialParameters.port)
-            plainText = self.textEdit.toPlainText()
-            if len(plainText) > 1000:
-                self.textEdit.setPlainText(plainText[-600:])
-            self.textEdit.setPlainText(self.textEdit.toPlainText() + data.decode().strip())
-            self.textEdit.append("")
-            self.textEdit.moveCursor(QTextCursor.End)
+        if serialParameters.readTextIndex == "read_line" and dataInfo["dataType"] == "RAW-Values" and type(data) == bytes:
+            if re.match(r"\{S[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]", data.decode()):
+                if self.fritteusenComPortLineEdit.text() == "":
+                    self.fritteusenComPortLineEdit.setText(serialParameters.port)
+                plainText = self.textEdit.toPlainText()
+                if len(plainText) > 1000:
+                    self.textEdit.setPlainText(plainText[-600:])
+                self.textEdit.setPlainText(self.textEdit.toPlainText() + data.decode().strip())
+                self.textEdit.append("")
+                self.textEdit.moveCursor(QTextCursor.End)
+
+        if serialParameters.readTextIndex == "read_WU_device" and dataInfo["dataType"] == "RAW-Values":
+            self.incomingDataBuffer[serialParameters.port.upper()] = data
 
 
 

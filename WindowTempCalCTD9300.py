@@ -776,27 +776,30 @@ class WindowTempCalCTD9300(AbstractWindow):
         self.deleteRowButton.setVisible(b)
 
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
-        self.cal.receiveData(serialParameters, data, dataInfo)
-        self.graphLines["BlockTemp"].setDataPoints(self.cal.temperatureValues["times"],
-                                                   self.cal.temperatureValues["values"])
-        self.graphLines["PrueflingsTemp"].setDataPoints(self.cal.pTemperatureValues["times"],
-                                                        self.cal.pTemperatureValues["values"])
-        self.graphLines["ReferenzTemp"].setDataPoints(self.cal.rTemperatureValues["times"],
-                                                      self.cal.rTemperatureValues["values"])
-        self.graphLines["SetPoint"].setDataPoints(self.cal.setPointTemps["times"], self.cal.setPointTemps["values"])
+        if serialParameters.readTextIndex == "read_until_ASCII" and dataInfo["dataType"] == "RAW-Values":
+            self.cal.receiveData(serialParameters, data, dataInfo)
+            self.graphLines["BlockTemp"].setDataPoints(self.cal.temperatureValues["times"], self.cal.temperatureValues["values"])
+            self.graphLines["PrueflingsTemp"].setDataPoints(self.cal.pTemperatureValues["times"], self.cal.pTemperatureValues["values"])
+            self.graphLines["ReferenzTemp"].setDataPoints(self.cal.rTemperatureValues["times"], self.cal.rTemperatureValues["values"])
+            self.graphLines["SetPoint"].setDataPoints(self.cal.setPointTemps["times"], self.cal.setPointTemps["values"])
 
-        self.keithley.receiveData(serialParameters, data, dataInfo)
+        if serialParameters.readTextIndex == "read_line" and dataInfo["dataType"] == "RAW-Values":
+            self.keithley.receiveData(serialParameters, data, dataInfo)
 
-        if data[0] == 2 and data[-1] == 3:
-            data = data[1:-1].decode()
-            if self.ctd9300ComPortLineEdit.text() == "":
-                self.ctd9300ComPortLineEdit.setText(serialParameters.port)
-            plainText = self.textEdit.toPlainText()
-            if len(plainText) > 1000:
-                self.textEdit.setPlainText(plainText[-600:])
-            self.textEdit.setPlainText(self.textEdit.toPlainText() + data.strip())
-            self.textEdit.append("")
-            self.textEdit.moveCursor(QTextCursor.End)
+        if serialParameters.readTextIndex == "read_until_ASCII" and dataInfo["dataType"] == "RAW-Values" and len(data) > 2:
+            if data[0] == 2 and data[-1] == 3:
+                data = data[1:-1].decode()
+                if self.ctd9300ComPortLineEdit.text() == "":
+                    self.ctd9300ComPortLineEdit.setText(serialParameters.port)
+                plainText = self.textEdit.toPlainText()
+                if len(plainText) > 1000:
+                    self.textEdit.setPlainText(plainText[-600:])
+                self.textEdit.setPlainText(self.textEdit.toPlainText() + data.strip())
+                self.textEdit.append("")
+                self.textEdit.moveCursor(QTextCursor.End)
+
+        if serialParameters.readTextIndex == "read_WU_device" and dataInfo["dataType"] == "RAW-Values":
+            self.incomingDataBuffer[serialParameters.port.upper()] = data
 
     def sendDataFromLineEdit(self):
         self.cal.sendMessage("\x02" + self.lineEdit.text() + "\x03")
