@@ -1,0 +1,1 @@
+pyinstaller --noconfirm --onefile --console --icon "D:/Local GitHub/Com-Utility-Manager/exe output/Exe_Icon.ico" --name "Com Utility Manager" --add-data "D:/Local GitHub/Com-Utility-Manager/

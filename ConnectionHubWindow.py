@@ -566,6 +566,7 @@ class ConnectionHubWindow(QMainWindow):
                             return False
                     else:
                         print("Column count of calibration file not 8")
+                        self.showInfoBox("Calibration File Error", "Error in calibration file.\nPlease check you calibration file in text editor!")
                         return False
                 line_count += 1
 
