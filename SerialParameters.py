@@ -4,10 +4,10 @@ import serial
 class SerialParameters:
     def __init__(self, port=None, baudrate=9600, bytesize=serial.EIGHTBITS, parity=serial.PARITY_NONE,
                  stopbits=serial.STOPBITS_ONE, timeout=None, xonxoff=False, rtscts=False,
-                 write_timeout=None, dsrdtr=False, inter_byte_timeout=None, exclusive=None,
+                 write_timeout=None, dsrdtr=False, inter_byte_timeout=None, exclusive=None, rts=None, dtr=None,
                  local_echo=False, appendCR=False, appendLF=False, readTextIndex="read_line", readBytes=1,
                  readUntil='', readUntilAscii=0, DTR=False, maxShownSignalRate=10, Kennbin = "", Kennung = "", autoReconnect = False,
-                 showFaultyData = False,recordBufferSize = 0):
+                 showFaultyData = False, recordBufferSize = 0):
         self.port = port
         self.baudrate = baudrate
         self.bytesize = bytesize
@@ -20,6 +20,8 @@ class SerialParameters:
         self.dsrdtr = dsrdtr
         self.inter_byte_timeout = inter_byte_timeout
         self.exclusive = exclusive
+        self.rts = rts
+        self.dtr = dtr
         self.readTextIndex = readTextIndex
         self.readBytes = readBytes
         self.readUntil = readUntil
@@ -53,6 +55,8 @@ class SerialParameters:
             "dsrdtr": self.dsrdtr,
             "inter_byte_timeout": self.inter_byte_timeout,
             "exclusive": self.exclusive,
+            "rts": self.rts,
+            "dtr": self.dtr,
             "readTextIndex": self.readTextIndex,
             "readBytes": self.readBytes,
             "readUntil": self.readUntil,
@@ -80,6 +84,8 @@ class SerialParameters:
         self.dsrdtr = data["dsrdtr"]
         self.inter_byte_timeout = data["inter_byte_timeout"]
         self.exclusive = data["exclusive"]
+        self.rts = data["rts"]
+        self.dtr = data["dtr"]
         self.readTextIndex = data["readTextIndex"]
         self.readBytes = data["readBytes"]
         self.readUntil = data["readUntil"]

@@ -22,6 +22,8 @@ class SerialConnectWindow(QWidget):
         stopBitsLabel = QLabel("Stop bits")
         parityLabel = QLabel("Parity")
         flowControlLabel = QLabel("Flow control")
+        rtsLineLabel = QLabel("RTS line")
+        dtrLineLabel = QLabel("DTR line")
 
         self.portCombobox = QComboBox()
         self.portCombobox.setEditable(True)
@@ -80,6 +82,18 @@ class SerialConnectWindow(QWidget):
         self.flowControlCombobox.addItem("dsrdtr")
         self.flowControlCombobox.setCurrentText("none")
 
+        self.rtsLineCombobox = QComboBox()
+        self.rtsLineCombobox.addItem("none")
+        self.rtsLineCombobox.addItem("high")
+        self.rtsLineCombobox.addItem("low")
+        self.rtsLineCombobox.addItem("none")
+
+        self.dtrLineCombobox = QComboBox()
+        self.dtrLineCombobox.addItem("none")
+        self.dtrLineCombobox.addItem("high")
+        self.dtrLineCombobox.addItem("low")
+        self.dtrLineCombobox.addItem("none")
+
         portConfigLayout = QFormLayout()
         portConfigLayout.addRow(portLabel, self.portCombobox)
         portConfigLayout.addRow(baudrateLabel, self.baudrateCombobox)
@@ -87,6 +101,8 @@ class SerialConnectWindow(QWidget):
         portConfigLayout.addRow(stopBitsLabel, self.stopBitsCombobox)
         portConfigLayout.addRow(parityLabel, self.parityCombobox)
         portConfigLayout.addRow(flowControlLabel, self.flowControlCombobox)
+        portConfigLayout.addRow(rtsLineLabel, self.rtsLineCombobox)
+        portConfigLayout.addRow(dtrLineLabel, self.dtrLineCombobox)
 
         portConfigGroupbox = QGroupBox("Port configuration")
         portConfigGroupbox.setLayout(portConfigLayout)
@@ -289,6 +305,14 @@ class SerialConnectWindow(QWidget):
             serialParam.rtscts = True
         if self.flowControlCombobox.currentText() == "dsrdtr":
             serialParam.dsrdtr = True
+        if self.rtsLineCombobox.currentText() == "high":
+            serialParam.rts = True
+        elif self.rtsLineCombobox.currentText() == "low":
+            serialParam.rts = False
+        if self.dtrLineCombobox.currentText() == "high":
+            serialParam.rts = True
+        elif self.dtrLineCombobox.currentText() == "low":
+            serialParam.rts = False
         if self.appendCRRB.isChecked():
             serialParam.appendCR = True
         if self.appendLFRB.isChecked():

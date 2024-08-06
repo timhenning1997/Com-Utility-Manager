@@ -44,7 +44,11 @@ class SerialThread(QRunnable):
         self.serialArduino.dsrdtr = self.serialParameters.dsrdtr
         self.serialArduino.inter_byte_timeout = self.serialParameters.inter_byte_timeout
         self.serialArduino.exclusive = self.serialParameters.exclusive
-        #self.serialArduino.setDTR(self.serialParameters.DTR)
+        if self.serialParameters.rts is not None:
+            self.serialArduino.rts = self.serialParameters.rts
+        if self.serialParameters.dtr is not None:
+            self.serialArduino.dtr = self.serialParameters.dtr
+        # self.serialArduino.setDTR(self.serialParameters.DTR)
 
         self.signals = SerialSignals()
         self.is_killed = False
