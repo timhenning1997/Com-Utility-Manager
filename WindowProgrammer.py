@@ -175,6 +175,7 @@ class PythonHighlighter (QSyntaxHighlighter):
 
 class SerialSignals(QObject):
     sendDataSignal = pyqtSignal(object, object)
+    forwardDataSignal = pyqtSignal(object, object, object)
     sendOutputSignal = pyqtSignal(object)
     sendErrorSignal = pyqtSignal(object)
     stoppedRunningSignal = pyqtSignal()
@@ -389,6 +390,19 @@ class Worker(QRunnable):
     def clearOutput(self):
         self.signals.sendOutputSignal.emit("CLEAR_OUTPUT_SIGNAL")
 
+    def forwardData(self, data, serialParameters: SerialParameters = None, dataInfo=None, port: str = None):
+        if serialParameters is None:
+            if port is None:
+                serialParameters = SerialParameters("COM69")
+            else:
+                serialParameters = SerialParameters(port)
+
+        if type(data) is not str:
+            data = str(data)
+        data.encode('utf-8')
+
+        self.signals.forwardDataSignal.emit(serialParameters, data, dataInfo)
+
     def kill(self):
         self.is_killed = True
 
@@ -425,6 +439,7 @@ class WindowProgrammer(AbstractWindow):
         QThreadPool.globalInstance().start(self.worker)
         self.worker.signals.sendDataSignal.connect(self.sendData)
         self.worker.signals.sendOutputSignal.connect(self.receiveOutput)
+        self.worker.signals.forwardDataSignal.connect(self.forwardDataToHub)
         self.worker.signals.sendErrorSignal.connect(self.caughtError)
         self.worker.signals.stoppedRunningSignal.connect(self.stoppedRunning)
 
@@ -524,6 +539,9 @@ class WindowProgrammer(AbstractWindow):
 
     def sendData(self, data, ports: None):
         self.sendSerialData(data, ports)
+
+    def forwardDataToHub(self, serialParameters: SerialParameters, data, dataInfo=None):
+        self._hubWindow.printReceivedData(serialParameters, data, dataInfo)
 
     def onClosing(self):
         self.killWorkerSignal.emit()

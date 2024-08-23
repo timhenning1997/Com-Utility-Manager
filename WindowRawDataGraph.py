@@ -134,7 +134,10 @@ class WindowRawDataGraph(AbstractWindow):
         if serialParameters.readTextIndex == "read_WU_device":
             kennung = binascii.hexlify(serialParameters.Kennbin).decode("utf-8").upper()
         else:
-            data = data.decode("utf-8").strip().replace(" ", "").replace(":", ";").split(";")
+            try:
+                data = data.decode("utf-8").strip().replace(" ", "").replace(":", ";").split(";")
+            except:
+                data = data.strip().replace(" ", "").replace(":", ";").split(";")
             kennung = ""
 
         for key in self.graphLines.keys():

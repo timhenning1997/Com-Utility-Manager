@@ -72,6 +72,7 @@ class WindowTablePlotter(AbstractWindow):
         self.shownTypeCB.addItem("Show: Hex")
         self.shownTypeCB.addItem("Show: Values")
         self.shownTypeCB.addItem("Show: Max-Min")
+        self.shownTypeCB.addItem("Show: Cal")
         self.shownTypeCB.currentTextChanged.connect(self.changeShownType)
 
         self.maxMinDataPointsSpinBox = QSpinBox()
@@ -162,6 +163,8 @@ class WindowTablePlotter(AbstractWindow):
             self.shownType = "MaxMin"
             self.savedMaxMinData.clear()
             self.maxMinDataPointsSpinBox.show()
+        elif self.shownTypeCB.currentText() == "Show: Cal":
+            self.shownType = "Cal"
 
     def clearTable(self, dataLength: int = 0):
         counter = 0
@@ -211,19 +214,26 @@ class WindowTablePlotter(AbstractWindow):
         self.changeTableHeaderLabels()
         self.changeTableColumnWidth(90)
 
+
         for countY in range(0, self.table.rowCount()):
             for countX in range(0, self.table.columnCount()):
                 tableContendIndex = countY * (self.table.columnCount()) + countX
                 if len(self.receivedData[1:]) > tableContendIndex:
-                    number = int(self.receivedData[1:][tableContendIndex], 16)
+                    if type(self.receivedData[1:][tableContendIndex]) in [int, float]:
+                        number = self.receivedData[1:][tableContendIndex]
+                    else:
+                        number = int(self.receivedData[1:][tableContendIndex], 16)
                     if self.shownType == "Hex":
-                        self.table.setItem(countY, countX, QTableWidgetItem(str(self.receivedData[1:][tableContendIndex])))
+                        self.table.setItem(countY, countX, QTableWidgetItem(str(number)))
                         self.table.item(countY, countX).setBackground(self.interpolateColor(self.color1, self.color2, (number - self.minValue) / (self.maxValue-self.minValue)))
                     elif self.shownType == "Values":
                         self.table.setItem(countY, countX, QTableWidgetItem(str(self.receivedValueData[1:][tableContendIndex])))
                         self.table.item(countY, countX).setBackground(self.interpolateColor(self.color1, self.color2, (number - self.minValue) / (self.maxValue-self.minValue)))
                     elif self.shownType == "MaxMin":
                         self.table.setItem(countY, countX, QTableWidgetItem(str(self.receivedMaxMinData[1:][tableContendIndex])))
+                        self.table.item(countY, countX).setBackground(QColor(Qt.transparent))
+                    elif self.shownType == "Cal":
+                        self.table.setItem(countY, countX, QTableWidgetItem(str(self.receivedValueData[1:][tableContendIndex])))
                         self.table.item(countY, countX).setBackground(QColor(Qt.transparent))
                 else:
                     self.table.setItem(countY, countX, QTableWidgetItem(""))
@@ -246,42 +256,49 @@ class WindowTablePlotter(AbstractWindow):
             self.resizeTable(0, self.table.columnCount() - 1)
 
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
-        if serialParameters.readTextIndex == "read_WU_device" and dataInfo["dataType"] == "RAW-Values":
+        if serialParameters.readTextIndex == "read_WU_device" and dataInfo["dataType"] == "CALIBRATED-Values":
+            data = data["DATA"]
+            data.append(0) # Ersetzt die "4f4b == "OK" Ausgabe in den Kalibrierten Daten von Bennies Programm"
+
+        if serialParameters.readTextIndex == "read_WU_device": # and dataInfo["dataType"] == "RAW-Values":
             self.receivedData = data
 
             self.receivedValueData = []
-            for numberIndex in range(0, len(data)):
-                self.receivedValueData.append(int(data[numberIndex], 16))
+            if dataInfo["dataType"] == "RAW-Values":
+                for numberIndex in range(0, len(data)):
+                    self.receivedValueData.append(int(data[numberIndex], 16))
+            elif dataInfo["dataType"] == "CALIBRATED-Values":
+                self.receivedValueData = data
 
             kennung = binascii.hexlify(serialParameters.Kennbin).decode("utf-8").upper()
             self.receivedMaxMinData = []
-            if self.shownType == "MaxMin":
+            if self.shownType == "MaxMin" and dataInfo["dataType"] == "RAW-Values":
                 if kennung not in self.savedMaxMinData.keys():
                     self.savedMaxMinData[kennung] = []
-                    for numberIndex in range(0, len(data)):
-                        self.savedMaxMinData[kennung].append([int(data[numberIndex], 16)])
-                        self.receivedMaxMinData.append(int(data[numberIndex], 16))
+                    for numberIndex in range(0, len(self.receivedValueData)):
+                        self.savedMaxMinData[kennung].append([self.receivedValueData[numberIndex]])
+                        self.receivedMaxMinData.append(self.receivedValueData[numberIndex])
                 else:
-                    for numberIndex in range(0, len(data)):
-                        self.savedMaxMinData[kennung][numberIndex].append(int(data[numberIndex], 16))
+                    for numberIndex in range(0, len(self.receivedValueData)):
+                        self.savedMaxMinData[kennung][numberIndex].append(self.receivedValueData[numberIndex])
                         self.savedMaxMinData[kennung][numberIndex] = self.savedMaxMinData[kennung][numberIndex][-self.maxMinDataPointsSpinBox.value():]
                         self.receivedMaxMinData.append(max(self.savedMaxMinData[kennung][numberIndex])-min(self.savedMaxMinData[kennung][numberIndex]))
 
-            if len(data[1:]) != self.currentLengthOfData:
-                self.currentLengthOfData = len(data[1:])
-                self.clearTable(len(data[1:]))
-                if int(math.ceil(len(data[1:]) / self.colNumber)) != self.table.rowCount():
-                    self.resizeTable(int(math.ceil(len(data[1:]) / self.colNumber)), self.colNumber)
+            if len(self.receivedValueData[1:]) != self.currentLengthOfData:
+                self.currentLengthOfData = len(self.receivedValueData[1:])
+                self.clearTable(len(self.receivedValueData[1:]))
+                if int(math.ceil(len(self.receivedValueData[1:]) / self.colNumber)) != self.table.rowCount():
+                    self.resizeTable(int(math.ceil(len(self.receivedValueData[1:]) / self.colNumber)), self.colNumber)
 
-            self.dataCounterLabel.setText(str(int(data[0], 16)))
+            self.dataCounterLabel.setText(str(self.receivedValueData[0]))
             self.dataSetLengthLabel.setText(str(serialParameters.Kennung))
             self.errorCounterLabel.setText(str(serialParameters.errorCounter))
 
             temp_data = []
             temp_receivedValueData = []
             temp_receivedMaxMinData = []
-            if len(data) > 1:
-                temp_data = data[1:]
+            if len(self.receivedValueData) > 1:
+                temp_data = [str(x) for x in data[1:]]
             if len(self.receivedValueData) > 1:
                 temp_receivedValueData = self.receivedValueData[1:]
             if len(self.receivedMaxMinData) > 1:
@@ -291,16 +308,19 @@ class WindowTablePlotter(AbstractWindow):
                 rowCount = numberIndex // self.colNumber
                 colCount = numberIndex % self.colNumber
 
-                if self.shownType == "Hex" and len(temp_data) > 0:
+                if dataInfo["dataType"] == "RAW-Values" and self.shownType == "Hex" and len(temp_data) > 0:
                     self.table.item(rowCount, colCount).setText(temp_data[numberIndex].upper())
                     self.table.item(rowCount, colCount).setBackground(self.interpolateColor(self.color1, self.color2, (temp_receivedValueData[numberIndex]-self.minValue) / (self.maxValue-self.minValue)))
-                elif self.shownType == "Values" and len(temp_receivedValueData) > 0:
+                elif dataInfo["dataType"] == "RAW-Values" and self.shownType == "Values" and len(temp_receivedValueData) > 0:
                     self.table.item(rowCount, colCount).setText(str(temp_receivedValueData[numberIndex]))
                     self.table.item(rowCount, colCount).setBackground(self.interpolateColor(self.color1, self.color2, (temp_receivedValueData[numberIndex]-self.minValue) / (self.maxValue-self.minValue)))
-                elif self.shownType == "MaxMin" and len(temp_receivedMaxMinData) > 0:
+                elif dataInfo["dataType"] == "RAW-Values" and self.shownType == "MaxMin" and len(temp_receivedMaxMinData) > 0:
                     self.table.item(rowCount, colCount).setText(str(temp_receivedMaxMinData[numberIndex]))
                     #self.table.item(rowCount, colCount).setBackground(QColor(Qt.transparent))
                     self.table.item(rowCount, colCount).setBackground(self.interpolateColor(self.color1, self.color2, (temp_receivedMaxMinData[numberIndex] - self.minValue) / (self.maxValue - self.minValue)))
+                elif dataInfo["dataType"] == "CALIBRATED-Values" and self.shownType == "Cal" and len(temp_receivedValueData) > 0:
+                    self.table.item(rowCount, colCount).setText(str(temp_receivedValueData[numberIndex]))
+                    self.table.item(rowCount, colCount).setBackground(QColor(Qt.transparent))
 
     def save(self):
             return {"rowCount": self.table.rowCount(),
