@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from time import time
+from time import time, time_ns
 from PyQt5.QtCore import *
 import serial
 from PyQt5.QtWidgets import QMessageBox
@@ -67,6 +67,9 @@ class SerialThread(QRunnable):
         # useful for faster write speeds to disc
         self.recordBuffer = []
         self.recordBufferSize = serialParameters.recordBufferSize
+
+        # useful for merging data streams... include timestamp
+        self.saveTimestamp = serialParameters.saveTimestamp
 
         if platform.system() == "Linux":
             self.serialArduino.port = "/dev/" + self.serialParameters.port
@@ -350,10 +353,12 @@ class SerialThread(QRunnable):
         self.record = lastRecord
 
     def recordData(self, data):
+        if self.saveTimestamp:
+            data.insert(0, str(time_ns()))
         if self.recordBufferSize == 0:
             with open(self.recordFilePath, 'a') as file:
                 file.write(' '.join(data) + "\n")
-        elif len(self.recordBuffer) >= self.recordBufferSize:
+        elif len(self.recordBuffer) >= self.recordBufferSize-1:
             self.recordBuffer.append(' '.join(data) + "\n")
             with open(self.recordFilePath, 'a') as file:
                 file.write(''.join(self.recordBuffer))

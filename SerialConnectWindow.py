@@ -225,11 +225,16 @@ class SerialConnectWindow(QWidget):
         self.showFaultyDataCheckBox = QCheckBox("")
         self.showFaultyDataCheckBox.setChecked(True)
 
+        saveTimestampDataLabel = QLabel("Save Timestamp")
+        self.saveTimestampCheckBox = QCheckBox("")
+        self.saveTimestampCheckBox.setChecked(True)
+
         optionsLayout = QFormLayout()
         optionsLayout.addRow(maxSignalRateLabel, self.maxSignalRateSpinBox)
         optionsLayout.addRow(recordBufferSizeLabel, self.recordBufferSizeSpinBox)
         optionsLayout.addRow(autoReconnectLabel, self.autoReconnectCheckBox)
         optionsLayout.addRow(showFaultyDataLabel, self.showFaultyDataCheckBox)
+        optionsLayout.addRow(saveTimestampDataLabel, self.saveTimestampCheckBox)
         # optionsLayout.addWidget(-------------, 0, 0, 1, 1)
 
         optionsGroupbox = QGroupBox("Options")
@@ -343,5 +348,6 @@ class SerialConnectWindow(QWidget):
         serialParam.recordBufferSize = self.recordBufferSizeSpinBox.value()
         serialParam.autoReconnect = self.autoReconnectCheckBox.isChecked()
         serialParam.showFaultyData = self.showFaultyDataCheckBox.isChecked()
+        serialParam.saveTimestamp = self.saveTimestampCheckBox.isChecked()
 
         return serialParam

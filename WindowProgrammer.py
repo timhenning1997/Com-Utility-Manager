@@ -384,6 +384,11 @@ class Worker(QRunnable):
             ports = [ports]
         self.signals.sendDataSignal.emit(data.encode('utf-8'), ports)
 
+    def sendRawData(self, data: str, ports=None):
+        if type(ports) == str:
+            ports = [ports]
+        self.signals.sendDataSignal.emit(data, ports)
+
     def sendOutput(self, text):
         self.signals.sendOutputSignal.emit(text)
 
