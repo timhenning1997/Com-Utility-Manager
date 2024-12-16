@@ -353,18 +353,23 @@ class SerialThread(QRunnable):
         self.record = lastRecord
 
     def recordData(self, data):
-        if self.saveTimestamp:
-            data.insert(0, str(time_ns()))
+        time = ""
         if self.recordBufferSize == 0:
             with open(self.recordFilePath, 'a') as file:
-                file.write(' '.join(data) + "\n")
+                if self.saveTimestamp:
+                    time = str(time_ns()) + ' '
+                file.write(time + ' '.join(data) + "\n")
         elif len(self.recordBuffer) >= self.recordBufferSize-1:
-            self.recordBuffer.append(' '.join(data) + "\n")
+            if self.saveTimestamp:
+                time = str(time_ns()) + ' '
+            self.recordBuffer.append(time + ' '.join(data) + "\n")
             with open(self.recordFilePath, 'a') as file:
                 file.write(''.join(self.recordBuffer))
                 self.recordBuffer = []
         else:
-            self.recordBuffer.append(' '.join(data) + "\n")
+            if self.saveTimestamp:
+                time = str(time_ns()) + ' '
+            self.recordBuffer.append(time + ' '.join(data) + "\n")
 
 
     def writeSerial(self, port, data):

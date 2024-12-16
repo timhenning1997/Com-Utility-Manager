@@ -227,7 +227,7 @@ class SerialConnectWindow(QWidget):
 
         saveTimestampDataLabel = QLabel("Save Timestamp")
         self.saveTimestampCheckBox = QCheckBox("")
-        self.saveTimestampCheckBox.setChecked(True)
+        self.saveTimestampCheckBox.setChecked(False)
 
         optionsLayout = QFormLayout()
         optionsLayout.addRow(maxSignalRateLabel, self.maxSignalRateSpinBox)
