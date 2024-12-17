@@ -207,9 +207,9 @@ def applyCalibrationFunctions(calData, data):
             pass    # TODO: Weitere fehlende KalFunkTypen hinzufügen
 
         elif calData[i][3] == "BLENDE":
-            D, d, p1, dp, T1, n = calData[i][2]    # Rohrdurchmesser, Blendendurchmesser, Druck vor der Blende, Differenzdruck, Druck nach der Blende, Temperatur vor der Blende, Genauigkeit der Massestromberechnung = 10^(-n)
+            D, d, p1, dp, T1, n = calData[i][2][:6]    # Rohrdurchmesser, Blendendurchmesser, Druck vor der Blende, Differenzdruck, Druck nach der Blende, Temperatur vor der Blende, Genauigkeit der Massestromberechnung = 10^(-n)
             p2 = p1 - dp            # Druck nach der Blende
-            ddp, dp1, dT1, dD, dd = [None, None, None, None, None]
+            ddp, dp1, dT1, dD, dd = [20, 90, 1.0, 1.0E-5, 1.0E-5]
 
             if len(calData[i][2]) > 6:
                  ddp, dp1, dT1, dD, dd = calData[i][2][6:11]  # Fehler der Differenzdruckmessung, Fehler der Absolutdruckmessung, Fehler der Temperaturmessung, Fehler des Rohrdurchmessers, Fehler des Blendendurchmessers
@@ -242,6 +242,75 @@ def applyCalibrationFunctions(calData, data):
                 X.append(X[-1] - dx[-1] * ((X[-1] - X[-2]) / (dx[-1] - dx[-2])))
             qm = pi / 4 * mu1 * D * X[-1]   # Berechnung des Massestromes nach EN ISO 5167-1: 3.3.2.1
             ReD = X[-1]                     # ReD = X1 = C * A1
+
+            # Zulässigkeit
+            if d < 12.5E-3:
+                qm = -1
+                ReD = -1
+                print("Die Zulässigkeitsgrenze (d < 12.5) für den Blendendurchmesser wurde unterschritten!")
+            if D < 50E-3:
+                qm = -1
+                ReD = -1
+                print("Die Zulässigkeitsgrenze (D < 50) für den Rohrdurchmesser wurde unterschritten!")
+            if D > 1000E-3:
+                qm = -1
+                ReD = -1
+                print("Die Zulässigkeitsgrenze (D > 1000) für den Rohrdurchmesser wurde überschritten!")
+            if beta < 0.1:
+                qm = -1
+                ReD = -1
+                print("Die Zulässigkeitsgrenze (beta < 0.1) für das Durchmesserverhältnis wurde unterschritten!")
+            if beta > 0.75:
+                qm = -1
+                ReD = -1
+                print("Die Zulässigkeitsgrenze (beta > 0.75) für das Durchmesserverhältnis wurde überschritten!")
+            if beta >= 0.1 and beta <= 0.56 and ReD < 5000:
+                    "Die Zulässigkeitsgrenze (0.1 <= beta <= 0.56: ReD < 5000) für die Rohr-Reynoldszahl wurde unterschritten!"
+            if beta > 0.56 and ReD < 16000 * beta ** 2:
+                    "Die Zulässigkeitsgrenze (beta > 0.56: ReD < 1.6E+04*beta^2) für die Rohr-Reynoldszahl wurde unterschritten!"
+
+            # Fehlerrechnung
+            droh1 = sqrt((dT1 ** 2 * p1 ** 2) / (Rs ** 2 * T1 ** 4) + dp1 ** 2 / (Rs ** 2 * T1 ** 2))
+            dC = 0
+
+            if 0.1 <= beta < 0.2:
+                dC = (0.7 - beta) / 100 * C[-1]
+
+            if 0.2 <= beta < 0.6:
+                dC = (0.5) / 100 * C[-1]
+
+            if 0.6 <= beta <= 0.75:
+                dC = (1.667 * beta - 0.5) / 100 * C[-1]
+
+            if D < 71.12E-3:
+                dC0 = (0.9 * (0.75 - beta) * (2.8 - (D / 25.4))) / 100 * C[-1]
+                dC = (dC + dC0) / 2  # sqrt(self.dC**2 + self.dC0**2)
+
+            if beta > 0.5 and X[-1] < 10000:
+                dC1 = 0.5 / 100 * C
+                dC = (dC + dC1) / 2  # sqrt(self.dC**2 + self.dC1**2)
+
+            de = e * 3.5 * dp / kappa / p1 / 100
+
+            # Nach DIN EN ISO 5167-1: 8.2.2.1
+            dqm = qm * sqrt((dC / C[-1]) ** 2  # Fehler des Durchflusskoeffizienten
+                            + (de / e) ** 2 + 1 / 4 * (ddp / dp) ** 2  # Fehler der Expansionszahl
+                            + 1 / 4 * (droh1 / roh1) ** 2  # Fehler der Dichte (T, p)
+                            + (2 * beta ** 4 / (1 - beta ** 4)) ** 2 * (dD / D) ** 2  # Fehler des Rohrdurchmessers
+                            + (2 / (1 - beta ** 4)) ** 2 * (dd / d) ** 2 # Fehler des Blendendurchmessers
+                            )
+
+            dqmp = dqm / qm * 100
+
+            calibratedData["UUID"].append(calData[i][0])
+            calibratedData["DATA"].append(qm)
+            calibratedData["BLENDEN_DATA"].append({
+                "UUID": calData[i][0],
+                "qm": qm,
+                "ReD": ReD,
+                "dqm": dqm,
+                "dqmp": dqmp
+            })
 
         else:
             calibratedData["UUID"].append(calData[i][0])
