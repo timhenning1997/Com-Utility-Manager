@@ -86,13 +86,13 @@ class SerialConnectWindow(QWidget):
         self.rtsLineCombobox.addItem("none")
         self.rtsLineCombobox.addItem("high")
         self.rtsLineCombobox.addItem("low")
-        self.rtsLineCombobox.setCurrentText("none")
+        self.rtsLineCombobox.setCurrentText("high")
 
         self.dtrLineCombobox = QComboBox()
         self.dtrLineCombobox.addItem("none")
         self.dtrLineCombobox.addItem("high")
         self.dtrLineCombobox.addItem("low")
-        self.dtrLineCombobox.setCurrentText("none")
+        self.dtrLineCombobox.setCurrentText("low")
 
         portConfigLayout = QFormLayout()
         portConfigLayout.addRow(portLabel, self.portCombobox)

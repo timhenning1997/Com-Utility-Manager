@@ -203,16 +203,23 @@ def applyCalibrationFunctions(calData, data):
             calibratedData["UUID"].append(calData[i][0])
             calibratedData["DATA"].append(res)
 
-        elif calData[i][3] == "NTC":
-            pass    # TODO: Weitere fehlende KalFunkTypen hinzufügen
-
         elif calData[i][3] == "BLENDE":
-            D, d, p1, dp, T1, n = calData[i][2][:6]    # Rohrdurchmesser, Blendendurchmesser, Druck vor der Blende, Differenzdruck, Druck nach der Blende, Temperatur vor der Blende, Genauigkeit der Massestromberechnung = 10^(-n)
+            D, d, p1_index, dp_index, T1_index = calData[i][2][:5]    # Rohrdurchmesser, Blendendurchmesser, Druck vor der Blende, Differenzdruck, Druck nach der Blende, Temperatur vor der Blende, Genauigkeit der Massestromberechnung = 10^(-n)
+            p1 = applyCalibrationFunctions(calData[p1_index], data[p1_index])["DATA"][0]
+            dp = applyCalibrationFunctions(calData[dp_index], data[dp_index])["DATA"][0]
+            T1 = applyCalibrationFunctions(calData[T1_index], data[T1_index])["DATA"][0]
             p2 = p1 - dp            # Druck nach der Blende
-            ddp, dp1, dT1, dD, dd = [20, 90, 1.0, 1.0E-5, 1.0E-5]
+            n, ddp, dp1, dT1, dD, dd = [8 ,20, 90, 1.0, 1.0E-5, 1.0E-5]
 
-            if len(calData[i][2]) > 6:
-                 ddp, dp1, dT1, dD, dd = calData[i][2][6:11]  # Fehler der Differenzdruckmessung, Fehler der Absolutdruckmessung, Fehler der Temperaturmessung, Fehler des Rohrdurchmessers, Fehler des Blendendurchmessers
+            print("D: ", D)
+            print("d: ", d)
+            print("p1: [", p1_index, "] \t:", p1)
+            print("p1: [", dp_index, "] \t:", dp)
+            print("p1: [", T1_index, "] \t:", T1)
+            print("______________________________")
+
+            if len(calData[i][2]) > 5:
+                 n, ddp, dp1, dT1, dD, dd = calData[i][2][5:11]  # Fehler der Differenzdruckmessung, Fehler der Absolutdruckmessung, Fehler der Temperaturmessung, Fehler des Rohrdurchmessers, Fehler des Blendendurchmessers
 
             roh1 = PropsSI('D', 'P', p1, 'T', T1, 'air')  # Dichte des Fluids vor der Blende
             mu1 = PropsSI('V', 'P', p1, 'T', T1, 'air')  # Dyn. Viskosität des Fluids vor der Blende
@@ -304,6 +311,8 @@ def applyCalibrationFunctions(calData, data):
 
             calibratedData["UUID"].append(calData[i][0])
             calibratedData["DATA"].append(qm)
+            if "BLENDEN_DATA" not in calibratedData.keys():
+                calibratedData["BLENDEN_DATA"] = []
             calibratedData["BLENDEN_DATA"].append({
                 "UUID": calData[i][0],
                 "qm": qm,
