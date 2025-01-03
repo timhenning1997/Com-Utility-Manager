@@ -204,7 +204,15 @@ def applyCalibrationFunctions(calData, data):
             calibratedData["DATA"].append(res)
 
         elif calData[i][3] == "BLENDE":
-            D, d, p1_index, dp_index, T1_index = calData[i][2][:5]    # Rohrdurchmesser, Blendendurchmesser, Druck vor der Blende, Differenzdruck, Druck nach der Blende, Temperatur vor der Blende, Genauigkeit der Massestromberechnung = 10^(-n)
+            # ____________Eingabe___________
+            # D = Rohrdurchmesser (Innendurchmesser des Rohres)
+            # d = Blendendurchmesser
+            # p1_index = Index der Druckentnahmestelle vor der Blende
+            # dp_index = Index der Differenzdruckmessstelle der Blende
+            # T1_index = Temperatur vor der Blende
+            # _______________________________
+
+            D, d, p1_index, dp_index, T1_index = calData[i][2][:5]    # Rohrdurchmesser, Blendendurchmesser, Druck vor der Blende, Differenzdruck, Temperatur vor der Blende
             p1 = applyCalibrationFunctions(calData[p1_index], data[p1_index])["DATA"][0]
             dp = applyCalibrationFunctions(calData[dp_index], data[dp_index])["DATA"][0]
             T1 = applyCalibrationFunctions(calData[T1_index], data[T1_index])["DATA"][0]
@@ -219,7 +227,7 @@ def applyCalibrationFunctions(calData, data):
             print("______________________________")
 
             if len(calData[i][2]) > 5:
-                 n, ddp, dp1, dT1, dD, dd = calData[i][2][5:11]  # Fehler der Differenzdruckmessung, Fehler der Absolutdruckmessung, Fehler der Temperaturmessung, Fehler des Rohrdurchmessers, Fehler des Blendendurchmessers
+                 n, ddp, dp1, dT1, dD, dd = calData[i][2][5:11]  # Genauigkeit der Massestromberechnung = 10^(-n), Fehler der Differenzdruckmessung, Fehler der Absolutdruckmessung, Fehler der Temperaturmessung, Fehler des Rohrdurchmessers, Fehler des Blendendurchmessers
 
             roh1 = PropsSI('D', 'P', p1, 'T', T1, 'air')  # Dichte des Fluids vor der Blende
             mu1 = PropsSI('V', 'P', p1, 'T', T1, 'air')  # Dyn. Viskosität des Fluids vor der Blende
