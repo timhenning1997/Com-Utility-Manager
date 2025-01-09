@@ -18,8 +18,18 @@ def isValidDiffChannels(diffChannels: list, data, numberOfChannels: int = 0):
     return True
 
 
-def applyCalibrationFunctions(calData, data):
+def applyCalibrationFunctions(calData, data, EinzelWert = False):
     calibratedData = {"UUID": [], "DATA": []}
+
+    if EinzelWert:
+        if type(data) not in [list]:
+            data = [data]
+        data.append(None)
+        if type(calData[0]) not in [list]:
+            calData = [calData]
+
+        print(data)
+        print(calData)
 
     for i in range(0, len(data) - 1):
         if calData[i][3] == "POL16":
@@ -213,17 +223,21 @@ def applyCalibrationFunctions(calData, data):
             # _______________________________
 
             D, d, p1_index, dp_index, T1_index = calData[i][2][:5]    # Rohrdurchmesser, Blendendurchmesser, Druck vor der Blende, Differenzdruck, Temperatur vor der Blende
-            p1 = applyCalibrationFunctions(calData[p1_index], data[p1_index])["DATA"][0]
-            dp = applyCalibrationFunctions(calData[dp_index], data[dp_index])["DATA"][0]
-            T1 = applyCalibrationFunctions(calData[T1_index], data[T1_index])["DATA"][0]
+            p1 = applyCalibrationFunctions(calData[p1_index], data[p1_index], EinzelWert=True)["DATA"][0]
+            dp = applyCalibrationFunctions(calData[dp_index], data[dp_index], EinzelWert=True)["DATA"][0]
+            T1 = applyCalibrationFunctions(calData[T1_index], data[T1_index], EinzelWert=True)["DATA"][0] + 273.15
             p2 = p1 - dp            # Druck nach der Blende
             n, ddp, dp1, dT1, dD, dd = [8 ,20, 90, 1.0, 1.0E-5, 1.0E-5]
 
+            if dp < 0:
+                print("Fehler in dp entdeckt! dp < 0  --> dp set to 0.001")
+                dp = 0.001
             print("D: ", D)
             print("d: ", d)
             print("p1: [", p1_index, "] \t:", p1)
-            print("p1: [", dp_index, "] \t:", dp)
-            print("p1: [", T1_index, "] \t:", T1)
+            print("dp: [", dp_index, "] \t:", dp)
+            print("T1: [", T1_index, "] \t:", T1)
+            print("n:", n)
             print("______________________________")
 
             if len(calData[i][2]) > 5:
@@ -249,7 +263,7 @@ def applyCalibrationFunctions(calData, data):
                 tempC = 0.5961 + 0.0261 * beta ** 2 - 0.216 * beta ** 8 \
                         + 0.000521 * ((10 ** 6 * beta) / (X[-1])) ** 0.7 \
                         + (0.0188 + 0.0063 * A) * beta ** 3.5 * (10 ** 6 / X[-1]) ** 0.3
-                if D < 71.12:
+                if D < 71.12E-3:
                     tempC += (0.011 * (0.75 - beta) * (2.8 - D / 25.4))
                 C.append(tempC)
                 X.append(C[-1] * A1)
@@ -328,6 +342,21 @@ def applyCalibrationFunctions(calData, data):
                 "dqm": dqm,
                 "dqmp": dqmp
             })
+
+        elif calData[i][3] == "TAU_W_SPALTKANAL":
+            # ____________Eingabe___________
+            # H = Kanalhöhe
+            # L = Kanallänge
+            # dp_index = Index der Differenzdruckmessstelle (Differenzdruck über Kanallänge)
+            # _______________________________
+
+            H, L, dp_index = calData[i][2]  # Kanalhöhe, Kanallänge, Index Differenzdruck über Kanallänge
+            dp = applyCalibrationFunctions(calData[dp_index], data[dp_index], EinzelWert=True)["DATA"][0]
+
+            tau_w = (H*dp)/(2*L)
+            calibratedData["UUID"].append(calData[i][0])
+            calibratedData["DATA"].append(tau_w)
+
 
         else:
             calibratedData["UUID"].append(calData[i][0])
