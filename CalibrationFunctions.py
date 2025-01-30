@@ -28,9 +28,6 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False):
         if type(calData[0]) not in [list]:
             calData = [calData]
 
-        print(data)
-        print(calData)
-
     for i in range(0, len(data) - 1):
         if calData[i][3] == "POL16":
             coeff = calData[i][2]               # Liste der vorhandenen Koeffizienten
