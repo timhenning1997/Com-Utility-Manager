@@ -203,6 +203,8 @@ class Worker(QRunnable):
         self.lastSerialParameters = None
         self.lastDataInfo = None
         self.lastPort = None
+
+        self.lastDataRead = False
     @pyqtSlot()
     def run(self):
         while not self.is_killed:
@@ -369,11 +371,25 @@ class Worker(QRunnable):
         else:
             return False
 
+
+    def queryData(self, port=None, dataType=None):
+        while True:
+            #while self.lastData is None or self.lastDataRead == False:
+            #    sleep(0.01)
+            if self.lastData is not None and self.lastDataRead == False:
+                if port in [self.lastPort, None]:
+                    if dataType in [self.lastDataInfo["dataType"], None]:
+                        self.lastDataRead = True
+                        return self.lastData
+
+
+
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
         self.lastPort = serialParameters.port
         self.lastSerialParameters = serialParameters
         self.lastDataInfo = dataInfo
         self.lastData = data
+        self.lastDataRead = False
         self.getData(self, serialParameters, data, dataInfo)
 
     def getData(self, object_body, serialParameters: SerialParameters, data, dataInfo):
