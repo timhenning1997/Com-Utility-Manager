@@ -93,6 +93,7 @@ class WindowTempCalFritoese(AbstractWindow):
         self.fritteusenComPortLineEdit = QLineEdit("")
         self.fritteusenComPortLineEdit.setPlaceholderText("COMXY")
         self.fritteusenComPortLineEdit.setFixedWidth(60)
+        self.fritteusenComPortLineEdit.textChanged.connect(self.portFilterChanged)
         fritteusenComPortLayout = QHBoxLayout()
         fritteusenComPortLayout.addWidget(fritteusenComPortLabel)
         fritteusenComPortLayout.addWidget(self.fritteusenComPortLineEdit)
