@@ -68,6 +68,11 @@ class SerialThread(QRunnable):
         self.recordBuffer = []
         self.recordBufferSize = serialParameters.recordBufferSize
 
+        # always save to disc
+        self.alwaysSave = serialParameters.alwaysSave
+        self.alwaysSaveBuffer = []
+        self.alwaysSaveBufferSize = serialParameters.alwaysSaveBuffer
+
         # useful for merging data streams... include timestamp
         self.saveTimestamp = serialParameters.saveTimestamp
 
@@ -104,6 +109,8 @@ class SerialThread(QRunnable):
                                 #    continue
                                 if self.record:
                                     self.recordData([readLine.decode('utf-8').strip()])
+                                if self.alwaysSave:
+                                    self.alwaysRecordData([readLine.decode('utf-8').strip()])
                                 if "lRT" not in self.lastRefreshTimeDict:
                                     self.lastRefreshTimeDict["lRT"] = 0
                                 if time() > self.lastRefreshTimeDict["lRT"] + (
@@ -127,6 +134,8 @@ class SerialThread(QRunnable):
                                 #    return None
                                 if self.record:
                                     self.recordData([readLine.decode('utf-8').strip()])
+                                if self.alwaysSave:
+                                    self.alwaysRecordData([readLine.decode('utf-8').strip()])
                                 if "lRT" not in self.lastRefreshTimeDict:
                                     self.lastRefreshTimeDict["lRT"] = 0
                                 if time() > self.lastRefreshTimeDict["lRT"] + (
@@ -151,6 +160,8 @@ class SerialThread(QRunnable):
                                     return None
                                 if self.record:
                                     self.recordData([readLine.decode('utf-8').strip()])
+                                if self.alwaysSave:
+                                    self.alwaysRecordData([readLine.decode('utf-8').strip()])
                                 if "lRT" not in self.lastRefreshTimeDict:
                                     self.lastRefreshTimeDict["lRT"] = 0
                                 if time() > self.lastRefreshTimeDict["lRT"] + (
@@ -174,6 +185,8 @@ class SerialThread(QRunnable):
                                     return None
                                 if self.record:
                                     self.recordData([readLine.decode('ascii', 'ignore').strip()])
+                                if self.alwaysSave:
+                                    self.alwaysRecordData([readLine.decode('ascii', 'ignore').strip()])
                                 if "lRT" not in self.lastRefreshTimeDict:
                                     self.lastRefreshTimeDict["lRT"] = 0
                                 if time() > self.lastRefreshTimeDict["lRT"] + (
@@ -200,6 +213,7 @@ class SerialThread(QRunnable):
                                     if not readLine == b'':
                                         crc16send = readLine[-2:]
                                         crc16 = libscrc.modbus(Kennbin + readLine[0:-2])
+                                        # crc16 = libscrc.ccitt_false(Kennbin + readLine[0:-2])
                                         crc_check = crc16 == int(binascii.hexlify(crc16send), 16)
 
                                         data = []
@@ -218,6 +232,8 @@ class SerialThread(QRunnable):
 
                                         if self.record:
                                             self.recordData(singleLine)
+                                        if self.alwaysSave:
+                                            self.alwaysRecordData(singleLine)
 
                                         if Kennbin not in self.lastRefreshTimeDict:
                                             self.lastRefreshTimeDict[Kennbin] = 0
@@ -370,6 +386,27 @@ class SerialThread(QRunnable):
             if self.saveTimestamp:
                 time = str(time_ns()) + ' '
             self.recordBuffer.append(time + ' '.join(data) + "\n")
+
+
+    def alwaysRecordData(self, data):
+        time = ""
+        filePath = "Files/Auto-Save/" + str(datetime.now())[:10] + "_Auto-Save.txt"
+        if self.alwaysSaveBufferSize == 0:
+            with open(filePath, 'a') as file:
+                if self.saveTimestamp:
+                    time = str(time_ns()) + ' '
+                file.write(time + ' '.join(data) + "\n")
+        elif len(self.alwaysSaveBuffer) >= self.alwaysSaveBufferSize-1:
+            if self.saveTimestamp:
+                time = str(time_ns()) + ' '
+            self.alwaysSaveBuffer.append(time + ' '.join(data) + "\n")
+            with open(filePath, 'a') as file:
+                file.write(''.join(self.alwaysSaveBuffer))
+                self.alwaysSaveBuffer = []
+        else:
+            if self.saveTimestamp:
+                time = str(time_ns()) + ' '
+            self.alwaysSaveBuffer.append(time + ' '.join(data) + "\n")
 
 
     def writeSerial(self, port, data):

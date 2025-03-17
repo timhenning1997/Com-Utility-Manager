@@ -35,8 +35,6 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False):
             res = 0                             # Resultat auf 0 setzen
             for k in range(0, len(coeff)):
                 res += coeff[k] * val ** (len(coeff)-1-k)
-            calibratedData["UUID"].append(calData[i][0])
-            calibratedData["DATA"].append(res)
 
         elif calData[i][3] == "POL12":
             coeff = calData[i][2]               # Liste der vorhandenen Koeffizienten
@@ -44,8 +42,6 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False):
             res = 0                             # Resultat auf 0 setzen
             for k in range(0, len(coeff)):
                 res += coeff[k] * val ** (len(coeff)-1-k)
-            calibratedData["UUID"].append(calData[i][0])
-            calibratedData["DATA"].append(res)
 
         elif calData[i][3] == "POL10":
             coeff = calData[i][2]               # Liste der vorhandenen Koeffizienten
@@ -53,8 +49,6 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False):
             res = 0                             # Resultat auf 0 setzen
             for k in range(0, len(coeff)):
                 res += coeff[k] * val ** (len(coeff)-1-k)
-            calibratedData["UUID"].append(calData[i][0])
-            calibratedData["DATA"].append(res)
 
         elif calData[i][3] == "POL8":
             coeff = calData[i][2]               # Liste der vorhandenen Koeffizienten
@@ -62,12 +56,6 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False):
             res = 0                             # Resultat auf 0 setzen
             for k in range(0, len(coeff)):
                 res += coeff[k] * val ** (len(coeff)-1-k)
-            calibratedData["UUID"].append(calData[i][0])
-            calibratedData["DATA"].append(res)
-
-
-
-
 
         elif calData[i][3] == "POL16TED2":
             diffChannels = calData[i][4]        # Liste der Differenzkanäle ("D2" ~ 2 Differenzkanälen [Thermoelement, Thermistor])
@@ -98,11 +86,6 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False):
                 tempRes2 += coeff3[k] * t3 ** (len(coeff3)-1-k)
 
             res = tempRes1 + tempRes2
-            calibratedData["UUID"].append(calData[i][0])
-            calibratedData["DATA"].append(res)
-
-
-
 
         elif calData[i][3] == "POL16DruckPlusBaro":
             diffChannels = calData[i][4]
@@ -126,9 +109,6 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False):
             res = DARes + DDRes
             # res = res/1e5 # Ausgabe  in bar
 
-            calibratedData["UUID"].append(calData[i][0])
-            calibratedData["DATA"].append(res)
-
 
         elif calData[i][3] == "RPM2HEX":
             diffChannels = calData[i][4]        # Liste des Differenzkaal
@@ -139,9 +119,6 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False):
             coeff1 = calData[i][2][0]
 
             res = coeff1*60/(val1 * 65536 + val2)
-
-            calibratedData["UUID"].append(calData[i][0])
-            calibratedData["DATA"].append(res)
 
         # elif calData[i][3] == "TIME":
         #     diffChannels = calData[i][4]
@@ -160,9 +137,7 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False):
         #         else:
         #             t_diff.append(res[j] + 2**32/fT - res[j-1] + t_diff[-1])
         #     t_diff = np.array(t_diff)
-
-        #     calibratedData["UUID"].append(calData[i][0])
-        #     calibratedData["DATA"].append(t_diff)
+        #     res = t_diff
 
         elif calData[i][3] == "UKONTR":
             diffChannels = calData[i][4]
@@ -174,17 +149,11 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False):
 
             res = koeff * padx/pad0
 
-            calibratedData["UUID"].append(calData[i][0])
-            calibratedData["DATA"].append(res)
-
         elif calData[i][3] == "UREF":
             padx  = int(data[i], 16)
             koeff = calData[i][2][0]
 
             res = koeff * 1023/padx
-
-            calibratedData["UUID"].append(calData[i][0])
-            calibratedData["DATA"].append(res)
 
         elif calData[i][3] == "TPROZ":
             padx  = int(data[i], 16)
@@ -195,9 +164,6 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False):
 
             res = (1/T25 + np.log(Ra*(1023/padx-1)/R25)/B)**(-1) - 273.15
 
-            calibratedData["UUID"].append(calData[i][0])
-            calibratedData["DATA"].append(res)
-
         elif calData[i][3] == "TPROZ_OV":
             padx  = int(data[i], 16)
             T25 = calData[i][2][0]
@@ -206,9 +172,6 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False):
 
             Rth = 68000 / (31.3 * padx/1023 - 1) - 2200
             res = (1/T25 + np.log(Rth/R25)/B)**(-1) - 273.15
-
-            calibratedData["UUID"].append(calData[i][0])
-            calibratedData["DATA"].append(res)
 
         elif calData[i][3] == "BLENDE":
             # ____________Eingabe___________
@@ -327,9 +290,8 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False):
                             )
 
             dqmp = dqm / qm * 100
+            res = qm
 
-            calibratedData["UUID"].append(calData[i][0])
-            calibratedData["DATA"].append(qm)
             if "BLENDEN_DATA" not in calibratedData.keys():
                 calibratedData["BLENDEN_DATA"] = []
             calibratedData["BLENDEN_DATA"].append({
@@ -351,12 +313,26 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False):
             dp = applyCalibrationFunctions(calData[dp_index], data[dp_index], EinzelWert=True)["DATA"][0]
 
             tau_w = (H*dp)/(2*L)
-            calibratedData["UUID"].append(calData[i][0])
-            calibratedData["DATA"].append(tau_w)
+            res = tau_w
 
 
         else:
-            calibratedData["UUID"].append(calData[i][0])
-            calibratedData["DATA"].append(int(data[i], 16))
+            res = int(data[i], 16)
+
+        if type(calData[i][7]) == dict and "format" in calData[i][7].keys():
+            x = calData[i][7]["format"].format(res)
+            res = float(x)
+        if type(calData[i][7]) == dict and "limitcolors" in calData[i][7].keys():
+            if "LIMIT_COLOR_DATA" not in calibratedData.keys():
+                calibratedData["LIMIT_COLOR_DATA"] = []
+            calibratedData["LIMIT_COLOR_DATA"].append({
+                "UUID": calData[i][0],
+                "limits": calData[i][7]["limitcolors"][0],
+                "colors": calData[i][7]["limitcolors"][1]
+            })
+
+
+        calibratedData["UUID"].append(calData[i][0])
+        calibratedData["DATA"].append(res)
 
     return calibratedData

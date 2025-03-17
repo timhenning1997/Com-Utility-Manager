@@ -1,5 +1,6 @@
 import binascii
 import math
+import bisect
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
@@ -256,7 +257,12 @@ class WindowTablePlotter(AbstractWindow):
             self.resizeTable(0, self.table.columnCount() - 1)
 
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
+        uuidData, limitColorsData = None, None
         if serialParameters.readTextIndex == "read_WU_device" and dataInfo["dataType"] == "CALIBRATED-Values":
+            if "LIMIT_COLOR_DATA" in data.keys():
+                uuidData = data["UUID"]
+                uuidData.append("#LastUUIDNotUsed#") # Ersetzt die UUID für "4f4b == "OK" Ausgabe in den Kalibrierten Daten von Bennies Programm"
+                limitColorsData = data["LIMIT_COLOR_DATA"]
             data = data["DATA"]
             data.append(0) # Ersetzt die "4f4b == "OK" Ausgabe in den Kalibrierten Daten von Bennies Programm"
 
@@ -319,8 +325,14 @@ class WindowTablePlotter(AbstractWindow):
                     #self.table.item(rowCount, colCount).setBackground(QColor(Qt.transparent))
                     self.table.item(rowCount, colCount).setBackground(self.interpolateColor(self.color1, self.color2, (temp_receivedMaxMinData[numberIndex] - self.minValue) / (self.maxValue - self.minValue)))
                 elif dataInfo["dataType"] == "CALIBRATED-Values" and self.shownType == "Cal" and len(temp_receivedValueData) > 0:
+                    color = "transparent"
+                    if uuidData is not None:
+                        for limitColorData in limitColorsData:
+                            if uuidData[numberIndex+1] == limitColorData["UUID"]:
+                                colorIndex = bisect.bisect_right(limitColorData["limits"], temp_receivedValueData[numberIndex])
+                                color = limitColorData["colors"][colorIndex]
                     self.table.item(rowCount, colCount).setText(str(temp_receivedValueData[numberIndex]))
-                    self.table.item(rowCount, colCount).setBackground(QColor(Qt.transparent))
+                    self.table.item(rowCount, colCount).setBackground(QColor(color))
 
     def save(self):
             return {"rowCount": self.table.rowCount(),
@@ -328,7 +340,8 @@ class WindowTablePlotter(AbstractWindow):
                     "color1": self.color1.name(),
                     "color2": self.color2.name(),
                     "minValue": self.minValue,
-                    "maxValue": self.maxValue}
+                    "maxValue": self.maxValue,
+                    "shownTypeCB": self.shownTypeCB.currentText()}
 
     def load(self, data):
         self.resizeTable(data["rowCount"], data["colCount"])
@@ -340,3 +353,4 @@ class WindowTablePlotter(AbstractWindow):
         self.minValueSpinBox.setValue(data["minValue"])
         self.maxValue = data["maxValue"]
         self.maxValueSpinBox.setValue(data["maxValue"])
+        self.shownTypeCB.setCurrentText(data["shownTypeCB"])

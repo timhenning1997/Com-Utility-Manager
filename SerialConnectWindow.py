@@ -229,12 +229,23 @@ class SerialConnectWindow(QWidget):
         self.saveTimestampCheckBox = QCheckBox("")
         self.saveTimestampCheckBox.setChecked(False)
 
+        alwaysSaveLabel = QLabel("Always save [Buffer]")
+        self.alwaysSaveCheckBox = QCheckBox("")
+        self.alwaysSaveCheckBox.setChecked(False)
+        self.alwaysSaveBufferSizeSpinBox = QSpinBox()
+        self.alwaysSaveBufferSizeSpinBox.setRange(0, 100000)
+        self.alwaysSaveBufferSizeSpinBox.setValue(100)
+        alwaysSaveLayout = QHBoxLayout()
+        alwaysSaveLayout.addWidget(self.alwaysSaveCheckBox)
+        alwaysSaveLayout.addWidget(self.alwaysSaveBufferSizeSpinBox)
+
         optionsLayout = QFormLayout()
         optionsLayout.addRow(maxSignalRateLabel, self.maxSignalRateSpinBox)
         optionsLayout.addRow(recordBufferSizeLabel, self.recordBufferSizeSpinBox)
         optionsLayout.addRow(autoReconnectLabel, self.autoReconnectCheckBox)
         optionsLayout.addRow(showFaultyDataLabel, self.showFaultyDataCheckBox)
         optionsLayout.addRow(saveTimestampDataLabel, self.saveTimestampCheckBox)
+        optionsLayout.addRow(alwaysSaveLabel, alwaysSaveLayout)
         # optionsLayout.addWidget(-------------, 0, 0, 1, 1)
 
         optionsGroupbox = QGroupBox("Options")
@@ -349,5 +360,7 @@ class SerialConnectWindow(QWidget):
         serialParam.autoReconnect = self.autoReconnectCheckBox.isChecked()
         serialParam.showFaultyData = self.showFaultyDataCheckBox.isChecked()
         serialParam.saveTimestamp = self.saveTimestampCheckBox.isChecked()
+        serialParam.alwaysSave = self.alwaysSaveCheckBox.isChecked()
+        serialParam.alwaysSaveBuffer = self.alwaysSaveBufferSizeSpinBox.value()
 
         return serialParam

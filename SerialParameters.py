@@ -7,7 +7,7 @@ class SerialParameters:
                  write_timeout=None, dsrdtr=False, inter_byte_timeout=None, exclusive=None, rts=None, dtr=None,
                  local_echo=False, appendCR=False, appendLF=False, readTextIndex="read_line", readBytes=1,
                  readUntil='', readUntilAscii=0, DTR=False, maxShownSignalRate=10, Kennbin = "", Kennung = "", autoReconnect = False,
-                 showFaultyData = False, saveTimestamp = True, recordBufferSize = 0):
+                 showFaultyData = False, saveTimestamp = True, recordBufferSize = 0, alwaysSave = False, alwaysSaveBuffer = 100):
         self.port = port
         self.baudrate = baudrate
         self.bytesize = bytesize
@@ -34,6 +34,8 @@ class SerialParameters:
         self.showFaultyData = showFaultyData
         self.saveTimestamp = saveTimestamp
         self.recordBufferSize = recordBufferSize        # useful for faster write speeds to disc
+        self.alwaysSave = alwaysSave
+        self.alwaysSaveBuffer = alwaysSaveBuffer
 
         self.local_echo = local_echo
         self.appendCR = appendCR
@@ -70,7 +72,9 @@ class SerialParameters:
             "autoReconnect": self.autoReconnect,
             "showFaultyData": self.showFaultyData,
             "saveTimestamp": self.saveTimestamp,
-            "recordBufferSize": self.recordBufferSize
+            "recordBufferSize": self.recordBufferSize,
+            "alwaysSave": self.alwaysSave,
+            "alwaysSaveBuffer": self.alwaysSaveBuffer
         }
 
     def deserialize(self, data):
@@ -101,3 +105,5 @@ class SerialParameters:
         self.showFaultyData = data["showFaultyData"]
         self.saveTimestamp = data["saveTimestamp"]
         self.recordBufferSize = data["recordBufferSize"]
+        self.alwaysSave = data["alwaysSave"]
+        self.alwaysSaveBuffer = data["alwaysSaveBuffer"]
