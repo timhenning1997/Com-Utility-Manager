@@ -565,10 +565,11 @@ class ConnectionHubWindow(QMainWindow):
                             )
                         except Exception as e:
                             print(str(e))
+                            print("Error in line: " + str(line_count))
                             return False
                     else:
                         print("Column count of calibration file not 8")
-                        self.showInfoBox("Calibration File Error", "Error in calibration file.\nPlease check you calibration file in text editor!")
+                        self.showInfoBox("Calibration File Error", "Error in calibration file.\nColumn count of calibration file not 8\nline: " + str(line_count) + "\nPlease check you calibration file in text editor!")
                         return False
                 line_count += 1
 
