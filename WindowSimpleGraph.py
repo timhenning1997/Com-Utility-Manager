@@ -1,9 +1,9 @@
 import time
 
 from PyQt5.QtCore import QPoint
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QPen, QColor
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QPushButton, QWidget, QLineEdit, QMenu, QGroupBox, QHBoxLayout, \
-    QTableWidget, QHeaderView, QTableWidgetItem, QSpinBox, QMessageBox, QSplitter, QAction, QDoubleSpinBox
+    QTableWidget, QHeaderView, QTableWidgetItem, QSpinBox, QMessageBox, QSplitter, QAction, QDoubleSpinBox, QCheckBox
 from PyQt5.QtCore import Qt
 from AbstractWindow import AbstractWindow
 from SerialParameters import SerialParameters
@@ -59,12 +59,14 @@ class WindowSimpleGraph(AbstractWindow):
         self._maxSamplingRate = 5
 
         self.colorCounter = 0
-        self.colorTable = ["#c095e3", "#fff384", "#53af8b", "#e3adb5", "#95b8e3", "#a99887", "#f69284", "#95dfe3", "#3f2b44", "#f0b892"]
-
+        #self.colorTable = ["#c095e3", "#fff384", "#53af8b", "#e3adb5", "#95b8e3", "#a99887", "#f69284", "#95dfe3", "#f0b892"]
+        self.colorTable = ["#E61D66", "#1E88E5", "#FFC107", "#12F5CF", "#14C944", "#EF7290", "#FE1A00", "#1FB2E0",
+                           "#C47DE4", "#FF2F97", "#BAE45D", "#FB88A5", "#5391CA", "#C8DEAB", "#DFAD5C", "#E3531E",
+                           "#3AD00B", "#E7C6EE", "#2465F8"]
         self.graphWidget = PlotWidget()
         self.graphWidget.showGrid(x=True, y=True)
         self.graphWidget.setBackground(None)
-        #self.graphWidget.addLegend()
+        self.graphWidget.addLegend()
 
         maxDataPointsLabel = QLabel("Max Data Points:")
 
@@ -94,13 +96,13 @@ class WindowSimpleGraph(AbstractWindow):
         self.table.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Fixed)
-        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Fixed)
-        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.Fixed)
+        self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Interactive)
+        self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.Interactive)
         self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.Fixed)
-        self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.Stretch)
-        self.table.horizontalHeader().setSectionResizeMode(5, QHeaderView.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.Interactive)
+        self.table.horizontalHeader().setSectionResizeMode(5, QHeaderView.Interactive)
         self.table.horizontalHeader().setSectionResizeMode(6, QHeaderView.Fixed)
-        self.table.setColumnWidth(0, 20)
+        self.table.setColumnWidth(0, 10)
         self.table.setColumnWidth(1, 100)
         self.table.setColumnWidth(2, 100)
         self.table.setColumnWidth(3, 30)
@@ -217,17 +219,34 @@ class WindowSimpleGraph(AbstractWindow):
 
         self.table.insertRow(self.table.rowCount())
 
-        widget = QWidget()
-        layout = QVBoxLayout()
-        legendBarLabel = QLabel()
-        legendBarLabel.setStyleSheet("QLabel {background-color: " + self.colorTable[self.colorCounter] + "}")
-        legendBarLabel.setFixedSize(20, 4)
+        #widget = QWidget()
+        #layout = QVBoxLayout()
+        #legendBarLabel = QLabel()
+        #legendBarLabel.setStyleSheet("QLabel {background-color: " + self.colorTable[self.colorCounter] + "}")
+        #legendBarLabel.setFixedSize(20, 4)
+        #layout.addStretch()
+        #layout.addWidget(legendBarLabel)
+        #layout.addStretch()
+        #widget.setLayout(layout)
+        #widget.setProperty("UUID", measuringPointUUID)
+
+        widget = QCheckBox()
+        widget.clicked.connect(lambda: self.highlightedCheckboxPressed(widget, measuringPointUUID))
+        widget.setStyleSheet('QCheckBox::indicator{border:1px solid ' +
+                             self.colorTable[self.colorCounter] +
+                             '}QCheckBox::indicator::checked{background-color : ' +
+                             self.colorTable[self.colorCounter] + '}')
+        # widget.setStyleSheet('border: 1px solid; border-color: ' + self.colorTable[self.colorCounter])
+        widget.setProperty("COLOR", self.colorTable[self.colorCounter])
+        tempWidget = QWidget()
+        layout = QHBoxLayout()
         layout.addStretch()
-        layout.addWidget(legendBarLabel)
+        layout.addWidget(widget)
         layout.addStretch()
-        widget.setLayout(layout)
-        widget.setProperty("UUID", measuringPointUUID)
-        self.table.setCellWidget(self.table.rowCount() - 1, 0, widget)
+        layout.setContentsMargins(1, 1, 1, 1)
+        tempWidget.setLayout(layout)
+        tempWidget.setProperty("UUID", measuringPointUUID)
+        self.table.setCellWidget(self.table.rowCount() - 1, 0, tempWidget)
 
         self.table.setItem(self.table.rowCount() - 1, 1, QTableWidgetItem(measuringPointUUID))
         self.table.item(self.table.rowCount() - 1, 1).setTextAlignment(Qt.AlignCenter)
@@ -279,6 +298,13 @@ class WindowSimpleGraph(AbstractWindow):
         self.table.removeRow(self.tableFindComRow(UUID))
         self.graphLines[UUID].dataLine.clear()
         del self.graphLines[UUID]
+
+    def highlightedCheckboxPressed(self, checkbox: QCheckBox, UUID: str):
+        if checkbox.isChecked():
+            new_pen = mkPen(checkbox.property("COLOR"), width=4)
+        else:
+            new_pen = mkPen(checkbox.property("COLOR"), width=1)
+        self.graphLines[UUID].dataLine.setPen(new_pen)
 
     def maxValueChanged(self):
         for key in self.graphLines.keys():
