@@ -41,11 +41,6 @@ class GraphLine:
             self.y.append(y)
         self.dataLine.setData(self.x, self.y)
 
-    def calculateFit(self):
-        p = polyfit(self.x, self.y, 1)
-        #return str(polyfit(self.x, self.y, 1))
-        return str("{:.2f}".format(p[0]))
-
 
 class WindowSimpleGraph(AbstractWindow):
     def __init__(self, hubWindow):
@@ -91,22 +86,21 @@ class WindowSimpleGraph(AbstractWindow):
         maxSamplingRateLayout.addWidget(maxSamplingRateLabel)
         maxSamplingRateLayout.addWidget(self.maxSamplingSpinBox)
 
-        self.table = QTableWidget(0, 7)
-        self.table.setHorizontalHeaderLabels(["", "UUID", "Name", "Unit", "Last Value", "Fit slope", "Del"])
+        self.table = QTableWidget(0, 6)
+        self.table.setHorizontalHeaderLabels(["", "UUID", "Name", "Unit", "Last Value", "Del"])
         self.table.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.table.setHorizontalScrollBarPolicy(Qt.ScrollBarAsNeeded)
         self.table.horizontalHeader().setSectionResizeMode(0, QHeaderView.Fixed)
         self.table.horizontalHeader().setSectionResizeMode(1, QHeaderView.Interactive)
         self.table.horizontalHeader().setSectionResizeMode(2, QHeaderView.Interactive)
         self.table.horizontalHeader().setSectionResizeMode(3, QHeaderView.Fixed)
-        self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.Interactive)
-        self.table.horizontalHeader().setSectionResizeMode(5, QHeaderView.Interactive)
-        self.table.horizontalHeader().setSectionResizeMode(6, QHeaderView.Fixed)
+        self.table.horizontalHeader().setSectionResizeMode(4, QHeaderView.Stretch)
+        self.table.horizontalHeader().setSectionResizeMode(5, QHeaderView.Fixed)
         self.table.setColumnWidth(0, 10)
         self.table.setColumnWidth(1, 100)
         self.table.setColumnWidth(2, 100)
         self.table.setColumnWidth(3, 30)
-        self.table.setColumnWidth(6, 20)
+        self.table.setColumnWidth(5, 20)
 
         addNameLabel = QLabel("UUID:")
         self.addNameLineEdit = QLineEdit("GeraetXY_Messstelle_Z0")
@@ -163,9 +157,6 @@ class WindowSimpleGraph(AbstractWindow):
         self.actShowLastValue = QAction('&Last value', self, triggered=lambda obj: self.tableShowColumn(4, obj))
         self.actShowLastValue.setCheckable(True)
         self.actShowLastValue.setChecked(True)
-        self.actShowFitSlope = QAction('&Fit slope', self, triggered=lambda obj: self.tableShowColumn(5, obj))
-        self.actShowFitSlope.setCheckable(True)
-        self.actShowFitSlope.setChecked(True)
         self.actShowDelete = QAction('&Delete', self, triggered=lambda obj: self.tableShowColumn(6, obj))
         self.actShowDelete.setCheckable(True)
         self.actShowDelete.setChecked(True)
@@ -174,7 +165,6 @@ class WindowSimpleGraph(AbstractWindow):
         tableMenu.addAction(self.actShowName)
         tableMenu.addAction(self.actShowUnit)
         tableMenu.addAction(self.actShowLastValue)
-        tableMenu.addAction(self.actShowFitSlope)
         tableMenu.addAction(self.actShowDelete)
         self.menuBar().addMenu(tableMenu)
 
@@ -264,14 +254,10 @@ class WindowSimpleGraph(AbstractWindow):
         self.table.item(self.table.rowCount() - 1, 4).setTextAlignment(Qt.AlignCenter)
         self.table.item(self.table.rowCount() - 1, 4).setFlags(Qt.ItemIsEnabled)
 
-        self.table.setItem(self.table.rowCount() - 1, 5, QTableWidgetItem(""))
-        self.table.item(self.table.rowCount() - 1, 5).setTextAlignment(Qt.AlignCenter)
-        self.table.item(self.table.rowCount() - 1, 5).setFlags(Qt.ItemIsEnabled)
-
         deleteButton = QPushButton("x")
         deleteButton.setStyleSheet("background-color : red")
         deleteButton.clicked.connect(lambda: self.deleteButtonPressed(measuringPointUUID))
-        self.table.setCellWidget(self.table.rowCount() - 1, 6, deleteButton)
+        self.table.setCellWidget(self.table.rowCount() - 1, 5, deleteButton)
 
         self.graphLines[measuringPointUUID] = GraphLine(measuringPointUUID, self.graphStartTime)
         pen = mkPen(color=self.colorTable[self.colorCounter])
@@ -324,9 +310,6 @@ class WindowSimpleGraph(AbstractWindow):
                 self.graphLines[key].appendDataPoint(value) #, self.dataCounter)
                 self.table.item(self.tableFindComRow(key), 4).setText("{:.2f}".format(value))
 
-                if self.dataCounter % 10 == 0:
-                    self.table.item(self.tableFindComRow(key), 5).setText(self.graphLines[key].calculateFit())
-
     def sendData(self):
         pass
 
@@ -354,8 +337,7 @@ class WindowSimpleGraph(AbstractWindow):
         self.actShowName.setChecked(not data['_tableColumnsHidden'][2])
         self.actShowUnit.setChecked(not data['_tableColumnsHidden'][3])
         self.actShowLastValue.setChecked(not data['_tableColumnsHidden'][4])
-        self.actShowFitSlope.setChecked(not data['_tableColumnsHidden'][5])
-        self.actShowDelete.setChecked(not data['_tableColumnsHidden'][6])
+        self.actShowDelete.setChecked(not data['_tableColumnsHidden'][5])
 
         for countX in range(0, self.table.columnCount()):
             self.table.hideColumn(countX) if data['_tableColumnsHidden'][countX] else self.table.showColumn(countX)
