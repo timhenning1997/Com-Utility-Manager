@@ -31,6 +31,7 @@ from WindowSynthetischeDaten import WindowSynthetischeDaten
 from WindowTempCalFritteuse import WindowTempCalFritoese
 from WindowTempCalCTD9300 import WindowTempCalCTD9300
 from WindowStationaritaet import WindowStationaritaet
+from WindowGERig import WindowGERig
 from WindowProgrammer import WindowProgrammer
 from WindowTest import WindowTest
 
@@ -209,6 +210,7 @@ class ConnectionHubWindow(QMainWindow):
         actCreateTempCalFritoeseWindow = QAction('Temp. Cal. &Fritteuse', self,triggered=self.createTempCalFritoeseWindow)
         actCreateTempCalCTD9300Window = QAction('Temp. Cal. &CTD9300', self, triggered=self.createTempCalCTD9300Window)
         actCreateStationaritaetWindow = QAction('Stat&ionaritaet', self,triggered=self.createStationaritaetWindow)
+        actCreateGERigWindow = QAction('&GE Rig', self, triggered=self.createGERigWindow)
         actCreateProgrammerWindow = QAction('Pr&ogrammer', self, triggered=self.createProgrammerWindow)
         actCreateTestWindow = QAction('T&est', self, triggered=self.createTestWindow)
         toolMenu.addAction(actCreateTerminal)
@@ -222,6 +224,7 @@ class ConnectionHubWindow(QMainWindow):
         toolMenu.addAction(actCreateTempCalFritoeseWindow)
         toolMenu.addAction(actCreateTempCalCTD9300Window)
         toolMenu.addAction(actCreateStationaritaetWindow)
+        toolMenu.addAction(actCreateGERigWindow)
         toolMenu.addAction(actCreateProgrammerWindow)
         toolMenu.addAction(actCreateTestWindow)
 
@@ -631,7 +634,7 @@ class ConnectionHubWindow(QMainWindow):
         if port in self.calibrationFiles:
             if str(len(data) - 1) in self.calibrationFiles[port]:
                 calData = self.calibrationFiles[port][str(len(data) - 1)]["CALIBRATIONDATA"]
-                calibratedData = applyCalibrationFunctions(calData, data)
+                calibratedData = applyCalibrationFunctions(calData, data, globalVars=self.globalVars)
                 return calibratedData
         return None
 
@@ -727,6 +730,12 @@ class ConnectionHubWindow(QMainWindow):
     
     def createStationaritaetWindow(self):
         window = WindowStationaritaet(self)
+        self.windows.append(window)
+        self.connectWindowToSignals(window)
+        return window
+
+    def createGERigWindow(self):
+        window = WindowGERig(self)
         self.windows.append(window)
         self.connectWindowToSignals(window)
         return window
@@ -950,6 +959,8 @@ class ConnectionHubWindow(QMainWindow):
                 self.createTempCalCTD9300Window().deserialize(window_data)
             if window_data["_windowType"] == "Stationaritaet":
                 self.createStationaritaetWindow().deserialize(window_data)
+            if window_data["_windowType"] == "GERig":
+                self.createGERigWindow().deserialize(window_data)
             if window_data["_windowType"] == "Programmer":
                 self.createProgrammerWindow().deserialize(window_data)
             if window_data["_windowType"] == "Test":

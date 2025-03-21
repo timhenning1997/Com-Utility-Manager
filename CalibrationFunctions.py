@@ -18,7 +18,7 @@ def isValidDiffChannels(diffChannels: list, data, numberOfChannels: int = 0):
     return True
 
 
-def applyCalibrationFunctions(calData, data, EinzelWert = False):
+def applyCalibrationFunctions(calData, data, EinzelWert = False, globalVars = None):
     calibratedData = {"UUID": [], "DATA": []}
 
     if EinzelWert:
@@ -183,22 +183,27 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False):
             # _______________________________
 
             D, d, p1_index, dp_index, T1_index = calData[i][2][:5]    # Rohrdurchmesser, Blendendurchmesser, Druck vor der Blende, Differenzdruck, Temperatur vor der Blende
+
+            dp_offset = 0
+            if "BLENDEN_OFFSET" in globalVars.keys():
+                dp_offset = globalVars["BLENDEN_OFFSET"]["DATA"][dp_index]
+
             p1 = applyCalibrationFunctions(calData[p1_index], data[p1_index], EinzelWert=True)["DATA"][0]
-            dp = applyCalibrationFunctions(calData[dp_index], data[dp_index], EinzelWert=True)["DATA"][0]
+            dp = applyCalibrationFunctions(calData[dp_index], data[dp_index], EinzelWert=True)["DATA"][0] - dp_offset
             T1 = applyCalibrationFunctions(calData[T1_index], data[T1_index], EinzelWert=True)["DATA"][0] + 273.15
             p2 = p1 - dp            # Druck nach der Blende
             n, ddp, dp1, dT1, dD, dd = [8 ,20, 90, 1.0, 1.0E-5, 1.0E-5]
 
-            if dp < 0:
-                print("Fehler in dp entdeckt! dp < 0  --> dp set to 0.001")
-                dp = 0.001
-            print("D: ", D)
-            print("d: ", d)
-            print("p1: [", p1_index, "] \t:", p1)
-            print("dp: [", dp_index, "] \t:", dp)
-            print("T1: [", T1_index, "] \t:", T1)
-            print("n:", n)
-            print("______________________________")
+            if dp <= 0:
+                print("Fehler in dp entdeckt! dp < 0  --> dp set to 0.000001")
+                dp = 0.000001
+            #print("D: ", D)
+            #print("d: ", d)
+            #print("p1: [", p1_index, "] \t:", p1)
+            #print("dp: [", dp_index, "] \t:", dp)
+            #print("T1: [", T1_index, "] \t:", T1)
+            #print("n:", n)
+            #print("______________________________")
 
             if len(calData[i][2]) > 5:
                  n, ddp, dp1, dT1, dD, dd = calData[i][2][5:11]  # Genauigkeit der Massestromberechnung = 10^(-n), Fehler der Differenzdruckmessung, Fehler der Absolutdruckmessung, Fehler der Temperaturmessung, Fehler des Rohrdurchmessers, Fehler des Blendendurchmessers
@@ -231,7 +236,6 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False):
                 X.append(X[-1] - dx[-1] * ((X[-1] - X[-2]) / (dx[-1] - dx[-2])))
             qm = pi / 4 * mu1 * D * X[-1]   # Berechnung des Massestromes nach EN ISO 5167-1: 3.3.2.1
             ReD = X[-1]                     # ReD = X1 = C * A1
-
             # Zulässigkeit
             if d < 12.5E-3:
                 qm = -1

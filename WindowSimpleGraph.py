@@ -188,6 +188,7 @@ class WindowSimpleGraph(AbstractWindow):
             if UUID == "":
                 if self.returnMsgBoxAnswerYesNo("UUID not found", "UUID not found.\nDo you still want to add them?") == QMessageBox.Yes:
                     measuringPointInfo = {"UUID": self.addNameLineEdit.text()}
+                    UUID = self.addNameLineEdit.text()
                 else:
                     return
             else:
