@@ -212,9 +212,11 @@ class SerialThread(QRunnable):
                                     readLine = self.serialArduino.read(2 * Kennung + 2 + 2)
                                     if not readLine == b'':
                                         crc16send = readLine[-2:]
-                                        crc16 = libscrc.modbus(Kennbin + readLine[0:-2])
-                                        # crc16 = libscrc.ccitt_false(Kennbin + readLine[0:-2])
+                                        crc16 = libscrc.ccitt_false(Kennbin + readLine[0:-2])
                                         crc_check = crc16 == int(binascii.hexlify(crc16send), 16)
+                                        if not crc_check:
+                                            crc16 = libscrc.modbus(Kennbin + readLine[0:-2])
+                                            crc_check = crc16 == int(binascii.hexlify(crc16send), 16)
 
                                         data = []
                                         for n in range(len(readLine) // 2):
