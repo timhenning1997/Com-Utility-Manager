@@ -36,6 +36,16 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False, globalVars = No
             for k in range(0, len(coeff)):
                 res += coeff[k] * val ** (len(coeff)-1-k)
 
+        elif calData[i][3] == "POL16DP":
+            coeff = calData[i][2]               # Liste der vorhandenen Koeffizienten
+            val = int(data[i], 16) / 65535      # Rohdaten Wert
+            res = 0                             # Resultat auf 0 setzen
+            for k in range(0, len(coeff)):
+                res += coeff[k] * val ** (len(coeff)-1-k)
+            if globalVars is not None:
+                if "BLENDEN_OFFSET" in globalVars.keys():
+                    res -= globalVars["BLENDEN_OFFSET"]["DATA"][i]
+
         elif calData[i][3] == "POL12":
             coeff = calData[i][2]               # Liste der vorhandenen Koeffizienten
             val = int(data[i], 16) / 4095       # Rohdaten Wert
@@ -185,8 +195,9 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False, globalVars = No
             D, d, p1_index, dp_index, T1_index = calData[i][2][:5]    # Rohrdurchmesser, Blendendurchmesser, Druck vor der Blende, Differenzdruck, Temperatur vor der Blende
 
             dp_offset = 0
-            if "BLENDEN_OFFSET" in globalVars.keys():
-                dp_offset = globalVars["BLENDEN_OFFSET"]["DATA"][dp_index]
+            if globalVars is not None:
+                if "BLENDEN_OFFSET" in globalVars.keys():
+                    dp_offset = globalVars["BLENDEN_OFFSET"]["DATA"][dp_index]
 
             p1 = applyCalibrationFunctions(calData[p1_index], data[p1_index], EinzelWert=True)["DATA"][0]
             dp = applyCalibrationFunctions(calData[dp_index], data[dp_index], EinzelWert=True)["DATA"][0] - dp_offset
@@ -195,7 +206,7 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False, globalVars = No
             n, ddp, dp1, dT1, dD, dd = [8 ,20, 90, 1.0, 1.0E-5, 1.0E-5]
 
             if dp <= 0:
-                print("Fehler in dp entdeckt! dp < 0  --> dp set to 0.000001")
+                #print("Fehler in dp entdeckt! dp < 0  --> dp set to 0.000001")
                 dp = 0.000001
             #print("D: ", D)
             #print("d: ", d)
@@ -234,8 +245,15 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False, globalVars = No
                 X.append(C[-1] * A1)
                 dx.append(X[-1] - X[-2])
                 X.append(X[-1] - dx[-1] * ((X[-1] - X[-2]) / (dx[-1] - dx[-2])))
-            qm = pi / 4 * mu1 * D * X[-1]   # Berechnung des Massestromes nach EN ISO 5167-1: 3.3.2.1
-            ReD = X[-1]                     # ReD = X1 = C * A1
+                if X[-1] < 0:
+                    break
+            if not X[-1]>0:
+                qm = -1
+                ReD = -1
+            else:
+                qm = pi / 4 * mu1 * D * X[-1]   # Berechnung des Massestromes nach EN ISO 5167-1: 3.3.2.1
+                ReD = X[-1]                     # ReD = X1 = C * A1
+
             # Zulässigkeit
             if d < 12.5E-3:
                 qm = -1
@@ -280,7 +298,7 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False, globalVars = No
                 dC = (dC + dC0) / 2  # sqrt(self.dC**2 + self.dC0**2)
 
             if beta > 0.5 and X[-1] < 10000:
-                dC1 = 0.5 / 100 * C
+                dC1 = 0.5 / 100 * C[-1]
                 dC = (dC + dC1) / 2  # sqrt(self.dC**2 + self.dC1**2)
 
             de = e * 3.5 * dp / kappa / p1 / 100
@@ -314,7 +332,10 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False, globalVars = No
             # _______________________________
 
             H, L, dp_index = calData[i][2]  # Kanalhöhe, Kanallänge, Index Differenzdruck über Kanallänge
-            dp = applyCalibrationFunctions(calData[dp_index], data[dp_index], EinzelWert=True)["DATA"][0]
+            dp_offset = 0
+            if "TAU_OFFSET" in globalVars.keys():
+                dp_offset = globalVars["TAU_OFFSET"]["DATA"][dp_index]
+            dp = applyCalibrationFunctions(calData[dp_index], data[dp_index], EinzelWert=True)["DATA"][0] - dp_offset
 
             tau_w = (H*dp)/(2*L)
             res = tau_w
@@ -334,7 +355,6 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False, globalVars = No
                 "limits": calData[i][7]["limitcolors"][0],
                 "colors": calData[i][7]["limitcolors"][1]
             })
-
 
         calibratedData["UUID"].append(calData[i][0])
         calibratedData["DATA"].append(res)
