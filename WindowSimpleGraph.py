@@ -157,7 +157,7 @@ class WindowSimpleGraph(AbstractWindow):
         self.actShowLastValue = QAction('&Last value', self, triggered=lambda obj: self.tableShowColumn(4, obj))
         self.actShowLastValue.setCheckable(True)
         self.actShowLastValue.setChecked(True)
-        self.actShowDelete = QAction('&Delete', self, triggered=lambda obj: self.tableShowColumn(6, obj))
+        self.actShowDelete = QAction('&Delete', self, triggered=lambda obj: self.tableShowColumn(5, obj))
         self.actShowDelete.setCheckable(True)
         self.actShowDelete.setChecked(True)
         tableMenu.addAction(self.actShowColor)
