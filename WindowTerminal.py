@@ -47,7 +47,8 @@ class WindowTerminal(AbstractWindow):
         self.sendBytesCombobox = QComboBox()
         self.sendBytesCombobox.addItem("Send as string")
         #self.sendBytesCombobox.addItem("Send as byte")
-        self.sendBytesCombobox.addItem("Send as 0F35 command")
+        self.sendBytesCombobox.addItem("Send as 0F35_modbus command")
+        self.sendBytesCombobox.addItem("Send as 0F35_ccitt command")
         self.newLineCharCombobox = QComboBox()
         self.newLineCharCombobox.setFixedWidth(65)
         self.newLineCharCombobox.addItem("None      |Kein Zeilenende")
@@ -100,19 +101,27 @@ class WindowTerminal(AbstractWindow):
             data = self.lineEdit.text().encode('utf-8')
         elif self.sendBytesCombobox.currentText() == "Send as string":
             data = self.lineEdit.text().encode('utf-8')
-        elif self.sendBytesCombobox.currentText() == "Send as 0F35 command":
+        elif self.sendBytesCombobox.currentText() == "Send as 0F35_modbus command":
             byte = self.lineEdit.text()
             try:
                 checkSum = str(hex(libscrc.modbus(binascii.unhexlify(str(byte))))[2:6].rjust(4,'0'))
                 data = "0F35" + str(byte) + str(checkSum)
-                #data = data.encode('utf-8')
-                #print(data)   # Testausgabe um zu schauen, welches Datenformat herauskommt
                 data = binascii.unhexlify(str(data))
-                #print("Befehl: 0F35")
-                #print("Byte: " + str(byte))
-                #print("CheckSum: " + str(checkSum))
-                #print("_______________________")
-                #print("Sending: " + str(data))   # Testausgabe um zu schauen, welches Datenformat herauskommt
+            except Exception as e:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Warning)
+                msg.setWindowTitle("Send Commandbyte Error")
+                msg.setText("There is an error with sending the command bytes")
+                msg.setInformativeText(str(e))
+                msg.setDetailedText(str(traceback.format_exc()))
+                msg.exec_()
+                return
+        elif self.sendBytesCombobox.currentText() == "Send as 0F35_ccitt command":
+            byte = self.lineEdit.text()
+            try:
+                checkSum = str(hex(libscrc.ccitt_false(binascii.unhexlify(str(byte))))[2:6].rjust(4,'0'))
+                data = "0F35" + str(byte) + str(checkSum)
+                data = binascii.unhexlify(str(data))
             except Exception as e:
                 msg = QMessageBox()
                 msg.setIcon(QMessageBox.Warning)

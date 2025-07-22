@@ -2,11 +2,11 @@ import random
 
 from PyQt5.QtCore import QPoint, Qt, QTimer
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QPushButton, QWidget, QLineEdit, QMenu, QGroupBox, QHBoxLayout, \
-    QGridLayout, QTableWidget, QTableWidgetItem, QDoubleSpinBox, QAbstractSpinBox, QSpinBox
+    QGridLayout, QTableWidget, QTableWidgetItem, QDoubleSpinBox, QAbstractSpinBox, QSpinBox, QCheckBox
 from PyQt5.QtGui import QPixmap, QFont
 from AbstractWindow import AbstractWindow
 from SerialParameters import SerialParameters
-from UsefulFunctions import returnFloat, isFloat
+from UsefulFunctions import returnFloat, isFloat, isInt, returnInt
 from math import *
 from time import *
 
@@ -42,11 +42,14 @@ class WindowSynthetischeDaten(AbstractWindow):
         deleteRowButton = QPushButton("- Row")
         deleteRowButton.clicked.connect(self.deleteLastRow)
 
-        #sendRawDataButton = QPushButton("Send Data")
-        #sendRawDataButton.clicked.connect(self.sendData)
+        sendRawDataButton = QPushButton("Send Raw Data")
+        sendRawDataButton.clicked.connect(self.sendData)
 
         sendCalibratedDataButton = QPushButton("Send Calibrated Data")
         sendCalibratedDataButton.clicked.connect(self.sendCalibratedData)
+
+        rawDataCheckBox = QCheckBox("Send raw Data")
+        rawDataCheckBox.clicked.connect(self.rawDataCheckBoxClicked)
 
         self.timerSpinBox = QSpinBox()
         self.timerSpinBox.setRange(1, 1000000)
@@ -64,9 +67,10 @@ class WindowSynthetischeDaten(AbstractWindow):
         # Layout
 
         sendButtonLayout = QHBoxLayout()
-        #sendButtonLayout.addWidget(sendRawDataButton)
+        sendButtonLayout.addWidget(sendRawDataButton)
         sendButtonLayout.addWidget(sendCalibratedDataButton)
         sendButtonLayout.addStretch()
+        sendButtonLayout.addWidget(rawDataCheckBox)
         sendButtonLayout.addWidget(self.timerSpinBox)
         sendButtonLayout.addWidget(startTimerButton)
         sendButtonLayout.addWidget(stopTimerButton)
@@ -123,8 +127,27 @@ class WindowSynthetischeDaten(AbstractWindow):
         pass
 
     def sendData(self):
-        value = str(hex(random.randint(0, 65535))[2:])
-        self._hubWindow.printReceivedData(self.serialParameters, ['a417', 'b8b6', '5138', value, '0003', '0004', '0005', '0006', '3b10', '4f4b'])
+        dataList = []
+
+        self.errorLineEdit.setText("")
+
+        for y in range(0, self.table.rowCount()):
+            for x in range(1, self.table.columnCount()):
+                self.table.cellWidget(y, x).setStyleSheet("background-color : transparent")
+
+        if self.dataCounter >= self.table.columnCount():
+            self.dataCounter = 1
+        if self.table.columnCount() > 1:
+            for i in range(0, self.table.rowCount()):
+                dataStr = self.table.cellWidget(i, self.dataCounter).text()
+                try:
+                    dataList.append(eval(dataStr))
+                except Exception as e:
+                    dataList.append(dataStr)
+                self.table.cellWidget(i, self.dataCounter).setStyleSheet("background-color : rgba(0, 0, 255, 50)")
+            self.dataCounter += 1
+        data = dataList
+        self._hubWindow.printReceivedData(self.serialParameters, data)
 
     def sendCalibratedData(self):
         uuidList = []
@@ -166,6 +189,14 @@ class WindowSynthetischeDaten(AbstractWindow):
 
     def stopTimerClicked(self):
         self.dataTimer.stop()
+
+    def rawDataCheckBoxClicked(self, b):
+        if b == False:
+            self.dataTimer.disconnect()
+            self.dataTimer.timeout.connect(self.sendCalibratedData)
+        else:
+            self.dataTimer.disconnect()
+            self.dataTimer.timeout.connect(self.sendData)
 
     def save(self):
         tableData = []

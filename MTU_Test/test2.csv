@@ -1,5 +1,0 @@
-UUID;Name (Str);KalKoeff (valid JSON);KalFunkTyp (Str);DifferenzKanal (Int);Messwert (Str);FitFehler (Float);Kommentar (valid JSON)
-EcoFlex-TeleB_PM1_0;PM1_0;[2, 1];POL16;3;TE;1E-10;[]
-EcoFlex-TeleB_PM1_1;PM1_1;[2, 1];POL16;3;TE;1E-10;[]
-EcoFlex-TeleB_PM1_2;PM1_2;[2, 1];POL16;3;TE;1E-10;[]
-EcoFlex-TeleB_PM1_3;PM1_3;[2, 1];POL16;3;TE;1E-10;[]

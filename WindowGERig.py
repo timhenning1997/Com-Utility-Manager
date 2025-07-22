@@ -154,10 +154,12 @@ class WindowGERig(AbstractWindow):
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.760), y(0.555), "Geraet_G17_2_Kanal_83", "Temp (0°)", "°C", "LTE", x(0.817),y(0.355)))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.840), y(0.555), "Geraet_G17_2_Kanal_84", "Temp (50°)", "°C", "LTE", x(0.830),y(0.355)))
         # Stator
-        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.470), y(0.040), "Geraet_G17_2_Kanal_22", "p_d (A-B)", "Pa", "DD", x(0.500),y(0.110)))
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.470), y(0.040), "Geraet_G17_2_Kanal_62", "p_d (A-B)", "Pa", "DD", x(0.500),y(0.110)))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.410), y(0.080), "Geraet_G17_2_Kanal_37", "p_a (Wall)", "Pa", "DA",x(0.497), y(0.206)))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.400), y(0.215), "Geraet_G17_2_Kanal_77", "Temp R180", "°C", "LTE", x(0.468),y(0.247))) # 0.410), y(0.080
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.533), y(0.215), "Geraet_G17_2_Kanal_76", "Temp R180", "°C", "LTE", x(0.525),y(0.247)))
+        # Stator Luft Temperatur
+        self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.533), y(0.080), "Geraet_G17_2_Kanal_79", "Temp Air", "°C", "LTE", x(0.497), y(0.216)))
         # Innenwelle
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.545), y(0.490), "Geraet_T24_IW_Kanal_27", "p_a (IW)", "Pa", "DA", x(0.497),y(0.370)))
         self.graphicalMeasurements.append(GraphicalMeasurement(msWidget, x(0.545), y(0.545), "Geraet_T24_IW_Kanal_15", "Temp (IW)", "°C", "TE", x(0.509),y(0.408)))
