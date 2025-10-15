@@ -2,6 +2,7 @@ import binascii
 import math
 import bisect
 
+import numpy as np
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QPushButton, QWidget, QHBoxLayout, QTableWidget, QGridLayout, \
@@ -35,7 +36,9 @@ class WindowTablePlotter(AbstractWindow):
         self.receivedData = []
         self.receivedValueData = []
         self.receivedMaxMinData = []
+        self.receivedMeanData = []
         self.savedMaxMinData = {}
+        self.savedMeanData = {}
         self.currentLengthOfData = 0
         self.shownType = "Hex"
         self.minValue = 0
@@ -73,6 +76,7 @@ class WindowTablePlotter(AbstractWindow):
         self.shownTypeCB.addItem("Show: Hex")
         self.shownTypeCB.addItem("Show: Values")
         self.shownTypeCB.addItem("Show: Max-Min")
+        self.shownTypeCB.addItem("Show: Mean")
         self.shownTypeCB.addItem("Show: Cal")
         self.shownTypeCB.currentTextChanged.connect(self.changeShownType)
 
@@ -82,6 +86,13 @@ class WindowTablePlotter(AbstractWindow):
         self.maxMinDataPointsSpinBox.setRange(2, 1000)
         self.maxMinDataPointsSpinBox.setValue(5)
         self.maxMinDataPointsSpinBox.hide()
+
+        self.meanDataPointsSpinBox = QSpinBox()
+        self.meanDataPointsSpinBox.setPrefix("of last: ")
+        self.meanDataPointsSpinBox.setSuffix(" Data points")
+        self.meanDataPointsSpinBox.setRange(2, 1000)
+        self.meanDataPointsSpinBox.setValue(5)
+        self.meanDataPointsSpinBox.hide()
 
         colorOptionsLayout = QHBoxLayout()
         colorOptionsLayout.setContentsMargins(0, 0, 0, 0)
@@ -94,6 +105,7 @@ class WindowTablePlotter(AbstractWindow):
         colorOptionsLayout.addStretch()
         colorOptionsLayout.addWidget(self.shownTypeCB)
         colorOptionsLayout.addWidget(self.maxMinDataPointsSpinBox)
+        colorOptionsLayout.addWidget(self.meanDataPointsSpinBox)
 
         addColumnButton = QPushButton("+ Column")
         addColumnButton.clicked.connect(self.addColumn)
@@ -156,6 +168,7 @@ class WindowTablePlotter(AbstractWindow):
 
     def changeShownType(self):
         self.maxMinDataPointsSpinBox.hide()
+        self.meanDataPointsSpinBox.hide()
         if self.shownTypeCB.currentText() == "Show: Hex":
             self.shownType = "Hex"
         elif self.shownTypeCB.currentText() == "Show: Values":
@@ -164,6 +177,10 @@ class WindowTablePlotter(AbstractWindow):
             self.shownType = "MaxMin"
             self.savedMaxMinData.clear()
             self.maxMinDataPointsSpinBox.show()
+        elif self.shownTypeCB.currentText() == "Show: Mean":
+            self.shownType = "Mean"
+            self.savedMeanData.clear()
+            self.meanDataPointsSpinBox.show()
         elif self.shownTypeCB.currentText() == "Show: Cal":
             self.shownType = "Cal"
 
@@ -231,8 +248,13 @@ class WindowTablePlotter(AbstractWindow):
                         self.table.setItem(countY, countX, QTableWidgetItem(str(self.receivedValueData[1:][tableContendIndex])))
                         self.table.item(countY, countX).setBackground(self.interpolateColor(self.color1, self.color2, (number - self.minValue) / (self.maxValue-self.minValue)))
                     elif self.shownType == "MaxMin":
+                        number = int(self.receivedMaxMinData[1:][tableContendIndex])
                         self.table.setItem(countY, countX, QTableWidgetItem(str(self.receivedMaxMinData[1:][tableContendIndex])))
-                        self.table.item(countY, countX).setBackground(QColor(Qt.transparent))
+                        self.table.item(countY, countX).setBackground(self.interpolateColor(self.color1, self.color2, (number - self.minValue) / (self.maxValue-self.minValue)))
+                    elif self.shownType == "Mean":
+                        number = int(self.receivedMeanData[1:][tableContendIndex])
+                        self.table.setItem(countY, countX, QTableWidgetItem(str(self.receivedMeanData[1:][tableContendIndex])))
+                        self.table.item(countY, countX).setBackground(self.interpolateColor(self.color1, self.color2, (number - self.minValue) / (self.maxValue-self.minValue)))
                     elif self.shownType == "Cal":
                         self.table.setItem(countY, countX, QTableWidgetItem(str(self.receivedValueData[1:][tableContendIndex])))
                         self.table.item(countY, countX).setBackground(QColor(Qt.transparent))
@@ -290,6 +312,19 @@ class WindowTablePlotter(AbstractWindow):
                         self.savedMaxMinData[kennung][numberIndex] = self.savedMaxMinData[kennung][numberIndex][-self.maxMinDataPointsSpinBox.value():]
                         self.receivedMaxMinData.append(max(self.savedMaxMinData[kennung][numberIndex])-min(self.savedMaxMinData[kennung][numberIndex]))
 
+            self.receivedMeanData = []
+            if self.shownType == "Mean" and dataInfo["dataType"] == "RAW-Values":
+                if kennung not in self.savedMeanData.keys():
+                    self.savedMeanData[kennung] = []
+                    for numberIndex in range(0, len(self.receivedValueData)):
+                        self.savedMeanData[kennung].append([self.receivedValueData[numberIndex]])
+                        self.receivedMeanData.append(self.receivedValueData[numberIndex])
+                else:
+                    for numberIndex in range(0, len(self.receivedValueData)):
+                        self.savedMeanData[kennung][numberIndex].append(self.receivedValueData[numberIndex])
+                        self.savedMeanData[kennung][numberIndex] = self.savedMeanData[kennung][numberIndex][-self.meanDataPointsSpinBox.value():]
+                        self.receivedMeanData.append(np.mean(self.savedMeanData[kennung][numberIndex]))
+
             if len(self.receivedValueData[1:]) != self.currentLengthOfData:
                 self.currentLengthOfData = len(self.receivedValueData[1:])
                 self.clearTable(len(self.receivedValueData[1:]))
@@ -303,12 +338,15 @@ class WindowTablePlotter(AbstractWindow):
             temp_data = []
             temp_receivedValueData = []
             temp_receivedMaxMinData = []
+            temp_receivedMeanData = []
             if len(self.receivedValueData) > 1:
                 temp_data = [str(x) for x in data[1:]]
             if len(self.receivedValueData) > 1:
                 temp_receivedValueData = self.receivedValueData[1:]
             if len(self.receivedMaxMinData) > 1:
                 temp_receivedMaxMinData = self.receivedMaxMinData[1:]
+            if len(self.receivedMeanData) > 1:
+                temp_receivedMeanData = self.receivedMeanData[1:]
 
             for numberIndex in range(0, len(temp_data)):
                 rowCount = numberIndex // self.colNumber
@@ -324,6 +362,10 @@ class WindowTablePlotter(AbstractWindow):
                     self.table.item(rowCount, colCount).setText(str(temp_receivedMaxMinData[numberIndex]))
                     #self.table.item(rowCount, colCount).setBackground(QColor(Qt.transparent))
                     self.table.item(rowCount, colCount).setBackground(self.interpolateColor(self.color1, self.color2, (temp_receivedMaxMinData[numberIndex] - self.minValue) / (self.maxValue - self.minValue)))
+                elif dataInfo["dataType"] == "RAW-Values" and self.shownType == "Mean" and len(temp_receivedMeanData) > 0:
+                    self.table.item(rowCount, colCount).setText(str(temp_receivedMeanData[numberIndex]))
+                    # self.table.item(rowCount, colCount).setBackground(QColor(Qt.transparent))
+                    self.table.item(rowCount, colCount).setBackground(self.interpolateColor(self.color1, self.color2, (temp_receivedMeanData[numberIndex] - self.minValue) / (self.maxValue - self.minValue)))
                 elif dataInfo["dataType"] == "CALIBRATED-Values" and self.shownType == "Cal" and len(temp_receivedValueData) > 0:
                     color = "transparent"
                     if uuidData is not None:
