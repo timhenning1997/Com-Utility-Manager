@@ -261,6 +261,7 @@ class WindowSimpleGraph(AbstractWindow):
         self.table.setCellWidget(self.table.rowCount() - 1, 5, deleteButton)
 
         self.graphLines[measuringPointUUID] = GraphLine(measuringPointUUID, self.graphStartTime)
+        self.graphLines[measuringPointUUID].maxSamplingRate = self.maxSamplingSpinBox.value()
         pen = mkPen(color=self.colorTable[self.colorCounter])
         if self.colorCounter >= len(self.colorTable) - 1:
             self.colorCounter = 0

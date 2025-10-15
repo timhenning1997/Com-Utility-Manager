@@ -14,7 +14,6 @@ import libscrc
 import numpy as np
 import platform
 
-
 class SerialSignals(QObject):
     # Signals
     receivedData = pyqtSignal(object, object)
@@ -125,6 +124,7 @@ class SerialThread(QRunnable):
 
                         elif self.serialParameters.readTextIndex == "read_bytes":
                             readLine = self.serialArduino.read(self.serialParameters.readBytes)
+
                             if not readLine == b'':
                                 #try:
                                 #    readLine.decode('utf-8')
@@ -210,17 +210,20 @@ class SerialThread(QRunnable):
                                     Kennbin = self.serialArduino.read(2)
                                     Kennung = int(binascii.hexlify(Kennbin[:1]), 16)
                                     readLine = self.serialArduino.read(2 * Kennung + 2 + 2)
+
                                     if not readLine == b'':
                                         crc16send = readLine[-2:]
                                         crc16 = libscrc.ccitt_false(Kennbin + readLine[0:-2])
                                         crc_check = crc16 == int(binascii.hexlify(crc16send), 16)
                                         if not crc_check:
+                                            pass
                                             crc16 = libscrc.modbus(Kennbin + readLine[0:-2])
                                             crc_check = crc16 == int(binascii.hexlify(crc16send), 16)
 
                                         data = []
                                         for n in range(len(readLine) // 2):
                                             data.append(str(binascii.hexlify(readLine[2 * n:2 * n + 2]))[2:6])
+
                                         singleLine = np.asarray(data)
                                         if not crc_check:
                                             singleLine = np.append(singleLine, '4650')
@@ -252,6 +255,7 @@ class SerialThread(QRunnable):
                                                 self.signals.receivedData.emit(self.serialParameters, singleLine)
 
                                         self.lastSignalTime = time()
+
                     else:
                         self.signals.lostConnection.emit(self.serialParameters)
                         return None

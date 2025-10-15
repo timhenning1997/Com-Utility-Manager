@@ -1,12 +1,15 @@
+import binascii
 import os
 import re
 import sys
 import time
 import csv
+import traceback
 
+import libscrc
 from PyQt5.QtCore import QPoint, Qt, QRunnable, pyqtSlot, QThreadPool, QProcess, QRegExp, pyqtSignal, QObject
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QPushButton, QWidget, QLineEdit, QMenu, QGroupBox, QHBoxLayout, \
-    QGridLayout, QTextEdit, QSplitter, QAction, QFileDialog, QApplication
+    QGridLayout, QTextEdit, QSplitter, QAction, QFileDialog, QApplication, QMessageBox
 from PyQt5.QtGui import QPixmap, QFont, QTextDocument, QSyntaxHighlighter, QColor, QTextCharFormat, QCloseEvent
 from AbstractWindow import AbstractWindow
 from SerialParameters import SerialParameters
@@ -296,7 +299,7 @@ class Worker(QRunnable):
                     else:
                         return None
 
-            if self.lastData is not None and (port == "COM-ALL" or self.lastPort in port):
+            if self.lastData is not None and (port == "COM-ALL" or "COM-ALL" in port or self.lastPort in port):
                 # No device specified
                 if device in [None, ""]:
                     return self.lastData
@@ -404,6 +407,36 @@ class Worker(QRunnable):
         if type(ports) == str:
             ports = [ports]
         self.signals.sendDataSignal.emit(data, ports)
+
+    def sendRawWUCommand(self, data: str, ports=None, checksum_ccitt: bool = True, pretext: str = "0F35"):
+        if type(ports) == str:
+            ports = [ports]
+        if checksum_ccitt:
+            try:
+                checkSum = str(hex(libscrc.ccitt_false(binascii.unhexlify(str(data))))[2:6].rjust(4, '0'))
+                _data = pretext + str(data) + str(checkSum)
+                _data = binascii.unhexlify(str(_data))
+            except Exception as e:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Warning)
+                msg.setWindowTitle("Send Commandbyte Error")
+                msg.setText("There is an error with sending the command bytes")
+                msg.exec_()
+                return
+        else:
+            try:
+                checkSum = str(hex(libscrc.modbus(binascii.unhexlify(str(data))))[2:6].rjust(4, '0'))
+                _data = pretext + str(data) + str(checkSum)
+                _data = binascii.unhexlify(str(_data))
+            except Exception as e:
+                msg = QMessageBox()
+                msg.setIcon(QMessageBox.Warning)
+                msg.setWindowTitle("Send Commandbyte Error")
+                msg.setText("There is an error with sending the command bytes")
+                msg.exec_()
+                return
+
+        self.signals.sendDataSignal.emit(_data, ports)
 
     def sendOutput(self, text):
         self.signals.sendOutputSignal.emit(text)
