@@ -203,6 +203,7 @@ class Worker(QRunnable):
         self.globalDelay = 0.1
 
         self.lastData = None
+        self.lastData_2 = {}
         self.lastSerialParameters = None
         self.lastDataInfo = None
         self.lastPort = None
@@ -328,6 +329,7 @@ class Worker(QRunnable):
                 self.lastPort = None
             sleep(0.05)
 
+
     def send(self, message: str = None, device: str = None, command: str = None, value=None, unit=None, port=None, delay=None):
         device = self.globalDevice if device is None else device
         port = self.globalPort if port is None else port
@@ -386,6 +388,15 @@ class Worker(QRunnable):
                         return self.lastData
 
 
+    def queryData_2(self, port=None, dataType=None):
+        while port not in self.lastData_2.keys():
+            sleep(0.01)
+        while len(self.lastData_2[port]) == 0:
+            sleep(0.01)
+        data = self.lastData_2[port]
+        self.lastData_2[port] = []
+        return data
+
 
     def receiveData(self, serialParameters: SerialParameters, data, dataInfo):
         self.lastPort = serialParameters.port
@@ -394,19 +405,24 @@ class Worker(QRunnable):
         self.lastData = data
         self.lastDataRead = False
         self.getData(self, serialParameters, data, dataInfo)
+        self.lastData_2[serialParameters.port] = data
+
 
     def getData(self, object_body, serialParameters: SerialParameters, data, dataInfo):
         pass
+
 
     def sendData(self, data: str, ports=None):
         if type(ports) == str:
             ports = [ports]
         self.signals.sendDataSignal.emit(data.encode('utf-8'), ports)
 
+
     def sendRawData(self, data: str, ports=None):
         if type(ports) == str:
             ports = [ports]
         self.signals.sendDataSignal.emit(data, ports)
+
 
     def sendRawWUCommand(self, data: str, ports=None, checksum_ccitt: bool = True, pretext: str = "0F35"):
         if type(ports) == str:
@@ -438,11 +454,14 @@ class Worker(QRunnable):
 
         self.signals.sendDataSignal.emit(_data, ports)
 
+
     def sendOutput(self, text):
         self.signals.sendOutputSignal.emit(text)
 
+
     def clearOutput(self):
         self.signals.sendOutputSignal.emit("CLEAR_OUTPUT_SIGNAL")
+
 
     def forwardData(self, data, serialParameters: SerialParameters = None, dataInfo=None, port: str = None):
         if serialParameters is None:
@@ -457,15 +476,19 @@ class Worker(QRunnable):
 
         self.signals.forwardDataSignal.emit(serialParameters, data, dataInfo)
 
+
     def kill(self):
         self.is_killed = True
+
 
     def runButtonPressed(self, text):
         self.program = text
         self.running = True
 
+
     def loopButtonPressed(self, b: bool):
         self.looping = b
+
 
     def stopButtonPressed(self):
         self.stopping = True
@@ -498,11 +521,26 @@ class WindowProgrammer(AbstractWindow):
         self.worker.signals.stoppedRunningSignal.connect(self.stoppedRunning)
 
         self.editorTextEdit = QTextEdit()
+        self.editorTextEdit.cursorPositionChanged.connect(self.on_cursor_changed)
         self.editorTextEdit.setObjectName("editorTextEditObj")
         self.editorTextEdit.setStyleSheet("#editorTextEditObj {color: #ffffff}")
         self.editorTextEdit.setTabStopDistance(20)
         self.editorTextEdit.setLineWrapMode(QTextEdit.NoWrap)
         self.highlight = PythonHighlighter(self.editorTextEdit.document())
+
+        # --- Statusleiste ---
+        self.status = self.statusBar()
+        self.status.setFixedHeight(18)
+
+        # Label für Cursor-Position
+        mono_font = QFont("Consolas")
+        mono_font.setStyleHint(QFont.Monospace)
+        mono_font.setFixedPitch(True)
+        self.cursor_label = QLabel("")
+        self.cursor_label.setFont(mono_font)
+        self.cursor_label.setAlignment(Qt.AlignTop)
+        self.cursor_label.setStyleSheet("QLabel {color: #aaaaaa; font-size: 12px; padding: 0px; margin: 0px;}")
+        self.status.addPermanentWidget(self.cursor_label)
 
         self.outputEditorTextEdit = QTextEdit()
         self.outputEditorTextEdit.setReadOnly(True)
@@ -514,6 +552,7 @@ class WindowProgrammer(AbstractWindow):
         graphSplitter.addWidget(self.outputEditorTextEdit)
 
         mainLayout.addWidget(graphSplitter)
+        mainLayout.setContentsMargins(8, 8, 8, 0)
 
         self.outputLayout = QVBoxLayout()
         mainLayout.addLayout(self.outputLayout)
@@ -560,6 +599,12 @@ class WindowProgrammer(AbstractWindow):
             with open(fname, "r") as file:
                 text = file.read()
                 self.editorTextEdit.setPlainText(text)
+
+    def on_cursor_changed(self):
+        cursor = self.editorTextEdit.textCursor()
+        line = cursor.blockNumber() + 1  # Zeile (1-basiert)
+        column = cursor.positionInBlock() + 1
+        self.cursor_label.setText(f"Z:{line:3}, SP:{column:3}")
 
     def startedRunning(self):
         self.runButton.setEnabled(False)

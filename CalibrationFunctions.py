@@ -97,36 +97,6 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False, globalVars = No
 
             res = tempRes1 + tempRes2
 
-        elif calData[i][3] == "POL16TED2":
-            diffChannels = calData[i][4]        # Liste der Differenzkanäle ("D2" ~ 2 Differenzkanälen [Thermoelement, Thermistor])
-            if not isValidDiffChannels(diffChannels, data, 2):
-                continue
-            t1 = int(data[i], 16) / 65535                   # dig des TE Messwertes
-            t2 = int(data[diffChannels[0]], 16) / 65535     # dig der TE Ref-Stelle
-            t3 = int(data[diffChannels[1]], 16) / 65535     # dig des Ref-Thermistors
-            coeff1 = calData[i][2][0]                       # Koeffizienten der Thermopaarung
-            coeff2 = calData[i][2][1]                       # Koeffizienten der Spannungskalibrierung
-            coeff3 = calData[diffChannels[1]][2]            # Koeffizienten der Thermistorkalibrierung
-
-            tempRes1 = 0    # Differenztemperatur der Messstelle zur Referenzstelle
-            tempRes2 = 0    # Temperatur der Referenzstelle
-            vRes     = 0    # Thermospannung
-
-            # Umrechnen der Digitdifferenz in eine TE-Spannung
-            for k in range(0, len(coeff2)):
-                vRes += coeff2[k] * (t1-t2) ** (len(coeff2)-1-k)
-
-            # Umrechnen der TE-Spannung in eine Temperatur
-            for k in range(0, len(coeff1)):
-                tempRes1 += coeff1[k] * vRes ** (len(coeff1)-1-k)
-                # tempRes1 += coeff1[k] * (t1-t2) ** (len(coeff1)-1-k)
-
-            # Umrechnen der Ref-Th Digit in eine Temperatur
-            for k in range(0, len(coeff3)):
-                tempRes2 += coeff3[k] * t3 ** (len(coeff3)-1-k)
-
-            res = tempRes1 + tempRes2
-
         elif calData[i][3] == "POL16POL10TED2":
             diffChannels = calData[i][4]        # Liste der Differenzkanäle ("D2" ~ 2 Differenzkanälen [Thermoelement, Thermistor])
             if not isValidDiffChannels(diffChannels, data, 2):
@@ -393,6 +363,22 @@ def applyCalibrationFunctions(calData, data, EinzelWert = False, globalVars = No
             tau_w = (H*dp)/(2*L)
             res = tau_w
 
+        elif calData[i][3] == "TWS_TIM":
+            # Kalibrierfile Parameter: index	UB_an_Uref	R1/R2	R2	Ra	A3	A2	A1	A0
+            # z.B. 25, 4178, 31.2761205609249, 1500, 19.993568496834, 5.28819657022718E-07, -0.00112463515198271, 1.29799139415304, -300.164307250794
+            ch7_index, UB_anUref, R1R2, R2, Ra = calData[i][2][:5]
+
+            coeff = calData[i][2][5:]  # Liste der vorhandenen Koeffizienten
+
+            valCHX = int(data[i], 16)
+            valCH7 = int(data[ch7_index], 16)
+            R1 = R1R2 * R2
+            B = (valCHX-valCH7)/valCH7/R1R2
+            Rt = ((65535/UB_anUref)-1+B)/(((1-B) / Ra) - (B / R2))
+
+            res = 0
+            for k in range(0, len(coeff)):
+                res += coeff[k] * Rt ** (len(coeff) - 1 - k)
 
         else:
             res = int(data[i], 16)

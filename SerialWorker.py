@@ -396,7 +396,7 @@ class SerialThread(QRunnable):
 
     def alwaysRecordData(self, data):
         time = ""
-        filePath = "Files/Auto-Save/" + self.serialArduino.port + "_" + str(datetime.now())[:10] + "_Auto-Save.txt"
+        filePath = str(Path(os.getcwd())) + "/Files/Auto-Save/" + str(self.serialArduino.port).replace("/dev/", "") + "_" + str(datetime.now())[:10] + "_Auto-Save.txt"
         if self.alwaysSaveBufferSize == 0:
             with open(filePath, 'a') as file:
                 if self.saveTimestamp:
