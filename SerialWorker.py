@@ -5,12 +5,11 @@ from PyQt5.QtCore import *
 import serial
 from PyQt5.QtWidgets import QMessageBox
 from pathlib import Path
+from crcengine import new
 
 from SerialParameters import SerialParameters
 
-
 import binascii
-import libscrc
 import numpy as np
 import platform
 
@@ -29,6 +28,10 @@ class SerialSignals(QObject):
 class SerialThread(QRunnable):
     def __init__(self, serialParameters: SerialParameters):
         super().__init__()
+
+        self.crc_ccitt_false = new('crc16-ccitt-false')
+        self.crc_modbus = new('crc16-modbus')
+
         self.serialParameters = serialParameters
         self.serialArduino = serial.Serial()
         self.serialArduino.port = self.serialParameters.port
@@ -213,12 +216,16 @@ class SerialThread(QRunnable):
 
                                     if not readLine == b'':
                                         crc16send = readLine[-2:]
-                                        crc16 = libscrc.ccitt_false(Kennbin + readLine[0:-2])
+                                        crc16 = self.crc_ccitt_false(Kennbin + readLine[0:-2])
                                         crc_check = crc16 == int(binascii.hexlify(crc16send), 16)
                                         if not crc_check:
                                             pass
-                                            crc16 = libscrc.modbus(Kennbin + readLine[0:-2])
+                                            crc16 = self.crc_modbus(Kennbin + readLine[0:-2])
+
                                             crc_check = crc16 == int(binascii.hexlify(crc16send), 16)
+
+
+
 
                                         data = []
                                         for n in range(len(readLine) // 2):

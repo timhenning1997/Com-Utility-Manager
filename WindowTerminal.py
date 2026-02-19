@@ -2,7 +2,7 @@ import binascii
 import traceback
 from datetime import datetime
 
-import libscrc
+from crcengine import new
 from PyQt5.QtGui import QTextCursor
 from PyQt5.QtWidgets import QLabel, QHBoxLayout, QVBoxLayout, QCheckBox, QTextEdit, QLineEdit, QPushButton, QComboBox, \
     QWidget, QMessageBox
@@ -104,7 +104,9 @@ class WindowTerminal(AbstractWindow):
         elif self.sendBytesCombobox.currentText() == "Send as 0F35_modbus command":
             byte = self.lineEdit.text()
             try:
-                checkSum = str(hex(libscrc.modbus(binascii.unhexlify(str(byte))))[2:6].rjust(4,'0'))
+                #checkSum = str(hex(libscrc.modbus(binascii.unhexlify(str(byte))))[2:6].rjust(4,'0'))
+                checkSum = format(new('crc16-modbus')(binascii.unhexlify(str(byte))), '04x')
+
                 data = "0F35" + str(byte) + str(checkSum)
                 data = binascii.unhexlify(str(data))
             except Exception as e:
@@ -119,7 +121,9 @@ class WindowTerminal(AbstractWindow):
         elif self.sendBytesCombobox.currentText() == "Send as 0F35_ccitt command":
             byte = self.lineEdit.text()
             try:
-                checkSum = str(hex(libscrc.ccitt_false(binascii.unhexlify(str(byte))))[2:6].rjust(4,'0'))
+                #checkSum = str(hex(libscrc.ccitt_false(binascii.unhexlify(str(byte))))[2:6].rjust(4,'0'))
+                checkSum = format(new('crc16-ccitt-false')(binascii.unhexlify(str(byte))), '04x')
+
                 data = "0F35" + str(byte) + str(checkSum)
                 data = binascii.unhexlify(str(data))
             except Exception as e:

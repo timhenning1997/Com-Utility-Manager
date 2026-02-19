@@ -6,7 +6,7 @@ import time
 import csv
 import traceback
 
-import libscrc
+from crcengine import new
 from PyQt5.QtCore import QPoint, Qt, QRunnable, pyqtSlot, QThreadPool, QProcess, QRegExp, pyqtSignal, QObject
 from PyQt5.QtWidgets import QLabel, QVBoxLayout, QPushButton, QWidget, QLineEdit, QMenu, QGroupBox, QHBoxLayout, \
     QGridLayout, QTextEdit, QSplitter, QAction, QFileDialog, QApplication, QMessageBox
@@ -429,7 +429,8 @@ class Worker(QRunnable):
             ports = [ports]
         if checksum_ccitt:
             try:
-                checkSum = str(hex(libscrc.ccitt_false(binascii.unhexlify(str(data))))[2:6].rjust(4, '0'))
+                #checkSum = str(hex(libscrc.ccitt_false(binascii.unhexlify(str(data))))[2:6].rjust(4, '0'))
+                checkSum = format(new('crc16-ccitt-false')(binascii.unhexlify(str(data))), '04x')
                 _data = pretext + str(data) + str(checkSum)
                 _data = binascii.unhexlify(str(_data))
             except Exception as e:
@@ -441,7 +442,8 @@ class Worker(QRunnable):
                 return
         else:
             try:
-                checkSum = str(hex(libscrc.modbus(binascii.unhexlify(str(data))))[2:6].rjust(4, '0'))
+                #checkSum = str(hex(libscrc.modbus(binascii.unhexlify(str(data))))[2:6].rjust(4, '0'))
+                checkSum = format(new('crc16-modbus')(binascii.unhexlify(str(data))), '04x')
                 _data = pretext + str(data) + str(checkSum)
                 _data = binascii.unhexlify(str(_data))
             except Exception as e:

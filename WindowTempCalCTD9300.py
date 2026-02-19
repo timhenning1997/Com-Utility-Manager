@@ -259,12 +259,15 @@ class WindowTempCalCTD9300(AbstractWindow):
 
         self.keithleyTable = QTableWidget(0, 4)
         self.keithleyTable.setHorizontalHeaderLabels(["Name", "Channel", "Function", "Range"])
+        self.keithleyTable.setVisible(False)
         self.addKeithleyRow()
 
         self.addRowButton = QPushButton("+ Row")
         self.addRowButton.clicked.connect(self.addKeithleyRow)
+        self.addRowButton.setVisible(False)
         self.deleteRowButton = QPushButton("- Row")
         self.deleteRowButton.clicked.connect(self.deleteLastKeithleyRow)
+        self.deleteRowButton.setVisible(False)
         keithleyAddDelLayout = QHBoxLayout()
         keithleyAddDelLayout.addStretch()
         keithleyAddDelLayout.addWidget(self.addRowButton)
