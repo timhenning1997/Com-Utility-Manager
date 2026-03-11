@@ -1,0 +1,61 @@
+#from crcengine import new
+
+comPortWU_TWS = ["ttyUSB0", "ttyUSB1", "ttyUSB2", "ttyUSB3", "ttyUSB4"]
+anzahlMessungen = 300
+spannungsniveaus = [3.2, 5.0]
+spannungsniveausWU = ["01A2", "0252"]
+einpendelZeit = 120
+BefehlsByte = "0203001F"
+
+sensor = "TWS8x8 Berlin"
+recordFilePath = ""
+
+try:
+	self.anmerkung = self.anmerkung + 1
+except:
+	self.anmerkung = 1
+
+
+
+
+spannungsniveausWU_Send = []
+for spannungsniveauWU in spannungsniveausWU:
+	byte = BefehlsByte + spannungsniveauWU
+	#checkSum = str(hex(libscrc.ccitt_false(binascii.unhexlify(str(byte))))[2:6].rjust(4,'0'))
+	checkSum = format(new('crc16-ccitt-false')(binascii.unhexlify(str(byte))), '04x')
+	data = "0F35" + str(byte) + str(checkSum)
+	spannungsniveausWU_Send.append(binascii.unhexlify(str(data)))
+
+
+for spannungsIndex, spannung in enumerate(spannungsniveaus):
+	spannung_send = spannungsniveausWU_Send[spannungsIndex]
+
+	recordFilePath = "Files/TWS_Files_Berlin/"
+	recordFilePath += str(datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
+	recordFilePath += "_" + str(spannung) + "V"
+	recordFilePath += "_" + str(sensor)
+	recordFilePath += "_" + str(self.anmerkung) + ".txt"
+
+	self.sendRawData(ports="COM-ALL", data=spannung_send)
+
+	for i in range(0, einpendelZeit):
+		self.clearOutput()
+		self.sendOutput("\nSpannung: " + str(spannung) + "V" + "\nEinpendelzeit: " + str(i+1) + "s/" + str(einpendelZeit) + "s")
+		sleep(1)
+
+	with open(recordFilePath, 'a') as file:
+		file.write(float.hex(time.time()) + "\n")
+
+	dataLines = []
+	for i in range(0, anzahlMessungen):
+		self.clearOutput()
+		self.sendOutput("\nSpannung: " + str(spannung) + "V" + "\nMessungen:" + str(i+1) + "/" + str(anzahlMessungen))
+		dataWU_TWS_0 = self.queryData_2(port=comPortWU_TWS[0], dataType="RAW-Values")
+		dataWU_TWS_1 = self.queryData_2(port=comPortWU_TWS[1], dataType="RAW-Values")
+		dataWU_TWS_2 = self.queryData_2(port=comPortWU_TWS[2], dataType="RAW-Values")
+		dataWU_TWS_3 = self.queryData_2(port=comPortWU_TWS[3], dataType="RAW-Values")
+		dataWU_TWS_4 = self.queryData_2(port=comPortWU_TWS[4], dataType="RAW-Values")
+		dataLines.append([str(time.time()), *dataWU_TWS_0, *dataWU_TWS_1, *dataWU_TWS_2, *dataWU_TWS_3, *dataWU_TWS_4])
+	with open(recordFilePath, 'a') as file:
+		for line in dataLines:
+			file.write(' '.join(line) + "\n")
